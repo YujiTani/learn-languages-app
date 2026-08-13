@@ -1,7 +1,7 @@
 # LingoPop! 🇰🇷🇩🇰🇬🇧
 
 日本語の文を見て、韓国語・デンマーク語・英語で答える、Duolingo風の語学学習アプリ。
-**各言語1000問(合計3000問)** 収録。
+問題は語彙×文型テンプレートから**ボタンを押すたびにその場で生成**されます(各言語 約2,500通り、合計 約7,700通り)。
 
 ## 機能
 
@@ -10,7 +10,7 @@
 - 回答モードをトグルで切替:
   - 📝 ノート記述: 自分でノートに書いてから「回答を確認」で答え合わせ
   - 🧩 単語タイル: Duolingo風。シャッフルされた単語を正しい順にタップ(ダミー単語入り)
-- 韓国語はローマ字読み付き(連音化を反映)
+- 韓国語はローマ字読み付き(連音化・鼻音化・二重パッチムを反映)
 - 全問に文法解説つき(助詞の使い分け、en/et の性、a/an など)
 - GitHubの草風「学習カレンダー」で毎日の学習量を可視化
 - ゲーミフィケーション: XP・レベル・連続学習ストリーク🔥・レベルアップ演出・紙吹雪
@@ -19,84 +19,71 @@
 ## ファイル構成
 
 ```
-index.html      アプリ本体
-questions.json  問題データ(各言語1000問)
-questions.js    同じデータのJS版。file:// で開いたときのフォールバック
+index.html         アプリ本体
+generator.js       問題ジェネレーター(語彙+文型テンプレート+文法処理)← 単一ソース
 tools/
-  vocab.py             語彙データ(名詞・動詞・形容詞など約180語)
-  generate_questions.py 問題ジェネレーター
-  curated.json         手書きの定番フレーズ(各言語20問)
+  validate.js      全数検証スクリプト(デプロイ前に実行)
 ```
 
-## 問題の追加・編集
+`questions.json` / `questions.js` / `tools/*.py` は旧方式(事前生成)の遺物で、現在は使われていません。削除して構いません。
 
-### 語彙を足す(推奨)
+## 品質保証の仕組み
 
-`tools/vocab.py` に単語を1行足して再生成すると、全テンプレートに自動で展開されます。
+問題は機械生成ですが、2段階でチェックしています。
 
-```python
-dict(ja="鏡", ko="거울", da="spejl", g="et", dad="spejlet", en="mirror", art="a", tag="thing"),
-```
+1. **全数検証(自動)** — 生成しうる全問題(約7,700問)を列挙し、韓国語の助詞(을/를・이/가・은/는・(으)로・이에요/예요)、デンマーク語の性(en/et・denne/dette・min/mit・形容詞一致)、英語の a/an、文形式、意味の禁止パターン、ローマ字の回帰テストを機械チェックします。
 
-```bash
-python3 tools/generate_questions.py   # questions.json / questions.js を再生成
-```
-
-文法は語彙データから自動で処理されます:
-
-- **韓国語** … 을/를・이/가・은/는・이에요/예요 をパッチムの有無で自動選択
-- **デンマーク語** … `g`(en/et)と `dad`(限定形)から冠詞・形容詞の中性形を決定
-- **英語** … `art` で a/an を指定
-
-### 文型を足す
-
-`tools/generate_questions.py` の `@group(...)` を1つ追加すると、語彙数ぶんの問題が一気に増えます。
-
-### 1問だけ手で足す
-
-`tools/curated.json` に追記して再生成してください(手書き問題は必ず収録されます)。
-
-## GitHub Pages へのデプロイ手順
-
-このフォルダでターミナルを開いて実行:
-
-```bash
-# 1. Gitリポジトリを初期化してコミット
-git init
-git add index.html questions.json questions.js README.md tools/
-git commit -m "Add LingoPop language learning app"
-git branch -M main
-
-# 2. GitHubにリポジトリを作成してプッシュ(gh CLIがある場合)
-gh repo create learn-languages-app --public --source=. --push
-
-# 3. GitHub Pagesを有効化
-gh api repos/{owner}/learn-languages-app/pages \
-  -X POST -f "source[branch]=main" -f "source[path]=/"
-```
-
-数分後に `https://<ユーザー名>.github.io/learn-languages-app/` で公開されます。
-
-### gh CLI がない場合(Web UIで)
-
-1. https://github.com/new で `learn-languages-app` リポジトリを作成(Public)
-2. ```bash
-   git init
-   git add index.html questions.json questions.js README.md tools/
-   git commit -m "Add LingoPop language learning app"
-   git branch -M main
-   git remote add origin https://github.com/<ユーザー名>/learn-languages-app.git
-   git push -u origin main
+   ```bash
+   node tools/validate.js   # エラーがあれば exit 1
    ```
-3. リポジトリの **Settings → Pages** を開き、Source を **Deploy from a branch**、Branch を **main / (root)** にして Save
-4. 数分後に表示されるURLでアクセス
+
+2. **LLMレビュー(随時)** — 言語ごとのサンプルを言語モデルにレビューさせ、見つかった誤り・不自然さは generator.js の修正と validate.js の禁止パターン(`BANNED`)への追加で再発を防ぎます(2026-08 実施: 約420問をレビューし、ローマ字の鼻音化、「風が強い」の訳、very delicious などを修正済み)。
+
+## 問題の追加方法
+
+**単語を足す(最も簡単)** — `generator.js` の語彙配列に1行足すだけ。全テンプレートに自動展開され、1語で数十問増えます。
+
+```js
+// FOODS に追加する例
+{ja:"はちみつ", ko:"꿀", da:"honning", g:"en", dad:"honningen", en:"honey", art:"", gen:"honey", dagen:"honning"},
+```
+
+- 韓国語の助詞はパッチムから自動選択されるので指定不要
+- デンマーク語は `g`(en/et)と `dad`(限定形)を辞書で確認して指定
+- 英語は `art`(a/an/""=不可算)を指定
+
+**文型を足す** — `generator.js` の `TEMPLATES` に1ブロック足すと語彙数ぶんの問題が一気に増えます。
+
+**手書きの定番フレーズを足す** — `generator.js` の `CURATED` に追記します。
+
+追加したら必ず検証を実行してください:
+
+```bash
+node tools/validate.js
+```
+
+## GitHub Pages へのデプロイ
+
+```bash
+cd ~/code/learn-languages-app
+node tools/validate.js                    # 検証してから
+git add index.html generator.js tools/ README.md .gitignore
+git commit -m "Update LingoPop"
+git push
+```
+
+初回セットアップは以下:
+
+```bash
+git init && git add . && git commit -m "Add LingoPop" && git branch -M main
+gh repo create learn-languages-app --public --source=. --push
+gh api repos/{owner}/learn-languages-app/pages -X POST -f "source[branch]=main" -f "source[path]=/"
+```
+
+(gh CLI がない場合は GitHub で `learn-languages-app` リポジトリを作成 → push → Settings → Pages で main / root を指定)
+
+公開URL: `https://<ユーザー名>.github.io/learn-languages-app/`
 
 ## ローカルで動かす
 
-`index.html` をダブルクリックするだけで動きます(`questions.js` フォールバックが効くため)。
-ローカルサーバーで動かしたい場合:
-
-```bash
-python3 -m http.server 8000
-# → http://localhost:8000
-```
+`index.html` をダブルクリックするだけで動きます(fetch不使用のため file:// でもOK)。

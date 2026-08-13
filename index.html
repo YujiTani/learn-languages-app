@@ -324,24 +324,15 @@
   <footer>LingoPop! ─ 韓国語・デンマーク語・英語をたのしく学ぼう</footer>
 </div>
 
+<script src="generator.js"></script>
 <script>
 // ---------- 問題バンク ----------
-// 問題データは questions.json (各言語1000問)。
-// file:// で開いた場合は fetch が使えないため questions.js にフォールバックする。
+// 問題は generator.js が語彙×文型テンプレートからその場で生成する。
+// (問題を増やすには generator.js の語彙かテンプレートを足すだけ)
 let BANK = null;
 
 function loadBank() {
-  return fetch("questions.json", { cache: "no-cache" })
-    .then(res => { if (!res.ok) throw new Error(res.status); return res.json(); })
-    .catch(() => new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = "questions.js";
-      s.onload = () => window.LINGOPOP_QUESTIONS
-        ? resolve(window.LINGOPOP_QUESTIONS)
-        : reject(new Error("データが空です"));
-      s.onerror = () => reject(new Error("questions.js を読み込めませんでした"));
-      document.head.appendChild(s);
-    }));
+  return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
 const QUESTIONS_PER_SESSION = 5;
