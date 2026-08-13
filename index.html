@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LingoPop! - 韓国語・デンマーク語・英語</title>
+<style>
+  :root {
+    --green: #58cc02;
+    --green-dark: #46a302;
+    --blue: #1cb0f6;
+    --blue-dark: #1899d6;
+    --orange: #ff9600;
+    --red: #ff4b4b;
+    --red-dark: #d33131;
+    --purple: #ce82ff;
+    --yellow: #ffc800;
+    --bg: #f7f7f7;
+    --card: #ffffff;
+    --text: #3c3c3c;
+    --text-light: #777;
+    --border: #e5e5e5;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .container { max-width: 640px; margin: 0 auto; padding: 16px; }
+
+  /* Header */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; margin-bottom: 8px;
+  }
+  .logo { font-size: 24px; font-weight: 800; color: var(--green); letter-spacing: -0.5px; }
+  .stats { display: flex; gap: 14px; align-items: center; }
+  .stat { display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 15px; }
+  .stat.streak { color: var(--orange); }
+  .stat.xp { color: var(--yellow); filter: saturate(1.4); }
+  .stat.level { color: var(--purple); }
+
+  /* Level bar */
+  .level-bar-wrap { margin-bottom: 20px; }
+  .level-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-light); font-weight: 700; margin-bottom: 4px; }
+  .level-bar { height: 10px; background: var(--border); border-radius: 6px; overflow: hidden; }
+  .level-bar-fill { height: 100%; background: var(--purple); border-radius: 6px; transition: width .5s ease; }
+
+  /* Cards & buttons */
+  .card {
+    background: var(--card); border: 2px solid var(--border); border-radius: 16px;
+    padding: 24px; margin-bottom: 16px;
+  }
+  .btn {
+    display: inline-block; width: 100%; padding: 14px 20px; border: none;
+    border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,.18); transition: transform .08s, box-shadow .08s, filter .15s;
+    user-select: none;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,.18); }
+  .btn:disabled { filter: grayscale(.6) opacity(.6); cursor: not-allowed; }
+  .btn-green { background: var(--green); color: #fff; box-shadow: 0 4px 0 var(--green-dark); }
+  .btn-blue { background: var(--blue); color: #fff; box-shadow: 0 4px 0 var(--blue-dark); }
+  .btn-white { background: #fff; color: var(--blue); border: 2px solid var(--border); box-shadow: 0 4px 0 var(--border); }
+  .btn-orange { background: var(--orange); color: #fff; box-shadow: 0 4px 0 #d97f00; }
+
+  /* Language select */
+  .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .lang-tile {
+    background: var(--card); border: 2px solid var(--border); border-radius: 16px;
+    padding: 20px 12px; text-align: center; cursor: pointer; transition: all .15s;
+    box-shadow: 0 3px 0 var(--border);
+  }
+  .lang-tile:hover { transform: translateY(-2px); }
+  .lang-tile.selected { border-color: var(--blue); background: #e7f6fd; box-shadow: 0 3px 0 var(--blue); }
+  .lang-tile .flag { font-size: 40px; display: block; margin-bottom: 8px; }
+  .lang-tile .name { font-weight: 800; font-size: 15px; }
+  .lang-tile .sub { font-size: 12px; color: var(--text-light); }
+
+  .lang-tile .cnt {
+    display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 800;
+    color: var(--green-dark); background: #eaf7e0; border-radius: 8px; padding: 2px 8px;
+  }
+  .load-err {
+    background: #ffe8e8; border: 2px solid var(--red); border-radius: 12px;
+    padding: 14px; font-size: 13px; line-height: 1.7; margin-top: 12px;
+  }
+  .load-err code { background: #fff; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+  .section-title { font-size: 18px; font-weight: 800; margin: 20px 0 12px; }
+
+  /* Mode toggle */
+  .mode-toggle {
+    display: flex; background: var(--card); border: 2px solid var(--border);
+    border-radius: 14px; padding: 4px; margin-bottom: 16px; gap: 4px;
+  }
+  .mode-opt {
+    flex: 1; text-align: center; padding: 10px 6px; border-radius: 10px;
+    font-weight: 800; font-size: 13px; cursor: pointer; color: var(--text-light);
+    transition: all .15s; user-select: none;
+  }
+  .mode-opt.active { background: var(--blue); color: #fff; }
+  .mode-desc { font-size: 12px; color: var(--text-light); text-align: center; margin: -8px 0 16px; }
+
+  /* Session */
+  .session-top { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .quit-btn { background: none; border: none; font-size: 22px; color: #b0b0b0; cursor: pointer; font-weight: 700; }
+  .progress { flex: 1; height: 16px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 10px; transition: width .4s ease; min-width: 0%; }
+
+  .q-label { font-size: 13px; font-weight: 800; color: var(--text-light); margin-bottom: 10px; letter-spacing: 1px; }
+  .q-flag { font-size: 20px; margin-right: 6px; }
+  .sentence { font-size: 26px; font-weight: 700; line-height: 1.5; margin: 8px 0 6px; }
+  .roman { font-size: 14px; color: var(--text-light); margin-bottom: 4px; }
+  .hint-chip {
+    display: inline-block; background: #fff4e0; color: var(--orange); font-size: 12px;
+    font-weight: 700; border-radius: 8px; padding: 3px 10px; margin-top: 8px;
+  }
+
+  .answer-box {
+    border-radius: 14px; padding: 18px; margin-top: 16px; animation: pop .3s ease;
+  }
+  .answer-box.good { background: #e9f8e0; border: 2px solid var(--green); }
+  .answer-box.bad { background: #ffe8e8; border: 2px solid var(--red); }
+  .answer-box .ans-label { font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px; }
+  .answer-box.good .ans-label { color: var(--green-dark); }
+  .answer-box.bad .ans-label { color: var(--red-dark); }
+  .answer-box .ans-text { font-size: 20px; font-weight: 700; }
+  .answer-box .ans-roman { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+  .answer-box .ans-note { font-size: 13px; color: #557; margin-top: 8px; line-height: 1.6; }
+  @keyframes pop { 0% { transform: scale(.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+  .self-check { display: flex; gap: 12px; margin-top: 16px; }
+  .self-check .btn { font-size: 14px; padding: 12px; }
+
+  /* Word bank */
+  .build-area {
+    min-height: 56px; border-bottom: 2px solid var(--border); border-top: 2px solid var(--border);
+    padding: 10px 4px; margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  }
+  .bank-area { padding: 16px 4px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .word-tile {
+    background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+    padding: 8px 14px; font-size: 16px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 3px 0 var(--border); transition: transform .08s; user-select: none;
+  }
+  .word-tile:active { transform: translateY(3px); box-shadow: none; }
+  .word-tile.used { visibility: hidden; }
+  .build-area .word-tile { border-color: var(--blue); box-shadow: 0 3px 0 var(--blue); }
+
+  /* Grass calendar */
+  .grass-card { padding: 18px; }
+  .grass-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .grass-title { font-weight: 800; font-size: 15px; }
+  .grass-sub { font-size: 12px; color: var(--text-light); font-weight: 700; }
+  .grass-scroll { overflow-x: auto; padding-bottom: 4px; }
+  .grass-months { display: flex; font-size: 10px; color: var(--text-light); font-weight: 700; margin-bottom: 3px; margin-left: 0; }
+  .grass-grid { display: flex; gap: 3px; }
+  .grass-week { display: flex; flex-direction: column; gap: 3px; }
+  .grass-cell { width: 13px; height: 13px; border-radius: 3px; background: #ebedf0; }
+  .grass-cell.l1 { background: #b7eb8f; }
+  .grass-cell.l2 { background: #73d13d; }
+  .grass-cell.l3 { background: #389e0d; }
+  .grass-cell.today { outline: 2px solid var(--orange); outline-offset: -1px; }
+  .grass-legend { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-light); margin-top: 8px; justify-content: flex-end; }
+  .grass-legend .grass-cell { width: 11px; height: 11px; }
+
+  /* Result */
+  .result { text-align: center; padding: 30px 10px; }
+  .result .big-emoji { font-size: 64px; animation: bounce 1s ease infinite alternate; display: inline-block; }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-12px); } }
+  .result h2 { font-size: 26px; margin: 12px 0 4px; color: var(--green); }
+  .result-stats { display: flex; justify-content: center; gap: 12px; margin: 24px 0; flex-wrap: wrap; }
+  .result-stat { border: 2px solid; border-radius: 14px; padding: 4px; min-width: 110px; overflow: hidden; }
+  .result-stat .rs-head { font-size: 11px; font-weight: 800; color: #fff; padding: 4px; border-radius: 8px 8px 0 0; letter-spacing: 1px; }
+  .result-stat .rs-val { font-size: 22px; font-weight: 800; padding: 10px 6px; }
+  .rs-yellow { border-color: var(--yellow); } .rs-yellow .rs-head { background: var(--yellow); } .rs-yellow .rs-val { color: #d5a500; }
+  .rs-orange { border-color: var(--orange); } .rs-orange .rs-head { background: var(--orange); } .rs-orange .rs-val { color: var(--orange); }
+  .rs-green { border-color: var(--green); } .rs-green .rs-head { background: var(--green); } .rs-green .rs-val { color: var(--green); }
+
+  .xp-float {
+    position: fixed; font-weight: 800; color: var(--yellow); filter: saturate(1.5);
+    font-size: 22px; pointer-events: none; animation: floatUp 1s ease forwards; z-index: 99;
+  }
+  @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-60px); } }
+
+  .confetti-piece { position: fixed; top: -20px; font-size: 22px; pointer-events: none; z-index: 98; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  .hidden { display: none !important; }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: #fff; font-weight: 700; padding: 10px 20px;
+    border-radius: 12px; font-size: 14px; z-index: 100; animation: pop .3s ease;
+  }
+  footer { text-align: center; color: #bbb; font-size: 12px; padding: 20px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">LingoPop!</div>
+    <div class="stats">
+      <div class="stat streak" title="連続学習日数">🔥 <span id="streakVal">0</span></div>
+      <div class="stat xp" title="合計XP">⚡ <span id="xpVal">0</span></div>
+      <div class="stat level" title="レベル">💎 Lv.<span id="levelVal">1</span></div>
+    </div>
+  </header>
+
+  <div class="level-bar-wrap">
+    <div class="level-bar-label"><span id="levelLabel">レベル 1</span><span id="levelXpLabel"></span></div>
+    <div class="level-bar"><div class="level-bar-fill" id="levelBarFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- Home screen -->
+  <div id="homeScreen">
+    <div class="card grass-card">
+      <div class="grass-head">
+        <div class="grass-title">🌱 学習カレンダー</div>
+        <div class="grass-sub">🔥 連続 <span id="grassStreak">0</span>日 / 最長 <span id="grassBest">0</span>日</div>
+      </div>
+      <div class="grass-scroll">
+        <div class="grass-months" id="grassMonths"></div>
+        <div class="grass-grid" id="grassGrid"></div>
+      </div>
+      <div class="grass-legend">
+        少 <span class="grass-cell"></span><span class="grass-cell l1"></span><span class="grass-cell l2"></span><span class="grass-cell l3"></span> 多
+      </div>
+    </div>
+
+    <div class="section-title">📚 言語をえらぶ</div>
+    <div class="lang-grid">
+      <div class="lang-tile selected" data-lang="ko" onclick="selectLang('ko')">
+        <span class="flag">🇰🇷</span><div class="name">韓国語</div><div class="sub">한국어</div><div class="cnt" id="cnt-ko">…</div>
+      </div>
+      <div class="lang-tile" data-lang="da" onclick="selectLang('da')">
+        <span class="flag">🇩🇰</span><div class="name">デンマーク語</div><div class="sub">Dansk</div><div class="cnt" id="cnt-da">…</div>
+      </div>
+      <div class="lang-tile" data-lang="en" onclick="selectLang('en')">
+        <span class="flag">🇬🇧</span><div class="name">英語</div><div class="sub">English</div><div class="cnt" id="cnt-en">…</div>
+      </div>
+      <div class="lang-tile" data-lang="mix" onclick="selectLang('mix')">
+        <span class="flag">🌏</span><div class="name">ミックス</div><div class="sub">3言語ランダム</div><div class="cnt" id="cnt-mix">…</div>
+      </div>
+    </div>
+
+    <div class="section-title">✍️ 回答モード</div>
+    <div class="mode-toggle">
+      <div class="mode-opt" id="modeWrite" onclick="setMode('write')">📝 ノート記述</div>
+      <div class="mode-opt" id="modeTiles" onclick="setMode('tiles')">🧩 単語タイル</div>
+    </div>
+    <div class="mode-desc" id="modeDesc"></div>
+
+    <button class="btn btn-green" id="startBtn" onclick="startSession()" disabled>問題を読み込み中…</button>
+    <div class="load-err hidden" id="loadErr"></div>
+
+    <div class="card" style="margin-top:20px">
+      <div style="font-weight:800; margin-bottom:8px">あそびかた</div>
+      <div style="font-size:14px; color:var(--text-light); line-height:1.8">
+        1. 言語と回答モードをえらんで「問題を生成」<br>
+        2. <b>日本語の文</b>が出題される<br>
+        3. 📝 ノート記述: 自分でノートに書いてから「回答を確認」で答え合わせ<br>
+        3. 🧩 単語タイル: バラバラの単語を正しい順にタップして「答え合わせ」<br>
+        4. XPをためてレベルアップ、毎日つづけて🌱草を育てよう!
+      </div>
+    </div>
+  </div>
+
+  <!-- Session screen -->
+  <div id="sessionScreen" class="hidden">
+    <div class="session-top">
+      <button class="quit-btn" onclick="quitSession()" title="やめる">✕</button>
+      <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="card">
+      <div class="q-label"><span class="q-flag" id="qFlag"></span><span id="qTask"></span></div>
+      <div class="sentence" id="qSentence"></div>
+      <span class="hint-chip" id="qHint"></span>
+
+      <!-- tiles mode -->
+      <div id="tilesUI" class="hidden">
+        <div class="build-area" id="buildArea"></div>
+        <div class="bank-area" id="bankArea"></div>
+      </div>
+
+      <div class="answer-box hidden" id="answerBox">
+        <div class="ans-label" id="ansLabel"></div>
+        <div class="ans-text" id="ansText"></div>
+        <div class="ans-roman" id="ansRoman"></div>
+        <div class="ans-note" id="ansNote"></div>
+      </div>
+    </div>
+
+    <!-- write mode buttons -->
+    <button class="btn btn-blue hidden" id="revealBtn" onclick="revealAnswer()">回答を確認する 👀</button>
+    <div class="self-check hidden" id="selfCheck">
+      <button class="btn btn-green" onclick="nextQuestion(10)">書けた! 😊 +10XP</button>
+      <button class="btn btn-orange" onclick="nextQuestion(5)">むずかしかった 😅 +5XP</button>
+    </div>
+
+    <!-- tiles mode buttons -->
+    <button class="btn btn-green hidden" id="checkBtn" onclick="checkTiles()">答え合わせ ✅</button>
+    <button class="btn btn-blue hidden" id="continueBtn" onclick="continueTiles()">つづける ➡️</button>
+  </div>
+
+  <!-- Result screen -->
+  <div id="resultScreen" class="hidden">
+    <div class="card result">
+      <span class="big-emoji">🎉</span>
+      <h2>レッスンクリア!</h2>
+      <div style="color:var(--text-light); font-weight:700" id="resultMsg"></div>
+      <div class="result-stats">
+        <div class="result-stat rs-yellow"><div class="rs-head">かくとくXP</div><div class="rs-val" id="rEarned">+0</div></div>
+        <div class="result-stat rs-orange"><div class="rs-head">ストリーク</div><div class="rs-val" id="rStreak">🔥 0</div></div>
+        <div class="result-stat rs-green"><div class="rs-head">パーフェクト</div><div class="rs-val" id="rPerfect">0/5</div></div>
+      </div>
+      <button class="btn btn-green" onclick="startSession()" style="margin-bottom:12px">もう一度 🎲</button>
+      <button class="btn btn-white" onclick="goHome()">ホームへもどる</button>
+    </div>
+  </div>
+
+  <footer>LingoPop! ─ 韓国語・デンマーク語・英語をたのしく学ぼう</footer>
+</div>
+
+<script>
+// ---------- 問題バンク ----------
+// 問題データは questions.json (各言語1000問)。
+// file:// で開いた場合は fetch が使えないため questions.js にフォールバックする。
+let BANK = null;
+
+function loadBank() {
+  return fetch("questions.json", { cache: "no-cache" })
+    .then(res => { if (!res.ok) throw new Error(res.status); return res.json(); })
+    .catch(() => new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "questions.js";
+      s.onload = () => window.LINGOPOP_QUESTIONS
+        ? resolve(window.LINGOPOP_QUESTIONS)
+        : reject(new Error("データが空です"));
+      s.onerror = () => reject(new Error("questions.js を読み込めませんでした"));
+      document.head.appendChild(s);
+    }));
+}
+
+const QUESTIONS_PER_SESSION = 5;
+const XP_PER_LEVEL = 100;
+const GRASS_WEEKS = 17; // 約4ヶ月分
+
+// ---------- 状態 ----------
+let state = load();
+let selectedLang = "ko";
+let session = null;
+
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem("lingopop") || "{}");
+    return {
+      xp: s.xp || 0, streak: s.streak || 0, lastDay: s.lastDay || null,
+      best: s.best || 0, days: s.days || {}, mode: s.mode || "write",
+    };
+  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write" }; }
+}
+function save() { localStorage.setItem("lingopop", JSON.stringify(state)); }
+
+function levelOf(xp) { return Math.floor(xp / XP_PER_LEVEL) + 1; }
+function dayKey(d) {
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+
+function renderStats() {
+  document.getElementById("streakVal").textContent = state.streak;
+  document.getElementById("xpVal").textContent = state.xp;
+  const lv = levelOf(state.xp);
+  document.getElementById("levelVal").textContent = lv;
+  document.getElementById("levelLabel").textContent = "レベル " + lv;
+  const into = state.xp % XP_PER_LEVEL;
+  document.getElementById("levelXpLabel").textContent = into + " / " + XP_PER_LEVEL + " XP";
+  document.getElementById("levelBarFill").style.width = (into / XP_PER_LEVEL * 100) + "%";
+}
+
+// ---------- 草カレンダー ----------
+function renderGrass() {
+  const grid = document.getElementById("grassGrid");
+  const monthsEl = document.getElementById("grassMonths");
+  grid.innerHTML = ""; monthsEl.innerHTML = "";
+  const today = new Date(); today.setHours(0,0,0,0);
+  // 今週の日曜まで戻り、そこから GRASS_WEEKS-1 週前の日曜が起点
+  const start = new Date(today);
+  start.setDate(start.getDate() - start.getDay() - (GRASS_WEEKS - 1) * 7);
+  const todayKey = dayKey(today);
+  let lastMonth = -1;
+  for (let w = 0; w < GRASS_WEEKS; w++) {
+    const week = document.createElement("div");
+    week.className = "grass-week";
+    const weekStart = new Date(start); weekStart.setDate(start.getDate() + w * 7);
+    // 月ラベル(週の初日で月が変わったら表示)
+    const mLabel = document.createElement("div");
+    mLabel.style.width = "16px";
+    if (weekStart.getMonth() !== lastMonth) {
+      mLabel.textContent = (weekStart.getMonth() + 1) + "月";
+      mLabel.style.width = "16px"; mLabel.style.overflow = "visible"; mLabel.style.whiteSpace = "nowrap";
+      lastMonth = weekStart.getMonth();
+    }
+    monthsEl.appendChild(mLabel);
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(weekStart); date.setDate(weekStart.getDate() + d);
+      const cell = document.createElement("div");
+      cell.className = "grass-cell";
+      if (date > today) { cell.style.visibility = "hidden"; week.appendChild(cell); continue; }
+      const key = dayKey(date);
+      const xp = state.days[key] || 0;
+      if (xp >= 100) cell.classList.add("l3");
+      else if (xp >= 50) cell.classList.add("l2");
+      else if (xp > 0) cell.classList.add("l1");
+      if (key === todayKey) cell.classList.add("today");
+      cell.title = key + " : " + xp + " XP";
+      week.appendChild(cell);
+    }
+    grid.appendChild(week);
+  }
+  document.getElementById("grassStreak").textContent = state.streak;
+  document.getElementById("grassBest").textContent = state.best;
+  // 右端(今日)まで自動スクロール
+  const sc = document.querySelector(".grass-scroll");
+  if (sc) sc.scrollLeft = sc.scrollWidth;
+}
+
+// ---------- 言語・モード選択 ----------
+function selectLang(lang) {
+  selectedLang = lang;
+  document.querySelectorAll(".lang-tile").forEach(el =>
+    el.classList.toggle("selected", el.dataset.lang === lang));
+}
+
+function setMode(mode) {
+  state.mode = mode; save();
+  document.getElementById("modeWrite").classList.toggle("active", mode === "write");
+  document.getElementById("modeTiles").classList.toggle("active", mode === "tiles");
+  document.getElementById("modeDesc").textContent = mode === "write"
+    ? "日本語の文を見て、ノートに自分で書いてから答え合わせ"
+    : "Duolingo風。バラバラの単語タイルを正しい順にタップ";
+}
+
+// ---------- セッション ----------
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function pickQuestions() {
+  let pool = [];
+  if (selectedLang === "mix") {
+    for (const key of ["ko", "da", "en"])
+      pool = pool.concat(BANK[key].items.map(it => ({...it, lang: key})));
+  } else {
+    pool = BANK[selectedLang].items.map(it => ({...it, lang: selectedLang}));
+  }
+  return shuffle(pool).slice(0, QUESTIONS_PER_SESSION);
+}
+
+function startSession() {
+  if (!BANK) return;
+  session = { questions: pickQuestions(), index: 0, earned: 0, perfect: 0 };
+  showScreen("sessionScreen");
+  renderQuestion();
+}
+
+function hideAll(ids) { ids.forEach(id => document.getElementById(id).classList.add("hidden")); }
+
+function renderQuestion() {
+  const q = session.questions[session.index];
+  const meta = BANK[q.lang];
+  document.getElementById("qFlag").textContent = meta.flag;
+  document.getElementById("qTask").textContent = meta.name + "にしてみよう";
+  document.getElementById("qSentence").textContent = q.a; // 日本語で出題
+  document.getElementById("qHint").textContent = "ヒント: " + q.h;
+  hideAll(["answerBox", "selfCheck", "revealBtn", "tilesUI", "checkBtn", "continueBtn"]);
+  if (state.mode === "write") {
+    document.getElementById("revealBtn").classList.remove("hidden");
+  } else {
+    setupTiles(q);
+    document.getElementById("tilesUI").classList.remove("hidden");
+    document.getElementById("checkBtn").classList.remove("hidden");
+    document.getElementById("checkBtn").disabled = true;
+  }
+  document.getElementById("progressFill").style.width =
+    (session.index / QUESTIONS_PER_SESSION * 100) + "%";
+}
+
+// ---------- ノート記述モード ----------
+function revealAnswer() {
+  const q = session.questions[session.index];
+  showAnswerBox(true, "✅ こたえ", q);
+  document.getElementById("revealBtn").classList.add("hidden");
+  document.getElementById("selfCheck").classList.remove("hidden");
+}
+
+// ---------- 単語タイルモード ----------
+function setupTiles(q) {
+  const tokens = q.t.split(" ");
+  // 同言語の他の文から気をそらす単語を2つ追加
+  const others = BANK[q.lang].items.filter(it => it.t !== q.t);
+  const distractors = [];
+  const seen = new Set(tokens);
+  shuffle([...others]).some(it => {
+    for (const w of shuffle(it.t.split(" "))) {
+      if (!seen.has(w)) { distractors.push(w); seen.add(w); break; }
+    }
+    return distractors.length >= 2;
+  });
+  session.tileAnswer = tokens;
+  session.selected = [];
+  const bank = shuffle(tokens.concat(distractors).map((w, i) => ({w, id: i})));
+  const bankArea = document.getElementById("bankArea");
+  const buildArea = document.getElementById("buildArea");
+  bankArea.innerHTML = ""; buildArea.innerHTML = "";
+  bank.forEach(item => {
+    const el = document.createElement("div");
+    el.className = "word-tile";
+    el.textContent = item.w;
+    el.onclick = () => {
+      if (el.classList.contains("used") || session.checked) return;
+      el.classList.add("used");
+      addToBuild(item, el);
+    };
+    bankArea.appendChild(el);
+  });
+  session.checked = false;
+}
+
+function addToBuild(item, bankEl) {
+  const buildArea = document.getElementById("buildArea");
+  const el = document.createElement("div");
+  el.className = "word-tile";
+  el.textContent = item.w;
+  el.onclick = () => {
+    if (session.checked) return;
+    el.remove();
+    bankEl.classList.remove("used");
+    session.selected = session.selected.filter(s => s.el !== el);
+    document.getElementById("checkBtn").disabled = session.selected.length === 0;
+  };
+  buildArea.appendChild(el);
+  session.selected.push({ w: item.w, el });
+  document.getElementById("checkBtn").disabled = false;
+}
+
+function checkTiles() {
+  const q = session.questions[session.index];
+  session.checked = true;
+  const guess = session.selected.map(s => s.w).join(" ");
+  const correct = guess === q.t;
+  session.lastXp = correct ? 10 : 2;
+  showAnswerBox(correct, correct ? "🎉 せいかい!" : "😢 ざんねん… 正解はこちら", q);
+  document.getElementById("checkBtn").classList.add("hidden");
+  document.getElementById("continueBtn").classList.remove("hidden");
+}
+
+function continueTiles() { nextQuestion(session.lastXp); }
+
+// ---------- 共通 ----------
+function showAnswerBox(good, label, q) {
+  const box = document.getElementById("answerBox");
+  box.classList.remove("hidden", "good", "bad");
+  box.classList.add(good ? "good" : "bad");
+  document.getElementById("ansLabel").textContent = label;
+  document.getElementById("ansText").textContent = q.t;
+  document.getElementById("ansRoman").textContent = q.r ? "🔊 " + q.r : "";
+  document.getElementById("ansNote").textContent = q.n;
+}
+
+function nextQuestion(xp) {
+  session.earned += xp;
+  if (xp >= 10) session.perfect++;
+  addXp(xp);
+  floatXp("+" + xp + " XP");
+  session.index++;
+  if (session.index >= QUESTIONS_PER_SESSION) {
+    document.getElementById("progressFill").style.width = "100%";
+    setTimeout(finishSession, 350);
+  } else {
+    renderQuestion();
+  }
+}
+
+function addXp(amount) {
+  const before = levelOf(state.xp);
+  state.xp += amount;
+  const key = dayKey(new Date());
+  state.days[key] = (state.days[key] || 0) + amount;
+  const after = levelOf(state.xp);
+  save();
+  renderStats();
+  if (after > before) {
+    toast("🎊 レベルアップ! Lv." + after + " になりました!");
+    confetti(24);
+  }
+}
+
+function updateStreak() {
+  const today = dayKey(new Date());
+  if (state.lastDay === today) return;
+  const y = dayKey(new Date(Date.now() - 86400000));
+  state.streak = (state.lastDay === y) ? state.streak + 1 : 1;
+  state.lastDay = today;
+  if (state.streak > state.best) state.best = state.streak;
+  save();
+}
+
+function finishSession() {
+  updateStreak();
+  renderStats();
+  document.getElementById("rEarned").textContent = "+" + session.earned;
+  document.getElementById("rStreak").textContent = "🔥 " + state.streak;
+  document.getElementById("rPerfect").textContent = session.perfect + "/" + QUESTIONS_PER_SESSION;
+  const msgs = session.perfect === QUESTIONS_PER_SESSION
+    ? ["パーフェクト!すごい!", "全問正解!天才!"]
+    : session.perfect >= 3
+      ? ["いい調子!この調子でつづけよう!", "ナイスチャレンジ!"]
+      : ["むずかしい文もチャレンジがえらい!", "くりかえせば必ず身につくよ!"];
+  document.getElementById("resultMsg").textContent = msgs[Math.floor(Math.random() * msgs.length)];
+  showScreen("resultScreen");
+  confetti(36);
+}
+
+function quitSession() {
+  if (confirm("レッスンを終了しますか?ここまでのXPは保存されています。")) goHome();
+}
+function goHome() { showScreen("homeScreen"); renderGrass(); }
+
+function showScreen(id) {
+  for (const s of ["homeScreen", "sessionScreen", "resultScreen"])
+    document.getElementById(s).classList.toggle("hidden", s !== id);
+}
+
+// ---------- エフェクト ----------
+function floatXp(text) {
+  const el = document.createElement("div");
+  el.className = "xp-float";
+  el.textContent = "⚡" + text;
+  el.style.left = (window.innerWidth / 2 - 40 + (Math.random() * 60 - 30)) + "px";
+  el.style.top = (window.innerHeight / 2) + "px";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+function confetti(count) {
+  const emojis = ["🎉", "✨", "⭐", "🎊", "💫", "🌟"];
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.animationDuration = (1.5 + Math.random() * 2) + "s";
+    el.style.animationDelay = Math.random() * 0.6 + "s";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+  }
+}
+
+function toast(text) {
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+
+// ---------- 初期化 ----------
+renderStats();
+setMode(state.mode);
+renderGrass();
+
+loadBank().then(bank => {
+  BANK = bank;
+  let total = 0;
+  for (const k of ["ko", "da", "en"]) {
+    const n = bank[k].items.length;
+    total += n;
+    document.getElementById("cnt-" + k).textContent = n.toLocaleString() + "問";
+  }
+  document.getElementById("cnt-mix").textContent = total.toLocaleString() + "問";
+  const btn = document.getElementById("startBtn");
+  btn.disabled = false;
+  btn.textContent = "問題を生成する 🎲";
+}).catch(err => {
+  document.getElementById("startBtn").textContent = "読み込みに失敗しました";
+  const box = document.getElementById("loadErr");
+  box.classList.remove("hidden");
+  box.innerHTML = "問題データを読み込めませんでした(" + err.message + ")。<br>" +
+    "<code>questions.json</code> と <code>questions.js</code> が " +
+    "<code>index.html</code> と同じフォルダにあるか確認してください。";
+});
+</script>
+</body>
+</html>
