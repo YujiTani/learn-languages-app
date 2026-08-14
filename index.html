@@ -47,6 +47,7 @@
   .level-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-light); font-weight: 700; margin-bottom: 4px; }
   .level-bar { height: 10px; background: var(--border); border-radius: 6px; overflow: hidden; }
   .level-bar-fill { height: 100%; background: var(--purple); border-radius: 6px; transition: width .5s ease; }
+  .diff-balance { font-size: 11px; color: var(--text-light); font-weight: 700; text-align: right; margin-top: 4px; }
 
   /* Cards & buttons */
   .card {
@@ -112,6 +113,10 @@
 
   .q-label { font-size: 13px; font-weight: 800; color: var(--text-light); margin-bottom: 10px; letter-spacing: 1px; }
   .q-flag { font-size: 20px; margin-right: 6px; }
+  .diff-chip {
+    float: right; font-size: 12px; font-weight: 800; color: var(--purple);
+    background: #f6ecff; border-radius: 8px; padding: 2px 8px; letter-spacing: 1px;
+  }
   .sentence { font-size: 26px; font-weight: 700; line-height: 1.5; margin: 8px 0 6px; }
   .roman { font-size: 14px; color: var(--text-light); margin-bottom: 4px; }
   .hint-chip {
@@ -212,6 +217,7 @@
   <div class="level-bar-wrap">
     <div class="level-bar-label"><span id="levelLabel">レベル 1</span><span id="levelXpLabel"></span></div>
     <div class="level-bar"><div class="level-bar-fill" id="levelBarFill" style="width:0%"></div></div>
+    <div class="diff-balance" id="diffBalance"></div>
   </div>
 
   <!-- Home screen -->
@@ -275,7 +281,7 @@
       <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
     </div>
     <div class="card">
-      <div class="q-label"><span class="q-flag" id="qFlag"></span><span id="qTask"></span></div>
+      <div class="q-label"><span class="q-flag" id="qFlag"></span><span id="qTask"></span><span class="diff-chip" id="qDiff"></span></div>
       <div class="sentence" id="qSentence"></div>
       <span class="hint-chip" id="qHint"></span>
 
@@ -296,8 +302,8 @@
     <!-- write mode buttons -->
     <button class="btn btn-blue hidden" id="revealBtn" onclick="revealAnswer()">回答を確認する 👀</button>
     <div class="self-check hidden" id="selfCheck">
-      <button class="btn btn-green" onclick="nextQuestion(10)">書けた! 😊 +10XP</button>
-      <button class="btn btn-orange" onclick="nextQuestion(5)">むずかしかった 😅 +5XP</button>
+      <button class="btn btn-green" id="selfGoodBtn" onclick="selfAnswer(true)">わかった! 😊</button>
+      <button class="btn btn-orange" id="selfHardBtn" onclick="selfAnswer(false)">むずかしかった 😅</button>
     </div>
 
     <!-- tiles mode buttons -->
@@ -369,6 +375,9 @@ function renderStats() {
   const into = state.xp % XP_PER_LEVEL;
   document.getElementById("levelXpLabel").textContent = into + " / " + XP_PER_LEVEL + " XP";
   document.getElementById("levelBarFill").style.width = (into / XP_PER_LEVEL * 100) + "%";
+  const dist = levelDist(lv);
+  document.getElementById("diffBalance").textContent =
+    "出題バランス: ★" + Math.round(dist[0] * 100) + "% ★★" + Math.round(dist[1] * 100) + "% ★★★" + Math.round(dist[2] * 100) + "%";
 }
 
 // ---------- 草カレンダー ----------
@@ -443,6 +452,19 @@ function shuffle(arr) {
   return arr;
 }
 
+// レベル帯ごとの難易度分布 [D1, D2, D3]
+function levelDist(lv) {
+  if (lv <= 2) return [0.70, 0.25, 0.05];
+  if (lv <= 4) return [0.45, 0.40, 0.15];
+  if (lv <= 7) return [0.25, 0.45, 0.30];
+  return [0.15, 0.40, 0.45];
+}
+function weightedPick(dist) {
+  const r = Math.random();
+  return r < dist[0] ? 0 : r < dist[0] + dist[1] ? 1 : 2;
+}
+function xpFor(d) { return [10, 15, 20][(d || 1) - 1]; }
+
 function pickQuestions() {
   let pool = [];
   if (selectedLang === "mix") {
@@ -451,7 +473,22 @@ function pickQuestions() {
   } else {
     pool = BANK[selectedLang].items.map(it => ({...it, lang: selectedLang}));
   }
-  return shuffle(pool).slice(0, QUESTIONS_PER_SESSION);
+  const buckets = [[], [], []];
+  for (const q of pool) buckets[(q.d || 1) - 1].push(q);
+  const dist = levelDist(levelOf(state.xp));
+  const out = [], used = new Set();
+  for (let i = 0; i < QUESTIONS_PER_SESSION; i++) {
+    let d = weightedPick(dist);
+    let guard = 0;
+    while (buckets[d].length === 0 && guard++ < 5) d = weightedPick(dist);
+    if (buckets[d].length === 0) d = buckets.findIndex(b => b.length > 0);
+    let q, tries = 0;
+    do { q = buckets[d][Math.floor(Math.random() * buckets[d].length)]; }
+    while (used.has(q.t) && ++tries < 50);
+    used.add(q.t);
+    out.push(q);
+  }
+  return out;
 }
 
 function startSession() {
@@ -470,6 +507,10 @@ function renderQuestion() {
   document.getElementById("qTask").textContent = meta.name + "にしてみよう";
   document.getElementById("qSentence").textContent = q.a; // 日本語で出題
   document.getElementById("qHint").textContent = "ヒント: " + q.h;
+  const dd = q.d || 1;
+  document.getElementById("qDiff").textContent = "★".repeat(dd) + "☆".repeat(3 - dd);
+  document.getElementById("selfGoodBtn").textContent = `わかった! 😊 +${xpFor(dd)}XP`;
+  document.getElementById("selfHardBtn").textContent = `むずかしかった 😅 +${Math.ceil(xpFor(dd) / 2)}XP`;
   hideAll(["answerBox", "selfCheck", "revealBtn", "tilesUI", "checkBtn", "continueBtn"]);
   if (state.mode === "write") {
     document.getElementById("revealBtn").classList.remove("hidden");
@@ -484,6 +525,12 @@ function renderQuestion() {
 }
 
 // ---------- ノート記述モード ----------
+function selfAnswer(good) {
+  const q = session.questions[session.index];
+  const full = xpFor(q.d);
+  nextQuestion(good ? full : Math.ceil(full / 2));
+}
+
 function revealAnswer() {
   const q = session.questions[session.index];
   showAnswerBox(true, "✅ こたえ", q);
@@ -546,7 +593,7 @@ function checkTiles() {
   session.checked = true;
   const guess = session.selected.map(s => s.w).join(" ");
   const correct = guess === q.t;
-  session.lastXp = correct ? 10 : 2;
+  session.lastXp = correct ? xpFor(q.d) : 2;
   showAnswerBox(correct, correct ? "🎉 せいかい!" : "😢 ざんねん… 正解はこちら", q);
   document.getElementById("checkBtn").classList.add("hidden");
   document.getElementById("continueBtn").classList.remove("hidden");
@@ -566,8 +613,9 @@ function showAnswerBox(good, label, q) {
 }
 
 function nextQuestion(xp) {
+  const q = session.questions[session.index];
   session.earned += xp;
-  if (xp >= 10) session.perfect++;
+  if (xp >= xpFor(q.d)) session.perfect++;
   addXp(xp);
   floatXp("+" + xp + " XP");
   session.index++;

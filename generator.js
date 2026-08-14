@@ -215,7 +215,7 @@ const ACTIONS = [
   {ja_p:"コーヒーを飲みます", ja_pa:"コーヒーを飲みました", ko_p:"커피를 마셔요", ko_pa:"커피를 마셨어요", da_p:"drikker kaffe", da_pa:"drak kaffe", en_b:"drink coffee", en_pa:"drank coffee", en_ing:"drinking coffee"},
   {ja_p:"友達に会います", ja_pa:"友達に会いました", ko_p:"친구를 만나요", ko_pa:"친구를 만났어요", da_p:"mødes med en ven", da_pa:"mødtes med en ven", en_b:"meet a friend", en_pa:"met a friend", en_ing:"meeting a friend"},
   {ja_p:"自転車に乗ります", ja_pa:"自転車に乗りました", ko_p:"자전거를 타요", ko_pa:"자전거를 탔어요", da_p:"cykler", da_pa:"cyklede", en_b:"ride a bike", en_pa:"rode a bike", en_ing:"riding a bike"},
-  {ja_p:"車を運転します", ja_pa:"車を運転しました", ko_p:"운전해요", ko_pa:"운전했어요", da_p:"kører bil", da_pa:"kørte bil", en_b:"drive", en_pa:"drove", en_ing:"driving"},
+  {ja_p:"車を運転します", ja_pa:"車を運転しました", ko_p:"차를 운전해요", ko_pa:"차를 운전했어요", da_p:"kører bil", da_pa:"kørte bil", en_b:"drive", en_pa:"drove", en_ing:"driving"},
   {ja_p:"歌を歌います", ja_pa:"歌を歌いました", ko_p:"노래를 불러요", ko_pa:"노래를 불렀어요", da_p:"synger", da_pa:"sang", en_b:"sing", en_pa:"sang", en_ing:"singing"},
   {ja_p:"絵を描きます", ja_pa:"絵を描きました", ko_p:"그림을 그려요", ko_pa:"그림을 그렸어요", da_p:"tegner", da_pa:"tegnede et billede", en_b:"draw", en_pa:"drew a picture", en_ing:"drawing"},
   {ja_p:"写真を撮ります", ja_pa:"写真を撮りました", ko_p:"사진을 찍어요", ko_pa:"사진을 찍었어요", da_p:"tager billeder", da_pa:"tog billeder", en_b:"take photos", en_pa:"took photos", en_ing:"taking photos"},
@@ -300,13 +300,13 @@ const COUNTRIES = [
 
 // 天気  da_t: デンマーク語の文全体を差し替える場合に指定
 const WEATHER = [
-  {ja:"暑い", ko:"더워요", da:"varmt", en:"hot"},
-  {ja:"寒い", ko:"추워요", da:"koldt", en:"cold"},
-  {ja:"暖かい", ko:"따뜻해요", da:"lunt", en:"warm"},
-  {ja:"涼しい", ko:"시원해요", da:"køligt", en:"cool"},
-  {ja:"曇り", ko:"흐려요", da:"overskyet", en:"cloudy"},
-  {ja:"風が強い", ko:"바람이 세요", da:"blæsende", da_t:"Det blæser meget i dag.", en:"windy"},
-  {ja:"蒸し暑い", ko:"무더워요", da:"lummert", en:"humid"},
+  {ja:"暑い", ko:"더워요", ko_seo:"더워서", da:"varmt", en:"hot"},
+  {ja:"寒い", ko:"추워요", ko_seo:"추워서", da:"koldt", en:"cold"},
+  {ja:"暖かい", ko:"따뜻해요", ko_seo:"따뜻해서", da:"lunt", en:"warm"},
+  {ja:"涼しい", ko:"시원해요", ko_seo:"시원해서", da:"køligt", en:"cool"},
+  {ja:"曇り", ko:"흐려요", ko_seo:"흐려서", da:"overskyet", en:"cloudy"},
+  {ja:"風が強い", ko:"바람이 세요", ko_seo:"바람이 세서", da:"blæsende", da_c:"det blæser meget", en:"windy"},
+  {ja:"蒸し暑い", ko:"무더워요", ko_seo:"무더워서", da:"lummert", en:"hot and humid"},
 ];
 
 // 趣味(私の趣味は~です)
@@ -388,6 +388,12 @@ function romanize(text) {
       cur[2] = 16;
     } else if (T_FIN.includes(cur[2]) && (nxt[0] === 2 || nxt[0] === 6)) {  // 鼻音化 t+ㄴ/ㅁ → n
       cur[2] = 4;
+    } else if (K_FIN.includes(cur[2]) && nxt[0] === 18) {          // 激音化 k+ㅎ → k (산책해요=sanchaekaeyo)
+      cur[2] = 0; nxt[3] = "k";
+    } else if (P_FIN.includes(cur[2]) && nxt[0] === 18) {          // 激音化 p+ㅎ → p
+      cur[2] = 0; nxt[3] = "p";
+    } else if (T_FIN.includes(cur[2]) && cur[2] !== 27 && nxt[0] === 18) {  // 激音化 t+ㅎ → t (따뜻해서=ttatteutaeseo)
+      cur[2] = 0; nxt[3] = "t";
     } else if (cur[2] === 8 && (nxt[0] === 5 || nxt[0] === 2)) {   // ㄹ+ㄹ/ㄴ → ll
       cur[2] = 0; nxt[3] = "ll";
     } else if (cur[2] === 4 && nxt[0] === 5) {                     // ㄴ+ㄹ → ll
@@ -415,14 +421,14 @@ const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 
 /* =====================  テンプレート  ===================== */
 /* item(): {ja, ko, da, en, h(ヒント), n:{ko,da,en}(解説)} */
-function item(ja, ko, da, en, h, nko, nda, nen) {
-  return { ja, ko, da, en, h, n: { ko: nko, da: nda, en: nen } };
+function item(ja, ko, da, en, h, nko, nda, nen, d) {
+  return { ja, ko, da, en, h, d, n: { ko: nko, da: nda, en: nen } };
 }
 const bat = w => hasBatchim(w) ? "あり" : "なし";
 
 const TEMPLATES = [
 
-["好み: ~が好きです", function* () {
+["好み: ~が好きです", 1, function* () {
   for (const f of FOODS) {
     yield item(`私は${f.ja}が好きです。`,
       `저는 ${objP(f.ko)} 좋아해요.`, `Jeg kan godt lide ${f.dagen}.`, `I like ${f.gen}.`, "好み",
@@ -443,7 +449,7 @@ const TEMPLATES = [
   }
 }],
 
-["注文する", function* () {
+["注文する", 1, function* () {
   for (const f of FOODS) {
     if (!f.art && f.gen === f.en) continue;   // 不可算(water, milk 等)は「一つください」と相性が悪いので除外
     yield item(`${f.ja}を一つください。`,
@@ -459,7 +465,7 @@ const TEMPLATES = [
   }
 }],
 
-["場所を尋ねる", function* () {
+["場所を尋ねる", 1, function* () {
   for (const p of PLACES) {
     yield item(`${p.ja}はどこですか?`,
       `${subjP(p.ko)} 어디예요?`, `Hvor er ${p.dad}?`, `Where is the ${p.en}?`, "旅行",
@@ -469,7 +475,7 @@ const TEMPLATES = [
   }
 }],
 
-["近くにありますか", function* () {
+["近くにありますか", 2, function* () {
   for (const p of PLACES) {
     if (["nature"].includes(p.tag)) continue;
     yield item(`近くに${p.ja}はありますか?`,
@@ -480,7 +486,7 @@ const TEMPLATES = [
   }
 }],
 
-["場所へ行く", function* () {
+["場所へ行く", 2, function* () {
   for (const p of PLACES) {
     if (!p.go) continue;
     yield item(`私は${p.ja}に行きます。`,
@@ -492,11 +498,11 @@ const TEMPLATES = [
       `어제 ${p.ko}에 갔어요.`, `Jeg tog til ${p.dad} i går.`, `I went to the ${p.en} yesterday.`, "過去",
       "過去形は 가요 → 갔어요。어제=昨日。",
       "tage(行く)の過去形は tog。i går=昨日。",
-      "go の過去形は went(不規則動詞)。");
+      "go の過去形は went(不規則動詞)。", 3);
   }
 }],
 
-["値段を聞く", function* () {
+["値段を聞く", 1, function* () {
   for (const o of OBJECTS) {
     if (["窓", "ドア"].includes(o.ja)) continue;   // 単体で値段を聞くのは不自然
     yield item(`この${o.ja}はいくらですか?`,
@@ -507,7 +513,7 @@ const TEMPLATES = [
   }
 }],
 
-["買いたい", function* () {
+["買いたい", 2, function* () {
   for (const o of OBJECTS) {
     if (o.tag === "furniture" && ["窓", "ドア"].includes(o.ja)) continue;
     yield item(`${o.ja}を買いたいです。`,
@@ -518,7 +524,7 @@ const TEMPLATES = [
   }
 }],
 
-["職業", function* () {
+["職業", 1, function* () {
   for (const j of JOBS) {
     yield item(`私は${j.ja}です。`,
       `저는 ${copula(j.ko)}.`, `Jeg er ${j.da}.`, `I'm ${enIndef(j)}.`, "自己紹介",
@@ -533,7 +539,7 @@ const TEMPLATES = [
   }
 }],
 
-["予定を聞く", function* () {
+["予定を聞く", 2, function* () {
   for (const t of TIMES) {
     const koTime = t.ko + (t.ko_e ? "에" : "");
     yield item(`${t.ja}は何をしますか?`,
@@ -544,7 +550,7 @@ const TEMPLATES = [
   }
 }],
 
-["毎日の習慣", function* () {
+["毎日の習慣", 2, function* () {
   for (const a of ACTIONS) {
     yield item(`私は毎日${a.ja_p}。`,
       `저는 매일 ${a.ko_p}.`, `Jeg ${a.da_p} hver dag.`, `I ${a.en_b} every day.`, "日常",
@@ -554,7 +560,7 @@ const TEMPLATES = [
   }
 }],
 
-["昨日したこと", function* () {
+["昨日したこと", 3, function* () {
   for (const a of ACTIONS) {
     yield item(`昨日${a.ja_pa}。`,
       `어제 ${a.ko_pa}.`, `Jeg ${a.da_pa} i går.`, `I ${a.en_pa} yesterday.`, "過去",
@@ -564,7 +570,7 @@ const TEMPLATES = [
   }
 }],
 
-["今していること", function* () {
+["今していること", 2, function* () {
   for (const a of ACTIONS) {
     yield item(`今${a.ja_p}。`,
       `지금 ${a.ko_p}.`, `Jeg ${a.da_p} lige nu.`, `I'm ${a.en_ing} right now.`, "日常",
@@ -574,7 +580,7 @@ const TEMPLATES = [
   }
 }],
 
-["明日の予定", function* () {
+["明日の予定", 3, function* () {
   // デンマーク語の予定は skal + 不定詞が最も自然
   const daInf = (da_p) => {
     const parts = da_p.split(" ");
@@ -593,7 +599,7 @@ const TEMPLATES = [
   }
 }],
 
-["物の描写", function* () {
+["物の描写", 2, function* () {
   for (const o of OBJECTS) {
     for (const a of ADJS) {
       if (!a.ok.split(" ").includes(o.tag)) continue;
@@ -608,7 +614,7 @@ const TEMPLATES = [
   }
 }],
 
-["場所の描写", function* () {
+["場所の描写", 2, function* () {
   for (const p of PLACES) {
     for (const a of ADJS) {
       if (!a.ok.split(" ").includes(p.tag)) continue;
@@ -622,7 +628,7 @@ const TEMPLATES = [
   }
 }],
 
-["食べ物の描写", function* () {
+["食べ物の描写", 2, function* () {
   // 意味的に自然な組み合わせだけを許可する
   const SWEET_OK = new Set(["ケーキ", "クッキー", "チョコレート", "アイスクリーム", "りんご", "バナナ", "オレンジ", "ぶどう", "いちご", "梨", "スイカ", "ジュース", "ワイン", "ヨーグルト"]);
   const FRESH_OK = new Set(["りんご", "バナナ", "オレンジ", "ぶどう", "いちご", "梨", "スイカ", "トマト", "にんじん", "玉ねぎ", "じゃがいも", "野菜", "魚", "肉", "卵", "牛乳", "パン"]);
@@ -645,7 +651,7 @@ const TEMPLATES = [
   }
 }],
 
-["言語を学ぶ", function* () {
+["言語を学ぶ", 2, function* () {
   for (const c of COUNTRIES) {
     yield item(`私は${c.lang_ja}を勉強しています。`,
       `저는 ${objP(c.lang_ko)} 공부해요.`, `Jeg lærer ${c.lang_da}.`, `I'm learning ${c.lang_en}.`, "学習",
@@ -660,7 +666,7 @@ const TEMPLATES = [
   }
 }],
 
-["国へ行きたい", function* () {
+["国へ行きたい", 2, function* () {
   for (const c of COUNTRIES) {
     yield item(`私は${c.ja}に行きたいです。`,
       `저는 ${c.ko}에 가고 싶어요.`, `Jeg vil gerne til ${c.da}.`, `I want to go to ${c.en}.`, "旅行",
@@ -671,11 +677,11 @@ const TEMPLATES = [
       `${c.ko}에 가 봤어요?`, `Har du været i ${c.da}?`, `Have you been to ${c.en}?`, "質問",
       "「~아/어 봤어요」=「~したことがあります」(経験)。",
       "現在完了は har + 過去分詞。været は være の過去分詞。",
-      "経験は現在完了(have been to ~)で表します。");
+      "経験は現在完了(have been to ~)で表します。", 3);
   }
 }],
 
-["持っていますか", function* () {
+["持っていますか", 1, function* () {
   for (const o of OBJECTS) {
     if (["furniture"].includes(o.tag) && ["窓", "ドア"].includes(o.ja)) continue;
     yield item(`${o.ja}を持っていますか?`,
@@ -686,7 +692,7 @@ const TEMPLATES = [
   }
 }],
 
-["必要です", function* () {
+["必要です", 2, function* () {
   for (const o of OBJECTS) {
     if (["窓", "ドア"].includes(o.ja)) continue;
     yield item(`${o.ja}が必要です。`,
@@ -697,7 +703,7 @@ const TEMPLATES = [
   }
 }],
 
-["私の物はどこ", function* () {
+["私の物はどこ", 2, function* () {
   for (const o of OBJECTS) {
     if (["窓", "ドア", "冷蔵庫", "洗濯機", "ベッド", "ソファ", "机", "テーブル", "鍵"].includes(o.ja)) continue;  // 鍵は複数形(keys)が自然なため除外
     yield item(`私の${o.ja}はどこですか?`,
@@ -708,7 +714,7 @@ const TEMPLATES = [
   }
 }],
 
-["家族・知人の職業", function* () {
+["家族・知人の職業", 2, function* () {
   for (const p of PEOPLE) {
     if (!p.human) continue;
     for (const j of JOBS) {
@@ -722,7 +728,7 @@ const TEMPLATES = [
   }
 }],
 
-["家族・知人の居場所", function* () {
+["家族・知人の居場所", 2, function* () {
   for (const p of PEOPLE) {
     if (!p.human) continue;
     for (const pl of PLACES) {
@@ -736,7 +742,7 @@ const TEMPLATES = [
   }
 }],
 
-["会いました", function* () {
+["会いました", 3, function* () {
   for (const p of PEOPLE) {
     if (!p.human) continue;
     yield item(`昨日私の${p.ja}に会いました。`,
@@ -747,17 +753,17 @@ const TEMPLATES = [
   }
 }],
 
-["天気", function* () {
+["天気", 1, function* () {
   for (const w of WEATHER) {
     yield item(`今日は${w.ja}です。`,
-      `오늘은 ${w.ko}.`, w.da_t || `Det er ${w.da} i dag.`, `It's ${w.en} today.`, "天気",
+      `오늘은 ${w.ko}.`, w.da_c ? `${cap(w.da_c)} i dag.` : `Det er ${w.da} i dag.`, `It's ${w.en} today.`, "天気",
       w.ja === "風が強い" ? "세다=(風・力が)強い。바람=風。" : "오늘은=今日は。天気は形容詞の해요体をそのまま使えます。",
-      w.da_t ? "blæse=風が吹く。動詞で表すのが自然です。" : "天気の文はふつう形式主語 Det で始めます。",
+      w.da_c ? "blæse=風が吹く。動詞で表すのが自然です。" : "天気の文はふつう形式主語 Det で始めます。",
       "天気の主語は it。It's ~ today. が定番。");
   }
 }],
 
-["遠いですか", function* () {
+["遠いですか", 2, function* () {
   for (const p of PLACES) {
     yield item(`${p.ja}はここから遠いですか?`,
       `${subjP(p.ko)} 여기서 멀어요?`, `Er ${p.dad} langt herfra?`, `Is the ${p.en} far from here?`, "旅行",
@@ -767,7 +773,7 @@ const TEMPLATES = [
   }
 }],
 
-["趣味", function* () {
+["趣味", 1, function* () {
   for (const h of HOBBIES) {
     yield item(`私の趣味は${h.ja}です。`,
       `제 취미는 ${copula(h.ko)}.`, `Min hobby er ${h.da}.`, `My hobby is ${h.en}.`, "自己紹介",
@@ -777,7 +783,7 @@ const TEMPLATES = [
   }
 }],
 
-["交通手段", function* () {
+["交通手段", 2, function* () {
   for (const t of TRANSPORT) {
     yield item(`私は${t.ja}で行きます。`,
       `저는 ${iro(t.ko)} 가요.`, `Jeg tager ${t.daph}.`, `I'm going ${t.enph}.`, "旅行",
@@ -788,7 +794,92 @@ const TEMPLATES = [
       `${iro(t.ko)} 갑시다.`, `Lad os tage ${t.daph}.`, `Let's go ${t.enph}.`, "提案",
       "「~(으)ㅂ시다」=「~しましょう」。",
       "Lad os ~ =「~しましょう」(英語の Let's にあたる)。",
-      "Let's + 動詞の原形で提案します。");
+      "Let's + 動詞の原形で提案します。", 3);
+  }
+}],
+
+/* ----- 応用文型(D3) ----- */
+
+["比較: ~より~が好き", 3, function* () {
+  // 同カテゴリ同士で比較しないと不自然(コーヒーとパン等)
+  const CATS = [
+    ["コーヒー", "お茶", "ビール", "ワイン", "ジュース", "牛乳"],
+    ["りんご", "バナナ", "オレンジ", "ぶどう", "いちご", "梨", "スイカ"],
+    ["ケーキ", "クッキー", "チョコレート", "アイスクリーム"],
+    ["パン", "スープ", "サラダ", "ピザ", "サンドイッチ", "パスタ", "カレー", "キムチ", "ご飯"],
+    ["魚", "肉", "卵", "チーズ", "じゃがいも", "野菜"],
+  ];
+  const byJa = {};
+  for (const f of FOODS) byJa[f.ja] = f;
+  const pairs = [];
+  for (const cat of CATS)
+    for (let i = 0; i < cat.length; i++)
+      pairs.push([byJa[cat[i]], byJa[cat[(i + 1) % cat.length]]]);
+  for (const [a, b] of pairs) {
+    if (!a || !b || a.ja === b.ja) continue;
+    yield item(`私は${a.ja}より${b.ja}の方が好きです。`,
+      `저는 ${a.ko}보다 ${objP(b.ko)} 더 좋아해요.`,
+      `Jeg kan bedre lide ${b.dagen} end ${a.dagen}.`,
+      `I like ${b.gen} better than ${a.gen}.`, "比較",
+      "「A보다 B를 더 좋아해요」=「AよりBの方が好き」。보다=~より、더=もっと。",
+      "kan bedre lide A end B =「BよりAが好き」。end=~より。",
+      "like A better than B が口語の定番。more than でも可。");
+  }
+}],
+
+["理由: 天気なので", 3, function* () {
+  for (const w of WEATHER) {
+    if (!w.ko_seo) continue;
+    yield item(`今日は${w.ja}${w.ja === "曇り" ? "な" : ""}ので、家にいます。`,
+      `오늘은 ${w.ko_seo} 집에 있어요.`,
+      `Jeg bliver hjemme i dag, fordi ${w.da_c || "det er " + w.da}.`,
+      `I'm staying home today because it's ${w.en}.`, "理由",
+      "「~아/어서」=「~なので」(理由)。집=家。",
+      "fordi=~だから。fordi のあとは主語+動詞の語順になります。",
+      "because のあとに理由の文を続けます。stay home=家にいる。");
+  }
+}],
+
+["依頼: 貸してもらえますか", 3, function* () {
+  const LENDABLE = new Set(["本", "ペン", "鉛筆", "傘", "辞書", "自転車", "カメラ", "地図", "充電器"]);
+  for (const o of OBJECTS) {
+    if (!LENDABLE.has(o.ja)) continue;
+    yield item(`${o.ja}を貸してもらえますか?`,
+      `${o.ko} 좀 빌려주시겠어요?`,
+      `Må jeg låne ${o.g === "en" ? "din" : "dit"} ${o.da}?`,
+      `Could I borrow your ${o.en}?`, "依頼",
+      "빌려주다=貸してくれる(빌리다「借りる」+주다「くれる」)。「~아/어 주시겠어요?」はとても丁寧な依頼。",
+      `Må jeg låne ~? =「~を借りてもいい?」。「あなたの」も性に一致(${o.g}名詞→${o.g === "en" ? "din" : "dit"})。`,
+      "borrow=借りる(lend=貸す と混同注意)。Could I ~? で丁寧に。");
+  }
+}],
+
+["経験: 食べたことがありますか", 3, function* () {
+  const TRYABLE = new Set(["キムチ", "カレー", "スイカ", "梨", "ぶどう"]);  // tried のニュアンスに合う食品のみ
+  for (const f of FOODS) {
+    if (!TRYABLE.has(f.ja)) continue;
+    yield item(`${f.ja}を食べたことがありますか?`,
+      `${f.ko} 먹어 봤어요?`,
+      `Har du smagt ${f.dagen}?`,
+      `Have you ever tried ${f.gen}?`, "経験",
+      "「먹어 봤어요?」=「食べてみたことある?」。~아/어 보다=~してみる。",
+      "smage の過去分詞 smagt。Har du smagt ~? =「~を食べたことある?」",
+      "食の経験は Have you ever tried ~? が自然(eaten より口語的)。");
+  }
+}],
+
+["頻度: どのくらい~しますか", 3, function* () {
+  for (const a of ACTIONS) {
+    const parts = a.da_p.split(" ");
+    let daQ = `Hvor tit ${parts[0]} du${parts.length > 1 ? " " + parts.slice(1).join(" ") : ""}?`;
+    if (a.ja_p === "勉強します") daQ = "Hvor tit læser du lektier?";  // studere は「専攻する」に聞こえるため
+    yield item(`どのくらいの頻度で${a.ja_p.replace(/します$|ます$/, m => m === "します" ? "しますか" : "ますか")}?`,
+      `얼마나 자주 ${a.ko_p.replace(/\.$/, "")}?`,
+      daQ,
+      `How often do you ${a.en_b.replace(/\bmy\b/g, "your")}?`, "頻度",
+      "얼마나 자주=どのくらい頻繁に。動詞はそのまま해요体でOK。",
+      "Hvor tit ~? =「どのくらいの頻度で?」。疑問詞のあとは動詞→主語の語順。",
+      "How often do you ~? 答えは every day / twice a week など。");
   }
 }],
 
@@ -874,14 +965,16 @@ function buildAll(lang) {
   for (const c of CURATED[lang]) {
     if (seen.has(c.t)) continue;
     seen.add(c.t);
-    out.push({ t: c.t, r: lang === "ko" ? romanize(c.t) : "", a: c.a, n: c.n, h: c.h });
+    out.push({ t: c.t, r: lang === "ko" ? romanize(c.t) : "", a: c.a, n: c.n, h: c.h, d: c.d || 1 });
   }
-  for (const [, gen] of TEMPLATES) {
+  for (const [, baseD, gen] of TEMPLATES) {
     for (const it of gen()) {
       const t = it[lang];
       if (seen.has(t)) continue;
       seen.add(t);
-      out.push({ t, r: lang === "ko" ? romanize(t) : "", a: it.ja, n: it.n[lang], h: it.h });
+      let d = it.d || baseD;
+      if (t.split(" ").length >= 7) d = Math.min(3, d + 1);   // 長い文は1段階難しく
+      out.push({ t, r: lang === "ko" ? romanize(t) : "", a: it.ja, n: it.n[lang], h: it.h, d });
     }
   }
   cache[lang] = out;

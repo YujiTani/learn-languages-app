@@ -170,6 +170,8 @@ const BANNED = {
     /(ご飯|バター|牛乳|水)はとても(甘い|人気)/,      // LLMレビュー指摘(2026-08)
     /(祖父|祖母|上司)は学生です/,
     /(写真|地図)はとても(重い|軽い)/,
+    /曇りので/,                                      // 名詞+ので は非文(→曇りなので)
+    /(ビール|ワイン|コーヒー|お茶|牛乳|水)を食べた/,
   ],
   da: [
     /\bzooen\b/,             // zoologisk have を使う(zooen は口語すぎ)
@@ -180,6 +182,8 @@ const BANNED = {
     /very delicious/,        // delicious は強意形容詞なので very と併用不可
     /\bI drew yesterday\b/,  // 目的語が必要
     /Where is my key\?/,     // 鍵は keys(複数)が自然
+    /do you .* my /,         // 疑問文でmyは人称不一致(→your)
+    /Have you ever tried (bread|meat|cheese|rice)\b/,  // 日常食すぎて不自然
   ],
   ko: [
     /바람이 불어요/,          // 「風が強い」は 바람이 세요(LLMレビュー指摘)
@@ -190,6 +194,28 @@ for (const [lang, data] of Object.entries(bank)) {
   for (const it of data.items) {
     for (const re of BANNED.ja) if (re.test(it.a)) err(lang, it.t, `禁止パターン(出題文): ${re}`);
     for (const re of BANNED[lang] || []) if (re.test(it.t)) err(lang, it.t, `禁止パターン: ${re}`);
+  }
+}
+
+/* ---------- 難易度チェック ---------- */
+{
+  const MIN_PER_BUCKET = 100;
+  for (const [lang, data] of Object.entries(bank)) {
+    const counts = [0, 0, 0];
+    for (const it of data.items) {
+      if (![1, 2, 3].includes(it.d)) { err(lang, it.t, `難易度が不正 (d=${it.d})`); continue; }
+      counts[it.d - 1]++;
+    }
+    counts.forEach((c, i) => {
+      if (c < MIN_PER_BUCKET) err(lang, `D${i + 1}`, `難易度D${i + 1}の問題が${c}問しかない(最低${MIN_PER_BUCKET}問)`);
+    });
+  }
+  // 飲み物に「食べた」が付いていないか(回帰ガード)
+  for (const it of bank.en.items) {
+    if (/tried (water|milk|coffee|tea|juice|beer|wine)\b/.test(it.t)) err("en", it.t, "飲み物にtried(食べた文脈)");
+  }
+  for (const it of Object.values(bank).flatMap(b => b.items)) {
+    if (/(ビール|ワイン|水|牛乳|コーヒー|お茶|ジュース)を食べた/.test(it.a)) err("ja", it.a, "飲み物に「食べた」");
   }
 }
 
@@ -204,6 +230,8 @@ for (const [lang, data] of Object.entries(bank)) {
     ["음악을", "eumageul"],               // 連音化
     ["한국어", "hangugeo"],
     ["좋아해요", "joahaeyo"],             // ㅎ+母音→無音
+    ["산책해요", "sanchaekaeyo"],         // 激音化 ㄱ+ㅎ→k
+    ["따뜻해서", "ttatteutaeseo"],        // 激音化 ㅅ+ㅎ→t
   ];
   for (const [input, expected] of CASES) {
     const got = gen.romanize(input);
