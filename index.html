@@ -142,6 +142,15 @@
   @keyframes pop { 0% { transform: scale(.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
   .self-check { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .btn-purple { background: var(--purple); color: #fff; box-shadow: 0 4px 0 #a95fd6; }
+  .wb-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .wb-count { font-weight: 800; color: var(--purple); font-size: 15px; }
+  .wb-count .num { font-size: 22px; }
+  .wb-langs { display: flex; gap: 12px; font-size: 12px; color: var(--text-light); font-weight: 700; margin-bottom: 12px; }
+  .review-tag {
+    display: inline-block; background: #f6ecff; color: var(--purple); font-size: 12px;
+    font-weight: 800; border-radius: 8px; padding: 3px 10px; margin-left: 6px;
+  }
   .self-check .btn { font-size: 15px; padding: 13px; }
   .btn-red { background: var(--red); color: #fff; box-shadow: 0 4px 0 var(--red-dark); }
 
@@ -268,6 +277,15 @@
     <div class="load-err hidden" id="loadErr"></div>
 
     <div class="card" style="margin-top:20px">
+      <div class="wb-head">
+        <div style="font-weight:800">📒 単語帳(まちがえた問題)</div>
+        <div class="wb-count"><span class="num" id="wbCount">0</span> 語</div>
+      </div>
+      <div class="wb-langs" id="wbLangs"></div>
+      <button class="btn btn-purple" id="reviewBtn" onclick="startReview()">単語帳で復習する 📖</button>
+    </div>
+
+    <div class="card" style="margin-top:20px">
       <div style="font-weight:800; margin-bottom:8px">あそびかた</div>
       <div style="font-size:14px; color:var(--text-light); line-height:1.8">
         1. 言語と回答モードをえらんで「問題を生成」<br>
@@ -275,7 +293,8 @@
         3. 📝 ノート記述: 自分でノートに書いてから「回答を確認」で答え合わせ<br>
         3. 🧩 単語タイル: バラバラの単語を正しい順にタップして「答え合わせ」<br>
         4. 正解でXP獲得(★の数で10/15/20XP)。間違えると1XPのみ<br>
-        5. XPをためてレベルアップ、毎日つづけて🌱草を育てよう!
+        5. まちがえた問題は📒単語帳にたまる。復習で「覚えた!」と消えていく<br>
+        6. XPをためてレベルアップ、毎日つづけて🌱草を育てよう!
       </div>
     </div>
   </div>
@@ -313,6 +332,12 @@
       <button class="btn btn-red" id="selfBadBtn" onclick="selfAnswer('bad')">書けなかった 😢</button>
     </div>
 
+    <!-- review mode buttons -->
+    <div class="self-check hidden" id="reviewCheck">
+      <button class="btn btn-green" onclick="reviewAnswer(true)">覚えた! 🎉 +5XP</button>
+      <button class="btn btn-orange" onclick="reviewAnswer(false)">まだあやしい 🤔 +1XP</button>
+    </div>
+
     <!-- tiles mode buttons -->
     <button class="btn btn-green hidden" id="checkBtn" onclick="checkTiles()">答え合わせ ✅</button>
     <button class="btn btn-blue hidden" id="continueBtn" onclick="continueTiles()">つづける ➡️</button>
@@ -348,7 +373,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.4.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const GRASS_WEEKS = 17; // 約4ヶ月分
@@ -364,8 +389,9 @@ function load() {
     return {
       xp: s.xp || 0, streak: s.streak || 0, lastDay: s.lastDay || null,
       best: s.best || 0, days: s.days || {}, mode: s.mode || "write",
+      wordbook: s.wordbook || [],
     };
-  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write" }; }
+  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [] }; }
 }
 function save() { localStorage.setItem("lingopop", JSON.stringify(state)); }
 
@@ -433,6 +459,52 @@ function renderGrass() {
   // 右端(今日)まで自動スクロール
   const sc = document.querySelector(".grass-scroll");
   if (sc) sc.scrollLeft = sc.scrollWidth;
+}
+
+// ---------- 単語帳(まちがえた問題の蓄積) ----------
+function addToWordbook(q) {
+  if (state.wordbook.some(w => w.lang === q.lang && w.t === q.t)) return;  // 重複は追加しない
+  state.wordbook.push({ lang: q.lang, t: q.t, r: q.r, a: q.a, n: q.n, h: q.h, d: q.d, added: Date.now() });
+  save();
+  renderWordbook();
+  toast("📒 単語帳に追加しました(" + state.wordbook.length + "語)");
+}
+
+function removeFromWordbook(q) {
+  state.wordbook = state.wordbook.filter(w => !(w.lang === q.lang && w.t === q.t));
+  save();
+  renderWordbook();
+}
+
+function renderWordbook() {
+  const el = document.getElementById("wbCount");
+  if (!el) return;
+  el.textContent = state.wordbook.length;
+  const per = { ko: 0, da: 0, en: 0 };
+  for (const w of state.wordbook) per[w.lang]++;
+  document.getElementById("wbLangs").innerHTML = BANK
+    ? ["ko", "da", "en"].map(k => `<span>${BANK[k].flag} ${per[k]}語</span>`).join("")
+    : "";
+  const btn = document.getElementById("reviewBtn");
+  btn.disabled = state.wordbook.length === 0;
+  btn.textContent = state.wordbook.length === 0
+    ? "単語帳は空です(まちがえた問題がたまります)"
+    : `単語帳で復習する 📖(${Math.min(state.wordbook.length, QUESTIONS_PER_SESSION)}問)`;
+}
+
+function startReview() {
+  if (!BANK || state.wordbook.length === 0) return;
+  const qs = shuffle([...state.wordbook]).slice(0, QUESTIONS_PER_SESSION);
+  session = { review: true, questions: qs, index: 0, earned: 0, perfect: 0, known: 0,
+              total: qs.length };
+  showScreen("sessionScreen");
+  renderQuestion();
+}
+
+function reviewAnswer(known) {
+  const q = session.questions[session.index];
+  if (known) { session.known++; removeFromWordbook(q); }
+  nextQuestion(known ? 5 : 1);
 }
 
 // ---------- 言語・モード選択 ----------
@@ -512,7 +584,8 @@ function renderQuestion() {
   const q = session.questions[session.index];
   const meta = BANK[q.lang];
   document.getElementById("qFlag").textContent = meta.flag;
-  document.getElementById("qTask").textContent = meta.name + "にしてみよう";
+  document.getElementById("qTask").innerHTML = meta.name + "にしてみよう" +
+    (session.review ? '<span class="review-tag">📒 復習</span>' : "");
   document.getElementById("qSentence").textContent = q.a; // 日本語で出題
   document.getElementById("qHint").textContent = "ヒント: " + q.h;
   const dd = q.d || 1;
@@ -520,8 +593,8 @@ function renderQuestion() {
   document.getElementById("selfGoodBtn").textContent = `書けた! 😊 +${xpFor(dd)}XP`;
   document.getElementById("selfHardBtn").textContent = `惜しかった 😅 +${Math.ceil(xpFor(dd) / 2)}XP`;
   document.getElementById("selfBadBtn").textContent = "書けなかった 😢 +1XP";
-  hideAll(["answerBox", "selfCheck", "revealBtn", "tilesUI", "checkBtn", "continueBtn"]);
-  if (state.mode === "write") {
+  hideAll(["answerBox", "selfCheck", "reviewCheck", "revealBtn", "tilesUI", "checkBtn", "continueBtn"]);
+  if (session.review || state.mode === "write") {
     document.getElementById("revealBtn").classList.remove("hidden");
   } else {
     setupTiles(q);
@@ -530,13 +603,14 @@ function renderQuestion() {
     document.getElementById("checkBtn").disabled = true;
   }
   document.getElementById("progressFill").style.width =
-    (session.index / QUESTIONS_PER_SESSION * 100) + "%";
+    (session.index / (session.total || QUESTIONS_PER_SESSION) * 100) + "%";
 }
 
 // ---------- ノート記述モード ----------
 function selfAnswer(result) {
   const q = session.questions[session.index];
   const full = xpFor(q.d);
+  if (result === "bad") addToWordbook(q);         // 書けなかった問題は単語帳へ
   // 書けた=満額 / 惜しかった=半額 / 書けなかった=1XP
   nextQuestion(result === "good" ? full : result === "close" ? Math.ceil(full / 2) : 1);
 }
@@ -545,7 +619,7 @@ function revealAnswer() {
   const q = session.questions[session.index];
   showAnswerBox(true, "✅ こたえ", q);
   document.getElementById("revealBtn").classList.add("hidden");
-  document.getElementById("selfCheck").classList.remove("hidden");
+  document.getElementById(session.review ? "reviewCheck" : "selfCheck").classList.remove("hidden");
 }
 
 // ---------- 単語タイルモード ----------
@@ -604,6 +678,7 @@ function checkTiles() {
   const guess = session.selected.map(s => s.w).join(" ");
   const correct = guess === q.t;
   session.lastXp = correct ? xpFor(q.d) : 1;   // 間違えた場合は1XPのみ
+  if (!correct) addToWordbook(q);              // 間違えた問題は単語帳へ
   showAnswerBox(correct, correct ? "🎉 せいかい!" : "😢 ざんねん… 正解はこちら", q);
   document.getElementById("checkBtn").classList.add("hidden");
   document.getElementById("continueBtn").classList.remove("hidden");
@@ -629,7 +704,7 @@ function nextQuestion(xp) {
   addXp(xp);
   floatXp("+" + xp + " XP");
   session.index++;
-  if (session.index >= QUESTIONS_PER_SESSION) {
+  if (session.index >= (session.total || QUESTIONS_PER_SESSION)) {
     document.getElementById("progressFill").style.width = "100%";
     setTimeout(finishSession, 350);
   } else {
@@ -666,6 +741,14 @@ function finishSession() {
   renderStats();
   document.getElementById("rEarned").textContent = "+" + session.earned;
   document.getElementById("rStreak").textContent = "🔥 " + state.streak;
+  if (session.review) {
+    document.getElementById("rPerfect").textContent = session.known + "/" + session.total;
+    document.getElementById("resultMsg").textContent =
+      state.wordbook.length === 0 ? "単語帳が空になりました!すごい!" : "単語帳の残り: " + state.wordbook.length + "語";
+    showScreen("resultScreen");
+    confetti(24);
+    return;
+  }
   document.getElementById("rPerfect").textContent = session.perfect + "/" + QUESTIONS_PER_SESSION;
   const msgs = session.perfect === QUESTIONS_PER_SESSION
     ? ["パーフェクト!すごい!", "全問正解!天才!"]
@@ -680,7 +763,7 @@ function finishSession() {
 function quitSession() {
   if (confirm("レッスンを終了しますか?ここまでのXPは保存されています。")) goHome();
 }
-function goHome() { showScreen("homeScreen"); renderGrass(); }
+function goHome() { showScreen("homeScreen"); renderGrass(); renderWordbook(); }
 
 function showScreen(id) {
   for (const s of ["homeScreen", "sessionScreen", "resultScreen"])
@@ -738,6 +821,7 @@ loadBank().then(bank => {
   const btn = document.getElementById("startBtn");
   btn.disabled = false;
   btn.textContent = "問題を生成する 🎲";
+  renderWordbook();
 }).catch(err => {
   document.getElementById("startBtn").textContent = "読み込みに失敗しました";
   const box = document.getElementById("loadErr");
