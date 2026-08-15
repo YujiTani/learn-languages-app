@@ -143,6 +143,19 @@
 
   .self-check { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
   .btn-purple { background: var(--purple); color: #fff; box-shadow: 0 4px 0 #a95fd6; }
+  .opt-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; }
+  .opt-desc { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .switch {
+    width: 52px; height: 30px; border-radius: 16px; background: #d5d5d5;
+    cursor: pointer; position: relative; transition: background .2s; flex-shrink: 0;
+  }
+  .switch .knob {
+    position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+    transition: left .2s;
+  }
+  .switch.on { background: var(--green); }
+  .switch.on .knob { left: 25px; }
   .wb-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .wb-count { font-weight: 800; color: var(--purple); font-size: 15px; }
   .wb-count .num { font-size: 22px; }
@@ -273,10 +286,19 @@
     </div>
     <div class="mode-desc" id="modeDesc"></div>
 
+    <div class="section-title">⚙️ オプション</div>
+    <div class="card opt-row">
+      <div>
+        <div style="font-weight:800">📒 単語帳</div>
+        <div class="opt-desc">まちがえた問題を自動で単語帳に登録する</div>
+      </div>
+      <div class="switch" id="wbSwitch" onclick="toggleWordbook()"><div class="knob"></div></div>
+    </div>
+
     <button class="btn btn-green" id="startBtn" onclick="startSession()" disabled>問題を読み込み中…</button>
     <div class="load-err hidden" id="loadErr"></div>
 
-    <div class="card" style="margin-top:20px">
+    <div class="card" style="margin-top:20px" id="wbCard">
       <div class="wb-head">
         <div style="font-weight:800">📒 単語帳(まちがえた問題)</div>
         <div class="wb-count"><span class="num" id="wbCount">0</span> 語</div>
@@ -373,7 +395,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.5.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const GRASS_WEEKS = 17; // 約4ヶ月分
@@ -390,8 +412,9 @@ function load() {
       xp: s.xp || 0, streak: s.streak || 0, lastDay: s.lastDay || null,
       best: s.best || 0, days: s.days || {}, mode: s.mode || "write",
       wordbook: s.wordbook || [],
+      wbEnabled: s.wbEnabled !== false,   // デフォルトON
     };
-  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [] }; }
+  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [], wbEnabled: true }; }
 }
 function save() { localStorage.setItem("lingopop", JSON.stringify(state)); }
 
@@ -463,6 +486,7 @@ function renderGrass() {
 
 // ---------- 単語帳(まちがえた問題の蓄積) ----------
 function addToWordbook(q) {
+  if (!state.wbEnabled) return;                                            // オプションOFF時は登録しない
   if (state.wordbook.some(w => w.lang === q.lang && w.t === q.t)) return;  // 重複は追加しない
   state.wordbook.push({ lang: q.lang, t: q.t, r: q.r, a: q.a, n: q.n, h: q.h, d: q.d, added: Date.now() });
   save();
@@ -476,9 +500,19 @@ function removeFromWordbook(q) {
   renderWordbook();
 }
 
+function toggleWordbook() {
+  state.wbEnabled = !state.wbEnabled;
+  save();
+  renderWordbook();
+  toast(state.wbEnabled ? "📒 単語帳をONにしました" : "単語帳をOFFにしました(蓄積データは残ります)");
+}
+
 function renderWordbook() {
   const el = document.getElementById("wbCount");
   if (!el) return;
+  document.getElementById("wbSwitch").classList.toggle("on", state.wbEnabled);
+  document.getElementById("wbCard").classList.toggle("hidden", !state.wbEnabled);
+  if (!state.wbEnabled) return;
   el.textContent = state.wordbook.length;
   const per = { ko: 0, da: 0, en: 0 };
   for (const w of state.wordbook) per[w.lang]++;
@@ -493,7 +527,7 @@ function renderWordbook() {
 }
 
 function startReview() {
-  if (!BANK || state.wordbook.length === 0) return;
+  if (!BANK || !state.wbEnabled || state.wordbook.length === 0) return;
   const qs = shuffle([...state.wordbook]).slice(0, QUESTIONS_PER_SESSION);
   session = { review: true, questions: qs, index: 0, earned: 0, perfect: 0, known: 0,
               total: qs.length };
