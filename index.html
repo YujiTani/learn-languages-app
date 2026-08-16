@@ -140,7 +140,16 @@
   .answer-box .ans-label { font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px; }
   .answer-box.good .ans-label { color: var(--green-dark); }
   .answer-box.bad .ans-label { color: var(--red-dark); }
-  .answer-box .ans-text { font-size: 20px; font-weight: 700; }
+  .answer-box .ans-main { display: flex; align-items: center; gap: 10px; }
+  .answer-box .ans-text { font-size: 20px; font-weight: 700; flex: 1; }
+  .tts-btn {
+    flex-shrink: 0; width: 44px; height: 44px; padding: 0; border-radius: 50%;
+    border: 2px solid var(--border); background: #fff; font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 0 var(--border); transition: transform .08s, box-shadow .08s;
+  }
+  .tts-btn:active { transform: translateY(3px); box-shadow: none; }
+  .tts-btn.speaking { border-color: var(--blue); box-shadow: 0 3px 0 var(--blue); }
   .answer-box .ans-roman { font-size: 13px; color: var(--text-light); margin-top: 4px; }
   .answer-box .ans-note { font-size: 13px; color: #557; margin-top: 8px; line-height: 1.6; }
   @keyframes pop { 0% { transform: scale(.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -298,6 +307,13 @@
       </div>
       <div class="switch" id="wbSwitch" onclick="toggleWordbook()"><div class="knob"></div></div>
     </div>
+    <div class="card opt-row hidden" id="ttsRow">
+      <div>
+        <div style="font-weight:800">🔊 音声読み上げ</div>
+        <div class="opt-desc">答え合わせのとき解答文を自動で読み上げる</div>
+      </div>
+      <div class="switch" id="ttsSwitch" onclick="toggleTts()"><div class="knob"></div></div>
+    </div>
 
     <button class="btn btn-green" id="startBtn" onclick="startSession()" disabled>問題を読み込み中…</button>
     <div class="load-err hidden" id="loadErr"></div>
@@ -318,9 +334,10 @@
         2. <b>日本語の文</b>が出題される<br>
         3. 📝 ノート記述: 自分でノートに書いてから「回答を確認」で答え合わせ<br>
         3. 🧩 単語タイル: バラバラの単語を正しい順にタップして「答え合わせ」<br>
-        4. 正解でXP獲得(★の数で10/15/20XP)。間違えると1XPのみ<br>
-        5. まちがえた問題は📒単語帳にたまる。復習で「覚えた!」と消えていく<br>
-        6. XPをためてレベルアップ、毎日つづけて🌱草を育てよう!
+        4. 答え合わせのとき解答文を音声で読み上げ。🔊ボタンで聞き直せる<br>
+        5. 正解でXP獲得(★の数で10/15/20XP)。間違えると1XPのみ<br>
+        6. まちがえた問題は📒単語帳にたまる。復習で「覚えた!」と消えていく<br>
+        7. XPをためてレベルアップ、毎日つづけて🌱草を育てよう!
       </div>
     </div>
   </div>
@@ -344,7 +361,10 @@
 
       <div class="answer-box hidden" id="answerBox">
         <div class="ans-label" id="ansLabel"></div>
-        <div class="ans-text" id="ansText"></div>
+        <div class="ans-main">
+          <div class="ans-text" id="ansText"></div>
+          <button class="tts-btn hidden" id="ttsBtn" onclick="replayTts()" title="もう一度聞く" aria-label="もう一度聞く">🔊</button>
+        </div>
         <div class="ans-roman" id="ansRoman"></div>
         <div class="ans-note" id="ansNote"></div>
       </div>
@@ -399,7 +419,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.5.1";
+const APP_VERSION = "1.6.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const GRASS_WEEKS = 17; // 約4ヶ月分
@@ -416,9 +436,10 @@ function load() {
       xp: s.xp || 0, streak: s.streak || 0, lastDay: s.lastDay || null,
       best: s.best || 0, days: s.days || {}, mode: s.mode || "write",
       wordbook: s.wordbook || [],
-      wbEnabled: s.wbEnabled !== false,   // デフォルトON
+      wbEnabled: s.wbEnabled !== false,     // デフォルトON
+      ttsEnabled: s.ttsEnabled !== false,   // デフォルトON
     };
-  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [], wbEnabled: true }; }
+  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [], wbEnabled: true, ttsEnabled: true }; }
 }
 function save() { localStorage.setItem("lingopop", JSON.stringify(state)); }
 
@@ -486,6 +507,69 @@ function renderGrass() {
   // 右端(今日)まで自動スクロール
   const sc = document.querySelector(".grass-scroll");
   if (sc) sc.scrollLeft = sc.scrollWidth;
+}
+
+// ---------- 音声読み上げ(Web Speech API) ----------
+const TTS_LANG = { ko: "ko-KR", da: "da-DK", en: "en-GB" };
+const TTS_OK = "speechSynthesis" in window;
+let ttsVoices = {};      // "ko" -> SpeechSynthesisVoice
+let ttsVoiceCount = 0;   // getVoices() の件数(0 = まだ取得できていない)
+let ttsCurrent = null;   // いま解答欄に出ている問題(🔊で聞き直す用)
+
+function initTts() {
+  if (!TTS_OK) return;
+  pickVoices();
+  // Chrome は voices を非同期でロードするため、そろった時点で選び直す
+  if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = pickVoices;
+}
+
+function pickVoices() {
+  const all = speechSynthesis.getVoices();
+  ttsVoiceCount = all.length;
+  ttsVoices = {};
+  for (const lang in TTS_LANG) {
+    const tag = TTS_LANG[lang], prefix = tag.slice(0, 2);
+    const norm = v => v.lang.replace("_", "-");
+    ttsVoices[lang] = all.find(v => norm(v) === tag)                 // ko-KR 完全一致
+                   || all.find(v => norm(v).startsWith(prefix))      // ko-* 前方一致
+                   || null;
+  }
+}
+
+// voices が空のときは「音声がない」ではなく「まだ取得できていない」なので、
+// 再生を試みてブラウザ既定の音声にまかせる
+function hasVoice(lang) { return TTS_OK && (ttsVoiceCount === 0 || !!ttsVoices[lang]); }
+
+function speak(text, lang) {
+  if (!TTS_OK) return;
+  // iOS Safari は cancel() 直後の speak() が無音になることがあるため、
+  // 実際に再生中のときだけ止める
+  if (speechSynthesis.speaking) speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = TTS_LANG[lang] || "en-US";
+  if (ttsVoices[lang]) u.voice = ttsVoices[lang];
+  u.rate = 0.9;   // 学習用にすこし遅め
+  const btn = document.getElementById("ttsBtn");
+  u.onstart = () => btn.classList.add("speaking");
+  u.onend = u.onerror = () => btn.classList.remove("speaking");
+  speechSynthesis.speak(u);
+}
+
+function stopTts() { if (TTS_OK) speechSynthesis.cancel(); }
+
+function replayTts() { if (ttsCurrent) speak(ttsCurrent.t, ttsCurrent.lang); }
+
+function toggleTts() {
+  state.ttsEnabled = !state.ttsEnabled;
+  save();
+  if (!state.ttsEnabled) stopTts();
+  renderTts();
+  toast(state.ttsEnabled ? "🔊 音声読み上げをONにしました" : "音声読み上げをOFFにしました(🔊ボタンでは聞けます)");
+}
+
+function renderTts() {
+  document.getElementById("ttsRow").classList.toggle("hidden", !TTS_OK);
+  document.getElementById("ttsSwitch").classList.toggle("on", state.ttsEnabled);
 }
 
 // ---------- 単語帳(まちがえた問題の蓄積) ----------
@@ -732,11 +816,18 @@ function showAnswerBox(good, label, q) {
   box.classList.add(good ? "good" : "bad");
   document.getElementById("ansLabel").textContent = label;
   document.getElementById("ansText").textContent = q.t;
-  document.getElementById("ansRoman").textContent = q.r ? "🔊 " + q.r : "";
+  document.getElementById("ansRoman").textContent = q.r ? "🗣 " + q.r : "";
   document.getElementById("ansNote").textContent = q.n;
+  // 読み上げ(記述・タイル・単語帳復習のすべてがこの関数を通る)
+  ttsCurrent = q;
+  const ttsBtn = document.getElementById("ttsBtn");
+  ttsBtn.classList.remove("speaking");
+  ttsBtn.classList.toggle("hidden", !hasVoice(q.lang));
+  if (state.ttsEnabled && hasVoice(q.lang)) speak(q.t, q.lang);
 }
 
 function nextQuestion(xp) {
+  stopTts();
   const q = session.questions[session.index];
   session.earned += xp;
   if (xp >= xpFor(q.d)) session.perfect++;
@@ -802,7 +893,7 @@ function finishSession() {
 function quitSession() {
   if (confirm("レッスンを終了しますか?ここまでのXPは保存されています。")) goHome();
 }
-function goHome() { showScreen("homeScreen"); renderGrass(); renderWordbook(); }
+function goHome() { stopTts(); showScreen("homeScreen"); renderGrass(); renderWordbook(); }
 
 function showScreen(id) {
   for (const s of ["homeScreen", "sessionScreen", "resultScreen"])
@@ -847,6 +938,8 @@ document.getElementById("appVersion").textContent = "v" + APP_VERSION;
 renderStats();
 setMode(state.mode);
 renderGrass();
+initTts();
+renderTts();   // 問題バンクに依存しないので、ロードを待たずに反映する
 
 loadBank().then(bank => {
   BANK = bank;
