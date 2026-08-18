@@ -111,6 +111,7 @@
     transition: all .15s; user-select: none;
   }
   .mode-opt.active { background: var(--blue); color: #fff; }
+  .mode-opt.disabled { opacity: .4; pointer-events: none; }
   .mode-desc { font-size: 12px; color: var(--text-light); text-align: center; margin: -8px 0 16px; }
 
   /* Session */
@@ -125,7 +126,15 @@
     float: right; font-size: 12px; font-weight: 800; color: var(--purple);
     background: #f6ecff; border-radius: 8px; padding: 2px 8px; letter-spacing: 1px;
   }
-  .sentence { font-size: 26px; font-weight: 700; line-height: 1.5; margin: 8px 0 6px; }
+  .q-main { display: flex; align-items: center; gap: 10px; }
+  .sentence { font-size: 26px; font-weight: 700; line-height: 1.5; margin: 8px 0 6px; flex: 1; }
+  .ja-input {
+    width: 100%; box-sizing: border-box; margin-top: 14px; padding: 12px 14px;
+    border: 2px solid var(--border); border-radius: 12px; background: #fff;
+    font-family: inherit; font-size: 17px; line-height: 1.6; color: var(--text);
+    resize: vertical;
+  }
+  .ja-input:focus { outline: none; border-color: var(--blue); }
   .roman { font-size: 14px; color: var(--text-light); margin-bottom: 4px; }
   .hint-chip {
     display: inline-block; background: #fff4e0; color: var(--orange); font-size: 12px;
@@ -150,6 +159,11 @@
   }
   .tts-btn:active { transform: translateY(3px); box-shadow: none; }
   .tts-btn.speaking { border-color: var(--blue); box-shadow: 0 3px 0 var(--blue); }
+  .answer-box .ans-yours {
+    font-size: 14px; color: var(--text-light); background: rgba(255,255,255,.65);
+    border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; line-height: 1.5;
+    white-space: pre-wrap; word-break: break-word;
+  }
   .answer-box .ans-roman { font-size: 13px; color: var(--text-light); margin-top: 4px; }
   .answer-box .ans-note { font-size: 13px; color: #557; margin-top: 8px; line-height: 1.6; }
   @keyframes pop { 0% { transform: scale(.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -296,6 +310,7 @@
     <div class="mode-toggle">
       <div class="mode-opt" id="modeWrite" onclick="setMode('write')">📝 ノート記述</div>
       <div class="mode-opt" id="modeTiles" onclick="setMode('tiles')">🧩 単語タイル</div>
+      <div class="mode-opt" id="modeJa" onclick="setMode('ja')">🇯🇵 和訳を入力</div>
     </div>
     <div class="mode-desc" id="modeDesc"></div>
 
@@ -334,6 +349,7 @@
         2. <b>日本語の文</b>が出題される<br>
         3. 📝 ノート記述: 自分でノートに書いてから「回答を確認」で答え合わせ<br>
         3. 🧩 単語タイル: バラバラの単語を正しい順にタップして「答え合わせ」<br>
+        3. 🇯🇵 和訳を入力(英語のみ): <b>英語の文</b>が出題される。日本語訳を入力してから答え合わせ<br>
         4. 答え合わせのとき解答文を音声で読み上げ。🔊ボタンで聞き直せる<br>
         5. 正解でXP獲得(★の数で10/15/20XP)。間違えると1XPのみ<br>
         6. まちがえた問題は📒単語帳にたまる。復習で「覚えた!」と消えていく<br>
@@ -350,7 +366,10 @@
     </div>
     <div class="card">
       <div class="q-label"><span class="q-flag" id="qFlag"></span><span id="qTask"></span><span class="diff-chip" id="qDiff"></span></div>
-      <div class="sentence" id="qSentence"></div>
+      <div class="q-main">
+        <div class="sentence" id="qSentence"></div>
+        <button class="tts-btn hidden" id="qTtsBtn" onclick="replayTts('qTtsBtn')" title="もう一度聞く" aria-label="もう一度聞く">🔊</button>
+      </div>
       <span class="hint-chip" id="qHint"></span>
 
       <!-- tiles mode -->
@@ -359,8 +378,14 @@
         <div class="bank-area" id="bankArea"></div>
       </div>
 
+      <!-- 和訳入力モード -->
+      <div id="jaInputUI" class="hidden">
+        <textarea id="jaInput" class="ja-input" rows="3" placeholder="日本語訳を入力…"></textarea>
+      </div>
+
       <div class="answer-box hidden" id="answerBox">
         <div class="ans-label" id="ansLabel"></div>
+        <div class="ans-yours hidden" id="ansYours"></div>
         <div class="ans-main">
           <div class="ans-text" id="ansText"></div>
           <button class="tts-btn hidden" id="ttsBtn" onclick="replayTts()" title="もう一度聞く" aria-label="もう一度聞く">🔊</button>
@@ -419,7 +444,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.7.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const GRASS_WEEKS = 17; // 約4ヶ月分
@@ -540,7 +565,8 @@ function pickVoices() {
 // 再生を試みてブラウザ既定の音声にまかせる
 function hasVoice(lang) { return TTS_OK && (ttsVoiceCount === 0 || !!ttsVoices[lang]); }
 
-function speak(text, lang) {
+// btnId: 再生中に .speaking を付けるボタン(出題側 qTtsBtn / 解答側 ttsBtn)
+function speak(text, lang, btnId) {
   if (!TTS_OK) return;
   // iOS Safari は cancel() 直後の speak() が無音になることがあるため、
   // 実際に再生中のときだけ止める
@@ -549,7 +575,7 @@ function speak(text, lang) {
   u.lang = TTS_LANG[lang] || "en-US";
   if (ttsVoices[lang]) u.voice = ttsVoices[lang];
   u.rate = 0.9;   // 学習用にすこし遅め
-  const btn = document.getElementById("ttsBtn");
+  const btn = document.getElementById(btnId || "ttsBtn");
   u.onstart = () => btn.classList.add("speaking");
   u.onend = u.onerror = () => btn.classList.remove("speaking");
   speechSynthesis.speak(u);
@@ -557,7 +583,7 @@ function speak(text, lang) {
 
 function stopTts() { if (TTS_OK) speechSynthesis.cancel(); }
 
-function replayTts() { if (ttsCurrent) speak(ttsCurrent.t, ttsCurrent.lang); }
+function replayTts(btnId) { if (ttsCurrent) speak(ttsCurrent.t, ttsCurrent.lang, btnId); }
 
 function toggleTts() {
   state.ttsEnabled = !state.ttsEnabled;
@@ -573,17 +599,22 @@ function renderTts() {
 }
 
 // ---------- 単語帳(まちがえた問題の蓄積) ----------
+// 出題の向き。dir を持たない旧エントリは従来向き(日本語→外国語)とみなす
+function dirOf(q) { return q.dir === "ja" ? "ja" : "fw"; }
+function sameCard(a, b) { return a.lang === b.lang && a.t === b.t && dirOf(a) === dirOf(b); }
+
 function addToWordbook(q) {
-  if (!state.wbEnabled) return;                                            // オプションOFF時は登録しない
-  if (state.wordbook.some(w => w.lang === q.lang && w.t === q.t)) return;  // 重複は追加しない
-  state.wordbook.push({ lang: q.lang, t: q.t, r: q.r, a: q.a, n: q.n, h: q.h, d: q.d, added: Date.now() });
+  if (!state.wbEnabled) return;                              // オプションOFF時は登録しない
+  if (state.wordbook.some(w => sameCard(w, q))) return;      // 同じ文でも向きが違えば別カード
+  state.wordbook.push({ lang: q.lang, t: q.t, r: q.r, a: q.a, n: q.n, h: q.h, d: q.d,
+                        dir: dirOf(q), added: Date.now() });
   save();
   renderWordbook();
   toast("📒 単語帳に追加しました(" + state.wordbook.length + "語)");
 }
 
 function removeFromWordbook(q) {
-  state.wordbook = state.wordbook.filter(w => !(w.lang === q.lang && w.t === q.t));
+  state.wordbook = state.wordbook.filter(w => !sameCard(w, q));
   save();
   renderWordbook();
 }
@@ -634,15 +665,29 @@ function selectLang(lang) {
   selectedLang = lang;
   document.querySelectorAll(".lang-tile").forEach(el =>
     el.classList.toggle("selected", el.dataset.lang === lang));
+  syncModeAvail();
 }
 
+// 和訳入力モードは英語のみ。他言語を選んだら選択できなくし、選択中ならノート記述へ戻す
+function syncModeAvail() {
+  const ok = selectedLang === "en";
+  document.getElementById("modeJa").classList.toggle("disabled", !ok);
+  if (!ok && state.mode === "ja") setMode("write");
+}
+
+const MODE_DESC = {
+  write: "日本語の文を見て、ノートに自分で書いてから答え合わせ",
+  tiles: "Duolingo風。バラバラの単語タイルを正しい順にタップ",
+  ja: "英語の文を見て、日本語訳を入力してから答え合わせ",
+};
+
 function setMode(mode) {
+  if (mode === "ja" && selectedLang !== "en") return;
   state.mode = mode; save();
   document.getElementById("modeWrite").classList.toggle("active", mode === "write");
   document.getElementById("modeTiles").classList.toggle("active", mode === "tiles");
-  document.getElementById("modeDesc").textContent = mode === "write"
-    ? "日本語の文を見て、ノートに自分で書いてから答え合わせ"
-    : "Duolingo風。バラバラの単語タイルを正しい順にタップ";
+  document.getElementById("modeJa").classList.toggle("active", mode === "ja");
+  document.getElementById("modeDesc").textContent = MODE_DESC[mode] || MODE_DESC.write;
 }
 
 // ---------- セッション ----------
@@ -669,12 +714,14 @@ function weightedPick(dist) {
 function xpFor(d) { return [10, 15, 20][(d || 1) - 1]; }
 
 function pickQuestions() {
+  // 向きは出題時に確定させる。単語帳に入っても向きが保たれ、復習で同じ形式が再現される
+  const dir = state.mode === "ja" ? "ja" : "fw";
   let pool = [];
   if (selectedLang === "mix") {
     for (const key of ["ko", "da", "en"])
-      pool = pool.concat(BANK[key].items.map(it => ({...it, lang: key})));
+      pool = pool.concat(BANK[key].items.map(it => ({...it, lang: key, dir})));
   } else {
-    pool = BANK[selectedLang].items.map(it => ({...it, lang: selectedLang}));
+    pool = BANK[selectedLang].items.map(it => ({...it, lang: selectedLang, dir}));
   }
   const buckets = [[], [], []];
   for (const q of pool) buckets[(q.d || 1) - 1].push(q);
@@ -706,18 +753,24 @@ function hideAll(ids) { ids.forEach(id => document.getElementById(id).classList.
 function renderQuestion() {
   const q = session.questions[session.index];
   const meta = BANK[q.lang];
+  const ja = dirOf(q) === "ja";   // 英語→日本語(和訳入力)の向きか
   document.getElementById("qFlag").textContent = meta.flag;
-  document.getElementById("qTask").innerHTML = meta.name + "にしてみよう" +
+  document.getElementById("qTask").innerHTML = (ja ? "日本語にしてみよう" : meta.name + "にしてみよう") +
     (session.review ? '<span class="review-tag">📒 復習</span>' : "");
-  document.getElementById("qSentence").textContent = q.a; // 日本語で出題
+  document.getElementById("qSentence").textContent = ja ? q.t : q.a;  // 和訳モードは外国語文で出題
   document.getElementById("qHint").textContent = "ヒント: " + q.h;
   const dd = q.d || 1;
   document.getElementById("qDiff").textContent = "★".repeat(dd) + "☆".repeat(3 - dd);
   document.getElementById("selfGoodBtn").textContent = `書けた! 😊 +${xpFor(dd)}XP`;
   document.getElementById("selfHardBtn").textContent = `惜しかった 😅 +${Math.ceil(xpFor(dd) / 2)}XP`;
   document.getElementById("selfBadBtn").textContent = "書けなかった 😢 +1XP";
-  hideAll(["answerBox", "selfCheck", "reviewCheck", "revealBtn", "tilesUI", "checkBtn", "continueBtn"]);
-  if (session.review || state.mode === "write") {
+  hideAll(["answerBox", "ansYours", "selfCheck", "reviewCheck", "revealBtn",
+           "tilesUI", "jaInputUI", "checkBtn", "continueBtn"]);
+  if (ja) {
+    document.getElementById("jaInput").value = "";
+    document.getElementById("jaInputUI").classList.remove("hidden");
+    document.getElementById("revealBtn").classList.remove("hidden");
+  } else if (session.review || state.mode === "write") {
     document.getElementById("revealBtn").classList.remove("hidden");
   } else {
     setupTiles(q);
@@ -725,6 +778,12 @@ function renderQuestion() {
     document.getElementById("checkBtn").classList.remove("hidden");
     document.getElementById("checkBtn").disabled = true;
   }
+  // 和訳モードは出題文が外国語なので、ここで読み上げる(答え合わせ時は自動再生しない)
+  ttsCurrent = q;
+  const qTts = document.getElementById("qTtsBtn");
+  qTts.classList.remove("speaking");
+  qTts.classList.toggle("hidden", !ja || !hasVoice(q.lang));
+  if (ja && state.ttsEnabled && hasVoice(q.lang)) speak(q.t, q.lang, "qTtsBtn");
   document.getElementById("progressFill").style.width =
     (session.index / (session.total || QUESTIONS_PER_SESSION) * 100) + "%";
 }
@@ -811,19 +870,26 @@ function continueTiles() { nextQuestion(session.lastXp); }
 
 // ---------- 共通 ----------
 function showAnswerBox(good, label, q) {
+  const ja = dirOf(q) === "ja";
   const box = document.getElementById("answerBox");
   box.classList.remove("hidden", "good", "bad");
   box.classList.add(good ? "good" : "bad");
   document.getElementById("ansLabel").textContent = label;
-  document.getElementById("ansText").textContent = q.t;
-  document.getElementById("ansRoman").textContent = q.r ? "🗣 " + q.r : "";
+  // 和訳モードでは自分の入力を模範解答の上に並べて見比べられるようにする
+  const yours = document.getElementById("ansYours");
+  const typed = ja ? document.getElementById("jaInput").value.trim() : "";
+  yours.textContent = typed ? "あなたの回答: " + typed : "";
+  yours.classList.toggle("hidden", !typed);
+  document.getElementById("ansText").textContent = ja ? q.a : q.t;   // 和訳モードの模範解答は日本語
+  document.getElementById("ansRoman").textContent = (!ja && q.r) ? "🗣 " + q.r : "";
   document.getElementById("ansNote").textContent = q.n;
-  // 読み上げ(記述・タイル・単語帳復習のすべてがこの関数を通る)
+  // 読み上げ(記述・タイル・単語帳復習のすべてがこの関数を通る)。読むのは常に外国語文 q.t
   ttsCurrent = q;
   const ttsBtn = document.getElementById("ttsBtn");
   ttsBtn.classList.remove("speaking");
   ttsBtn.classList.toggle("hidden", !hasVoice(q.lang));
-  if (state.ttsEnabled && hasVoice(q.lang)) speak(q.t, q.lang);
+  // 和訳モードは出題時に再生済みなので、ここでは🔊ボタンでの手動再生だけにする
+  if (!ja && state.ttsEnabled && hasVoice(q.lang)) speak(q.t, q.lang);
 }
 
 function nextQuestion(xp) {
@@ -936,7 +1002,11 @@ function toast(text) {
 // ---------- 初期化 ----------
 document.getElementById("appVersion").textContent = "v" + APP_VERSION;
 renderStats();
+// selectedLang は永続化されないため、和訳モードの復元には英語の再選択が先に必要
+// (setMode("ja") は selectedLang が en でないと弾かれる)
+if (state.mode === "ja") selectLang("en");
 setMode(state.mode);
+syncModeAvail();
 renderGrass();
 initTts();
 renderTts();   // 問題バンクに依存しないので、ロードを待たずに反映する
