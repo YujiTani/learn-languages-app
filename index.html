@@ -248,6 +248,26 @@
   .confetti-piece { position: fixed; top: -20px; font-size: 22px; pointer-events: none; z-index: 98; animation: fall linear forwards; }
   @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
 
+  /* My page */
+  .icon-btn {
+    background: none; border: none; font-size: 20px; cursor: pointer;
+    padding: 0; line-height: 1; filter: grayscale(.3);
+  }
+  .icon-btn:active { transform: translateY(1px); }
+  .profile-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .summary-card { display: flex; justify-content: space-between; text-align: center; padding: 18px 12px; gap: 6px; }
+  .sum-val { font-size: 20px; font-weight: 800; color: var(--purple); }
+  .sum-lab { font-size: 11px; color: var(--text-light); font-weight: 700; margin-top: 2px; }
+  .track-card { padding: 16px 18px; }
+  .track-card.fresh { opacity: .65; }
+  .track-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .track-flag { font-size: 24px; margin-right: 8px; vertical-align: middle; }
+  .track-name { font-weight: 800; font-size: 16px; vertical-align: middle; }
+  .track-sub { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+  .track-lv { font-weight: 800; font-size: 20px; color: var(--purple); white-space: nowrap; }
+  .track-xp { font-size: 12px; color: var(--text-light); font-weight: 700; margin-top: 5px; }
+  .track-rows { font-size: 12px; color: var(--text-light); font-weight: 700; margin-top: 8px; line-height: 1.9; }
+
   .hidden { display: none !important; }
   .toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -264,7 +284,8 @@
     <div class="stats">
       <div class="stat streak" title="連続学習日数">🔥 <span id="streakVal">0</span></div>
       <div class="stat xp" title="合計XP">⚡ <span id="xpVal">0</span></div>
-      <div class="stat level" title="レベル">💎 Lv.<span id="levelVal">1</span></div>
+      <div class="stat level" title="このモードのレベル">💎 Lv.<span id="levelVal">1</span></div>
+      <button class="icon-btn" onclick="showProfile()" title="マイページ" aria-label="マイページ">👤</button>
     </div>
   </header>
 
@@ -353,7 +374,9 @@
         4. 答え合わせのとき解答文を音声で読み上げ。🔊ボタンで聞き直せる<br>
         5. 正解でXP獲得(★の数で10/15/20XP)。間違えると1XPのみ<br>
         6. まちがえた問題は📒単語帳にたまる。復習で「覚えた!」と消えていく<br>
-        7. XPをためてレベルアップ、毎日つづけて🌱草を育てよう!
+        7. <b>レベルはモードごとに別々</b>。韓国語をやっても英語の難易度は上がらない<br>
+        8. 👤マイページで各モードのレベル・正解率をチェック<br>
+        9. XPをためてレベルアップ、毎日つづけて🌱草を育てよう!
       </div>
     </div>
   </div>
@@ -414,6 +437,27 @@
     <button class="btn btn-blue hidden" id="continueBtn" onclick="continueTiles()">つづける ➡️</button>
   </div>
 
+  <!-- My page -->
+  <div id="profileScreen" class="hidden">
+    <div class="profile-top">
+      <div class="section-title" style="margin:0">👤 マイページ</div>
+      <button class="quit-btn" onclick="goHome()" title="とじる">✕</button>
+    </div>
+    <div class="card summary-card">
+      <div><div class="sum-val" id="pTotalXp">0</div><div class="sum-lab">⚡ 総合XP</div></div>
+      <div><div class="sum-val" id="pStreak">0</div><div class="sum-lab">🔥 連続</div></div>
+      <div><div class="sum-val" id="pBest">0</div><div class="sum-lab">🏅 最長</div></div>
+      <div><div class="sum-val" id="pDays">0</div><div class="sum-lab">🌱 学習日数</div></div>
+    </div>
+
+    <div class="section-title">📊 モード別の熟練度</div>
+    <div class="mode-desc" style="margin:-6px 0 12px">
+      レベルはモードごとに別々にたまり、そのモードの出題難易度だけが上がります
+    </div>
+    <div id="trackList"></div>
+    <button class="btn btn-white" onclick="goHome()">ホームへもどる</button>
+  </div>
+
   <!-- Result screen -->
   <div id="resultScreen" class="hidden">
     <div class="card result">
@@ -444,10 +488,30 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.8.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const GRASS_WEEKS = 17; // 約4ヶ月分
+
+// ---------- 学習トラック ----------
+// 熟練度は「言語 × 出題の向き」ごとに独立してたまる。
+// 回答モード(📝記述 / 🧩タイル)は同じ言語・同じ向きなので同一トラックに合算する。
+const TRACKS = {
+  ko:    { flag: "🇰🇷", name: "韓国語",       sub: "日本語 → 한국어" },
+  da:    { flag: "🇩🇰", name: "デンマーク語", sub: "日本語 → Dansk" },
+  en:    { flag: "🇬🇧", name: "英語",         sub: "日本語 → English" },
+  en_ja: { flag: "🇯🇵", name: "和訳",         sub: "English → 日本語" },
+};
+const TRACK_KEYS = ["ko", "da", "en", "en_ja"];
+
+function trackOf(lang, dir) { return dir === "ja" ? "en_ja" : lang; }
+function trackOfQ(q) { return trackOf(q.lang, dirOf(q)); }
+function trackXp(t) { return (state.tracks[t] || {}).xp || 0; }
+function trackLevel(t) { return levelOf(trackXp(t)); }
+// いま出題・表示の対象になっているトラック。ミックスはトラックではないので "mix" を返す
+function currentTrack() {
+  return selectedLang === "mix" ? "mix" : trackOf(selectedLang, state.mode === "ja" ? "ja" : "fw");
+}
 
 // ---------- 状態 ----------
 let state = load();
@@ -461,10 +525,26 @@ function load() {
       xp: s.xp || 0, streak: s.streak || 0, lastDay: s.lastDay || null,
       best: s.best || 0, days: s.days || {}, mode: s.mode || "write",
       wordbook: s.wordbook || [],
+      tracks: loadTracks(s),
       wbEnabled: s.wbEnabled !== false,     // デフォルトON
       ttsEnabled: s.ttsEnabled !== false,   // デフォルトON
     };
-  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [], wbEnabled: true, ttsEnabled: true }; }
+  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [], tracks: loadTracks({}), wbEnabled: true, ttsEnabled: true }; }
+}
+
+// トラック別XPの読み込み。tracks を持たない旧データは各トラックの初期XPを総合XPにそろえ、
+// それまで到達していた難易度をどのモードでも維持する(いきなり簡単に戻らない)
+function loadTracks(s) {
+  const out = {};
+  for (const k of TRACK_KEYS) {
+    const t = (s.tracks || {})[k] || {};
+    out[k] = {
+      xp: t.xp != null ? t.xp : (s.tracks ? 0 : (s.xp || 0)),
+      answered: t.answered || 0,
+      correct: t.correct || 0,
+    };
+  }
+  return out;
 }
 function save() { localStorage.setItem("lingopop", JSON.stringify(state)); }
 
@@ -473,18 +553,30 @@ function dayKey(d) {
   return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 }
 
+function distText(dist) {
+  return "出題バランス: ★" + Math.round(dist[0] * 100) + "% ★★" + Math.round(dist[1] * 100) +
+         "% ★★★" + Math.round(dist[2] * 100) + "%";
+}
+
+// ヘッダーの⚡は総合XP(全モード通算)、💎とレベルバーは「いま選んでいるトラック」を表す
 function renderStats() {
   document.getElementById("streakVal").textContent = state.streak;
   document.getElementById("xpVal").textContent = state.xp;
-  const lv = levelOf(state.xp);
+  const t = currentTrack();
+  const mix = t === "mix";
+  const keys = mix ? ["ko", "da", "en"] : [t];
+  // ミックスは3言語それぞれのレベルで出題されるので、平均を代表値として見せる
+  const lv = Math.floor(keys.reduce((a, k) => a + trackLevel(k), 0) / keys.length);
+  const into = Math.round(keys.reduce((a, k) => a + trackXp(k) % XP_PER_LEVEL, 0) / keys.length);
   document.getElementById("levelVal").textContent = lv;
-  document.getElementById("levelLabel").textContent = "レベル " + lv;
-  const into = state.xp % XP_PER_LEVEL;
+  document.getElementById("levelLabel").textContent = mix
+    ? "🌏 ミックス(各言語のレベルで出題)"
+    : TRACKS[t].flag + " " + TRACKS[t].name + " レベル " + lv;
   document.getElementById("levelXpLabel").textContent = into + " / " + XP_PER_LEVEL + " XP";
-  document.getElementById("levelBarFill").style.width = (into / XP_PER_LEVEL * 100) + "%";
-  const dist = levelDist(lv);
-  document.getElementById("diffBalance").textContent =
-    "出題バランス: ★" + Math.round(dist[0] * 100) + "% ★★" + Math.round(dist[1] * 100) + "% ★★★" + Math.round(dist[2] * 100) + "%";
+  document.getElementById("levelBarFill").style.width = Math.round(into / XP_PER_LEVEL * 100) + "%";
+  document.getElementById("diffBalance").textContent = mix
+    ? keys.map(k => TRACKS[k].flag + " Lv." + trackLevel(k)).join(" / ")
+    : distText(levelDist(lv));
 }
 
 // ---------- 草カレンダー ----------
@@ -626,6 +718,14 @@ function toggleWordbook() {
   toast(state.wbEnabled ? "📒 単語帳をONにしました" : "単語帳をOFFにしました(蓄積データは残ります)");
 }
 
+// 単語帳の残数をトラック別に数える(向きが違えば別カード)
+function wordbookPerTrack() {
+  const per = {};
+  for (const k of TRACK_KEYS) per[k] = 0;
+  for (const w of state.wordbook) if (per[trackOfQ(w)] != null) per[trackOfQ(w)]++;
+  return per;
+}
+
 function renderWordbook() {
   const el = document.getElementById("wbCount");
   if (!el) return;
@@ -633,11 +733,9 @@ function renderWordbook() {
   document.getElementById("wbCard").classList.toggle("hidden", !state.wbEnabled);
   if (!state.wbEnabled) return;
   el.textContent = state.wordbook.length;
-  const per = { ko: 0, da: 0, en: 0 };
-  for (const w of state.wordbook) per[w.lang]++;
-  document.getElementById("wbLangs").innerHTML = BANK
-    ? ["ko", "da", "en"].map(k => `<span>${BANK[k].flag} ${per[k]}語</span>`).join("")
-    : "";
+  const per = wordbookPerTrack();
+  document.getElementById("wbLangs").innerHTML =
+    TRACK_KEYS.filter(k => per[k] > 0).map(k => `<span>${TRACKS[k].flag} ${TRACKS[k].name} ${per[k]}語</span>`).join("");
   const btn = document.getElementById("reviewBtn");
   btn.disabled = state.wordbook.length === 0;
   btn.textContent = state.wordbook.length === 0
@@ -666,6 +764,7 @@ function selectLang(lang) {
   document.querySelectorAll(".lang-tile").forEach(el =>
     el.classList.toggle("selected", el.dataset.lang === lang));
   syncModeAvail();
+  renderStats();   // 選んだトラックのレベル・出題バランスに切り替える
 }
 
 // 和訳入力モードは英語のみ。他言語を選んだら選択できなくし、選択中ならノート記述へ戻す
@@ -688,6 +787,7 @@ function setMode(mode) {
   document.getElementById("modeTiles").classList.toggle("active", mode === "tiles");
   document.getElementById("modeJa").classList.toggle("active", mode === "ja");
   document.getElementById("modeDesc").textContent = MODE_DESC[mode] || MODE_DESC.write;
+  renderStats();   // 🇯🇵和訳モードは英語とは別トラックなので表示を切り替える
 }
 
 // ---------- セッション ----------
@@ -716,24 +816,26 @@ function xpFor(d) { return [10, 15, 20][(d || 1) - 1]; }
 function pickQuestions() {
   // 向きは出題時に確定させる。単語帳に入っても向きが保たれ、復習で同じ形式が再現される
   const dir = state.mode === "ja" ? "ja" : "fw";
-  let pool = [];
-  if (selectedLang === "mix") {
-    for (const key of ["ko", "da", "en"])
-      pool = pool.concat(BANK[key].items.map(it => ({...it, lang: key, dir})));
-  } else {
-    pool = BANK[selectedLang].items.map(it => ({...it, lang: selectedLang, dir}));
+  const langs = selectedLang === "mix" ? ["ko", "da", "en"] : [selectedLang];
+  // 難易度バケツは言語ごとに持つ。ミックスでも「その言語のトラックのレベル」で難易度を決めるため、
+  // 韓国語はLv.2・英語はLv.8といった差がそのまま出題に反映される
+  const buckets = {};
+  for (const lang of langs) {
+    const b = [[], [], []];
+    for (const it of BANK[lang].items) b[(it.d || 1) - 1].push({...it, lang, dir});
+    buckets[lang] = b;
   }
-  const buckets = [[], [], []];
-  for (const q of pool) buckets[(q.d || 1) - 1].push(q);
-  const dist = levelDist(levelOf(state.xp));
   const out = [], used = new Set();
   for (let i = 0; i < QUESTIONS_PER_SESSION; i++) {
+    const lang = langs[Math.floor(Math.random() * langs.length)];
+    const bk = buckets[lang];
+    const dist = levelDist(trackLevel(trackOf(lang, dir)));
     let d = weightedPick(dist);
     let guard = 0;
-    while (buckets[d].length === 0 && guard++ < 5) d = weightedPick(dist);
-    if (buckets[d].length === 0) d = buckets.findIndex(b => b.length > 0);
+    while (bk[d].length === 0 && guard++ < 5) d = weightedPick(dist);
+    if (bk[d].length === 0) d = bk.findIndex(b => b.length > 0);
     let q, tries = 0;
-    do { q = buckets[d][Math.floor(Math.random() * buckets[d].length)]; }
+    do { q = bk[d][Math.floor(Math.random() * bk[d].length)]; }
     while (used.has(q.t) && ++tries < 50);
     used.add(q.t);
     out.push(q);
@@ -895,9 +997,16 @@ function showAnswerBox(good, label, q) {
 function nextQuestion(xp) {
   stopTts();
   const q = session.questions[session.index];
+  const track = trackOfQ(q);       // 問題の言語と向きから、XPを入れるトラックが決まる
+  const full = xp >= xpFor(q.d);
   session.earned += xp;
-  if (xp >= xpFor(q.d)) session.perfect++;
-  addXp(xp);
+  if (full) session.perfect++;
+  // 正解率は通常セッションのみ集計する(単語帳の復習は満額XPにならないため)
+  if (!session.review) {
+    state.tracks[track].answered++;
+    if (full) state.tracks[track].correct++;
+  }
+  addXp(xp, track);
   floatXp("+" + xp + " XP");
   session.index++;
   if (session.index >= (session.total || QUESTIONS_PER_SESSION)) {
@@ -908,16 +1017,18 @@ function nextQuestion(xp) {
   }
 }
 
-function addXp(amount) {
-  const before = levelOf(state.xp);
+// 総合XPと草カレンダーは全モード合算のまま。レベルアップ判定はトラック単位で行う
+function addXp(amount, track) {
+  const before = trackLevel(track);
   state.xp += amount;
+  state.tracks[track].xp += amount;
   const key = dayKey(new Date());
   state.days[key] = (state.days[key] || 0) + amount;
-  const after = levelOf(state.xp);
+  const after = trackLevel(track);
   save();
   renderStats();
   if (after > before) {
-    toast("🎊 レベルアップ! Lv." + after + " になりました!");
+    toast("🎊 " + TRACKS[track].flag + " " + TRACKS[track].name + " レベルアップ! Lv." + after + " になりました!");
     confetti(24);
   }
 }
@@ -961,9 +1072,42 @@ function quitSession() {
 }
 function goHome() { stopTts(); showScreen("homeScreen"); renderGrass(); renderWordbook(); }
 
+function showProfile() { stopTts(); renderProfile(); showScreen("profileScreen"); }
+
+function renderProfile() {
+  document.getElementById("pTotalXp").textContent = state.xp;
+  document.getElementById("pStreak").textContent = state.streak + "日";
+  document.getElementById("pBest").textContent = state.best + "日";
+  document.getElementById("pDays").textContent =
+    Object.keys(state.days).filter(k => state.days[k] > 0).length + "日";
+  const per = wordbookPerTrack();
+  document.getElementById("trackList").innerHTML = TRACK_KEYS.map(k => {
+    const tr = state.tracks[k], lv = trackLevel(k), into = tr.xp % XP_PER_LEVEL;
+    const acc = tr.answered ? Math.round(tr.correct / tr.answered * 100) + "%" : "—";
+    const fresh = tr.xp === 0 && tr.answered === 0;
+    const detail = fresh
+      ? "まだ学習していません。ここから始めよう!"
+      : `出題 ${tr.answered}問 ・ 正解率 ${acc} ・ 📒 単語帳 ${per[k]}語`;
+    return `<div class="card track-card${fresh ? " fresh" : ""}">
+        <div class="track-head">
+          <div>
+            <span class="track-flag">${TRACKS[k].flag}</span><span class="track-name">${TRACKS[k].name}</span>
+            <div class="track-sub">${TRACKS[k].sub}</div>
+          </div>
+          <div class="track-lv">Lv.${lv}</div>
+        </div>
+        <div class="level-bar"><div class="level-bar-fill" style="width:${into / XP_PER_LEVEL * 100}%"></div></div>
+        <div class="track-xp">${into} / ${XP_PER_LEVEL} XP ・ 累計 ${tr.xp} XP</div>
+        <div class="track-rows"><div>${distText(levelDist(lv))}</div><div>${detail}</div></div>
+      </div>`;
+  }).join("");
+}
+
 function showScreen(id) {
-  for (const s of ["homeScreen", "sessionScreen", "resultScreen"])
+  for (const s of ["homeScreen", "sessionScreen", "resultScreen", "profileScreen"])
     document.getElementById(s).classList.toggle("hidden", s !== id);
+  // マイページは全トラックを並べるので、上部の「現在トラック」バーは隠す
+  document.querySelector(".level-bar-wrap").classList.toggle("hidden", id === "profileScreen");
 }
 
 // ---------- エフェクト ----------
