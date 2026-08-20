@@ -202,37 +202,37 @@ const PEOPLE = [
 // 動作  ja_p/ja_pa: 日本語 現在/過去、ko_p/ko_pa: 韓国語、da_p/da_pa: デンマーク語、
 //       en_b/en_pa/en_ing: 英語 原形/過去/進行形
 const ACTIONS = [
-  {ja_p:"勉強します", ja_pa:"勉強しました", ko_p:"공부해요", ko_pa:"공부했어요", da_p:"studerer", da_pa:"studerede", en_b:"study", en_pa:"studied", en_ing:"studying"},
-  {ja_p:"働きます", ja_pa:"働きました", ko_p:"일해요", ko_pa:"일했어요", da_p:"arbejder", da_pa:"arbejdede", en_b:"work", en_pa:"worked", en_ing:"working"},
-  {ja_p:"運動します", ja_pa:"運動しました", ko_p:"운동해요", ko_pa:"운동했어요", da_p:"træner", da_pa:"trænede", en_b:"exercise", en_pa:"exercised", en_ing:"exercising"},
-  {ja_p:"料理します", ja_pa:"料理しました", ko_p:"요리해요", ko_pa:"요리했어요", da_p:"laver mad", da_pa:"lavede mad", en_b:"cook", en_pa:"cooked", en_ing:"cooking"},
-  {ja_p:"掃除します", ja_pa:"掃除しました", ko_p:"청소해요", ko_pa:"청소했어요", da_p:"gør rent", da_pa:"gjorde rent", en_b:"clean", en_pa:"cleaned", en_ing:"cleaning"},
-  {ja_p:"散歩します", ja_pa:"散歩しました", ko_p:"산책해요", ko_pa:"산책했어요", da_p:"går en tur", da_pa:"gik en tur", en_b:"take a walk", en_pa:"took a walk", en_ing:"taking a walk"},
-  {ja_p:"買い物します", ja_pa:"買い物しました", ko_p:"쇼핑해요", ko_pa:"쇼핑했어요", da_p:"shopper", da_pa:"shoppede", en_b:"go shopping", en_pa:"went shopping", en_ing:"going shopping"},
+  {ja_p:"勉強します", ja_pa:"勉強しました", ko_p:"공부해요", ko_pa:"공부했어요", da_p:"studerer", da_pa:"studerede", en_b:"study", en_pa:"studied", en_ing:"studying", alt_ko:"공부해요 は 배워요 とも言えます(공부하다=机に向かって勉強する / 배우다=習って身につける)", alt_da:"studerer は læser とも言えます(læse は「(学科を)勉強する」の意味でもよく使います)"},
+  {ja_p:"働きます", ja_pa:"働きました", ko_p:"일해요", ko_pa:"일했어요", da_p:"arbejder", da_pa:"arbejdede", en_b:"work", en_pa:"worked", en_ing:"working", alt_ko:"일해요 は 근무해요 とも言えます(근무하다 は職場での勤務を指す少し硬い語)"},
+  {ja_p:"運動します", ja_pa:"運動しました", ko_p:"운동해요", ko_pa:"운동했어요", da_p:"træner", da_pa:"trænede", en_b:"exercise", en_pa:"exercised", en_ing:"exercising", alt_da:"træner は dyrker motion とも言えます(dyrke motion=運動をする)", alt_en:"exercise は work out とも言えます(work out はジムでの筋トレ・運動によく使います)"},
+  {ja_p:"料理します", ja_pa:"料理しました", ko_p:"요리해요", ko_pa:"요리했어요", da_p:"laver mad", da_pa:"lavede mad", en_b:"cook", en_pa:"cooked", en_ing:"cooking", alt_ko:"요리해요 は 음식을 만들어요(食べ物を作る)とも言えます", alt_en:"cook は make food とも言えます(make dinner「夕食を作る」のように具体的に言うのも自然です)"},
+  {ja_p:"掃除します", ja_pa:"掃除しました", ko_p:"청소해요", ko_pa:"청소했어요", da_p:"gør rent", da_pa:"gjorde rent", en_b:"clean", en_pa:"cleaned", en_ing:"cleaning", alt_da:"gør rent は rydder op とも言えます(rydde op は「片づける」寄りの意味)", alt_en:"clean は tidy up とも言えます(tidy up は「散らかりを片づける」寄りの意味)"},
+  {ja_p:"散歩します", ja_pa:"散歩しました", ko_p:"산책해요", ko_pa:"산책했어요", da_p:"går en tur", da_pa:"gik en tur", en_b:"take a walk", en_pa:"took a walk", en_ing:"taking a walk", alt_da:"går en tur は tager en gåtur とも言えます", alt_en:"take a walk は go for a walk とも言えます(どちらも同じくらいよく使います)"},
+  {ja_p:"買い物します", ja_pa:"買い物しました", ko_p:"쇼핑해요", ko_pa:"쇼핑했어요", da_p:"shopper", da_pa:"shoppede", en_b:"go shopping", en_pa:"went shopping", en_ing:"going shopping", alt_ko:"쇼핑해요 は 장을 봐요 とも言えます(장을 보다 は食料品の買い出しを指します)", alt_da:"shopper は køber ind とも言えます(købe ind は食料品の買い出し寄り)", alt_en:"go shopping は do some shopping とも言えます"},
   {ja_p:"本を読みます", ja_pa:"本を読みました", ko_p:"책을 읽어요", ko_pa:"책을 읽었어요", da_p:"læser en bog", da_pa:"læste en bog", en_b:"read a book", en_pa:"read a book", en_ing:"reading a book"},
-  {ja_p:"音楽を聞きます", ja_pa:"音楽を聞きました", ko_p:"음악을 들어요", ko_pa:"음악을 들었어요", da_p:"hører musik", da_pa:"hørte musik", en_b:"listen to music", en_pa:"listened to music", en_ing:"listening to music"},
-  {ja_p:"映画を見ます", ja_pa:"映画を見ました", ko_p:"영화를 봐요", ko_pa:"영화를 봤어요", da_p:"ser en film", da_pa:"så en film", en_b:"watch a movie", en_pa:"watched a movie", en_ing:"watching a movie"},
-  {ja_p:"コーヒーを飲みます", ja_pa:"コーヒーを飲みました", ko_p:"커피를 마셔요", ko_pa:"커피를 마셨어요", da_p:"drikker kaffe", da_pa:"drak kaffe", en_b:"drink coffee", en_pa:"drank coffee", en_ing:"drinking coffee"},
-  {ja_p:"友達に会います", ja_pa:"友達に会いました", ko_p:"친구를 만나요", ko_pa:"친구를 만났어요", da_p:"mødes med en ven", da_pa:"mødtes med en ven", en_b:"meet a friend", en_pa:"met a friend", en_ing:"meeting a friend"},
-  {ja_p:"自転車に乗ります", ja_pa:"自転車に乗りました", ko_p:"자전거를 타요", ko_pa:"자전거를 탔어요", da_p:"cykler", da_pa:"cyklede", en_b:"ride a bike", en_pa:"rode a bike", en_ing:"riding a bike"},
-  {ja_p:"車を運転します", ja_pa:"車を運転しました", ko_p:"차를 운전해요", ko_pa:"차를 운전했어요", da_p:"kører bil", da_pa:"kørte bil", en_b:"drive", en_pa:"drove", en_ing:"driving"},
-  {ja_p:"歌を歌います", ja_pa:"歌を歌いました", ko_p:"노래를 불러요", ko_pa:"노래를 불렀어요", da_p:"synger", da_pa:"sang", en_b:"sing", en_pa:"sang", en_ing:"singing"},
-  {ja_p:"絵を描きます", ja_pa:"絵を描きました", ko_p:"그림을 그려요", ko_pa:"그림을 그렸어요", da_p:"tegner", da_pa:"tegnede et billede", en_b:"draw", en_pa:"drew a picture", en_ing:"drawing"},
-  {ja_p:"写真を撮ります", ja_pa:"写真を撮りました", ko_p:"사진을 찍어요", ko_pa:"사진을 찍었어요", da_p:"tager billeder", da_pa:"tog billeder", en_b:"take photos", en_pa:"took photos", en_ing:"taking photos"},
+  {ja_p:"音楽を聞きます", ja_pa:"音楽を聞きました", ko_p:"음악을 들어요", ko_pa:"음악을 들었어요", da_p:"hører musik", da_pa:"hørte musik", en_b:"listen to music", en_pa:"listened to music", en_ing:"listening to music", alt_da:"hører musik は lytter til musik とも言えます(lytte til は「耳を傾ける」感じ)"},
+  {ja_p:"映画を見ます", ja_pa:"映画を見ました", ko_p:"영화를 봐요", ko_pa:"영화를 봤어요", da_p:"ser en film", da_pa:"så en film", en_b:"watch a movie", en_pa:"watched a movie", en_ing:"watching a movie", alt_en:"watch a movie は see a movie とも言えます(過去形は saw。see は映画館で観るイメージ)"},
+  {ja_p:"コーヒーを飲みます", ja_pa:"コーヒーを飲みました", ko_p:"커피를 마셔요", ko_pa:"커피를 마셨어요", da_p:"drikker kaffe", da_pa:"drak kaffe", en_b:"drink coffee", en_pa:"drank coffee", en_ing:"drinking coffee", alt_en:"drink coffee は have coffee とも言えます(have は飲む・食べるのどちらにも使えます)"},
+  {ja_p:"友達に会います", ja_pa:"友達に会いました", ko_p:"친구를 만나요", ko_pa:"친구를 만났어요", da_p:"mødes med en ven", da_pa:"mødtes med en ven", en_b:"meet a friend", en_pa:"met a friend", en_ing:"meeting a friend", alt_ko:"친구를 만나요 は 친구를 봐요 とも言えます(봐요 のほうが口語的)", alt_en:"meet a friend は see a friend とも言えます(すでに知っている友達に会うときは see が自然。過去形は saw)"},
+  {ja_p:"自転車に乗ります", ja_pa:"自転車に乗りました", ko_p:"자전거를 타요", ko_pa:"자전거를 탔어요", da_p:"cykler", da_pa:"cyklede", en_b:"ride a bike", en_pa:"rode a bike", en_ing:"riding a bike", alt_en:"ride a bike は go cycling とも言えます"},
+  {ja_p:"車を運転します", ja_pa:"車を運転しました", ko_p:"차를 운전해요", ko_pa:"차를 운전했어요", da_p:"kører bil", da_pa:"kørte bil", en_b:"drive", en_pa:"drove", en_ing:"driving", alt_ko:"차를 운전해요 は 차를 몰아요 とも言えます(몰다 のほうが口語的)", alt_en:"drive は drive a car と言っても同じ意味です(過去形は drove)"},
+  {ja_p:"歌を歌います", ja_pa:"歌を歌いました", ko_p:"노래를 불러요", ko_pa:"노래를 불렀어요", da_p:"synger", da_pa:"sang", en_b:"sing", en_pa:"sang", en_ing:"singing", alt_ko:"노래를 불러요 は 노래해요 とも言えます", alt_en:"sing は sing a song とも言えます(過去形はどちらも sang)"},
+  {ja_p:"絵を描きます", ja_pa:"絵を描きました", ko_p:"그림을 그려요", ko_pa:"그림을 그렸어요", da_p:"tegner", da_pa:"tegnede et billede", en_b:"draw", en_pa:"drew a picture", en_ing:"drawing", alt_en:"draw は draw a picture とも言えます(過去形は drew)"},
+  {ja_p:"写真を撮ります", ja_pa:"写真を撮りました", ko_p:"사진을 찍어요", ko_pa:"사진을 찍었어요", da_p:"tager billeder", da_pa:"tog billeder", en_b:"take photos", en_pa:"took photos", en_ing:"taking photos", alt_da:"tager billeder は tager fotos とも言えます", alt_en:"take photos は take pictures とも言えます(過去形は took)"},
   {ja_p:"手紙を書きます", ja_pa:"手紙を書きました", ko_p:"편지를 써요", ko_pa:"편지를 썼어요", da_p:"skriver et brev", da_pa:"skrev et brev", en_b:"write a letter", en_pa:"wrote a letter", en_ing:"writing a letter"},
-  {ja_p:"日記を書きます", ja_pa:"日記を書きました", ko_p:"일기를 써요", ko_pa:"일기를 썼어요", da_p:"skriver dagbog", da_pa:"skrev dagbog", en_b:"write in my diary", en_pa:"wrote in my diary", en_ing:"writing in my diary"},
-  {ja_p:"早く起きます", ja_pa:"早く起きました", ko_p:"일찍 일어나요", ko_pa:"일찍 일어났어요", da_p:"står tidligt op", da_pa:"stod tidligt op", en_b:"get up early", en_pa:"got up early", en_ing:"getting up early"},
-  {ja_p:"遅く寝ます", ja_pa:"遅く寝ました", ko_p:"늦게 자요", ko_pa:"늦게 잤어요", da_p:"går sent i seng", da_pa:"gik sent i seng", en_b:"go to bed late", en_pa:"went to bed late", en_ing:"going to bed late"},
-  {ja_p:"走ります", ja_pa:"走りました", ko_p:"달려요", ko_pa:"달렸어요", da_p:"løber", da_pa:"løb", en_b:"run", en_pa:"ran", en_ing:"running"},
-  {ja_p:"泳ぎます", ja_pa:"泳ぎました", ko_p:"수영해요", ko_pa:"수영했어요", da_p:"svømmer", da_pa:"svømmede", en_b:"swim", en_pa:"swam", en_ing:"swimming"},
+  {ja_p:"日記を書きます", ja_pa:"日記を書きました", ko_p:"일기를 써요", ko_pa:"일기를 썼어요", da_p:"skriver dagbog", da_pa:"skrev dagbog", en_b:"write in my diary", en_pa:"wrote in my diary", en_ing:"writing in my diary", alt_en:"write in my diary は keep a diary とも言えます(keep a diary は「日記をつける習慣がある」)"},
+  {ja_p:"早く起きます", ja_pa:"早く起きました", ko_p:"일찍 일어나요", ko_pa:"일찍 일어났어요", da_p:"står tidligt op", da_pa:"stod tidligt op", en_b:"get up early", en_pa:"got up early", en_ing:"getting up early", alt_en:"get up early は wake up early とも言えます(wake up=目が覚める / get up=起き上がる)"},
+  {ja_p:"遅く寝ます", ja_pa:"遅く寝ました", ko_p:"늦게 자요", ko_pa:"늦게 잤어요", da_p:"går sent i seng", da_pa:"gik sent i seng", en_b:"go to bed late", en_pa:"went to bed late", en_ing:"going to bed late", alt_en:"go to bed late は stay up late とも言えます(stay up late=夜ふかしする)"},
+  {ja_p:"走ります", ja_pa:"走りました", ko_p:"달려요", ko_pa:"달렸어요", da_p:"løber", da_pa:"løb", en_b:"run", en_pa:"ran", en_ing:"running", alt_ko:"달려요 は 뛰어요 とも言えます(뛰다 のほうが日常的)", alt_en:"run は go for a run とも言えます(過去形は ran)"},
+  {ja_p:"泳ぎます", ja_pa:"泳ぎました", ko_p:"수영해요", ko_pa:"수영했어요", da_p:"svømmer", da_pa:"svømmede", en_b:"swim", en_pa:"swam", en_ing:"swimming", alt_en:"swim は go swimming とも言えます(過去形は swam)"},
   {ja_p:"踊ります", ja_pa:"踊りました", ko_p:"춤춰요", ko_pa:"춤췄어요", da_p:"danser", da_pa:"dansede", en_b:"dance", en_pa:"danced", en_ing:"dancing"},
-  {ja_p:"ヨガをします", ja_pa:"ヨガをしました", ko_p:"요가해요", ko_pa:"요가했어요", da_p:"dyrker yoga", da_pa:"dyrkede yoga", en_b:"do yoga", en_pa:"did yoga", en_ing:"doing yoga"},
-  {ja_p:"サッカーをします", ja_pa:"サッカーをしました", ko_p:"축구해요", ko_pa:"축구했어요", da_p:"spiller fodbold", da_pa:"spillede fodbold", en_b:"play soccer", en_pa:"played soccer", en_ing:"playing soccer"},
+  {ja_p:"ヨガをします", ja_pa:"ヨガをしました", ko_p:"요가해요", ko_pa:"요가했어요", da_p:"dyrker yoga", da_pa:"dyrkede yoga", en_b:"do yoga", en_pa:"did yoga", en_ing:"doing yoga", alt_en:"do yoga は practice yoga とも言えます"},
+  {ja_p:"サッカーをします", ja_pa:"サッカーをしました", ko_p:"축구해요", ko_pa:"축구했어요", da_p:"spiller fodbold", da_pa:"spillede fodbold", en_b:"play soccer", en_pa:"played soccer", en_ing:"playing soccer", alt_en:"play soccer は play football とも言えます(イギリスでは football が普通)"},
   {ja_p:"ゲームをします", ja_pa:"ゲームをしました", ko_p:"게임해요", ko_pa:"게임했어요", da_p:"spiller computerspil", da_pa:"spillede computerspil", en_b:"play video games", en_pa:"played video games", en_ing:"playing video games"},
-  {ja_p:"ピアノを弾きます", ja_pa:"ピアノを弾きました", ko_p:"피아노를 쳐요", ko_pa:"피아노를 쳤어요", da_p:"spiller klaver", da_pa:"spillede klaver", en_b:"play the piano", en_pa:"played the piano", en_ing:"playing the piano"},
+  {ja_p:"ピアノを弾きます", ja_pa:"ピアノを弾きました", ko_p:"피아노를 쳐요", ko_pa:"피아노를 쳤어요", da_p:"spiller klaver", da_pa:"spillede klaver", en_b:"play the piano", en_pa:"played the piano", en_ing:"playing the piano", alt_ko:"피아노를 쳐요 は 피아노를 연주해요 とも言えます(연주하다=演奏する。少し硬い語)"},
   {ja_p:"パンを焼きます", ja_pa:"パンを焼きました", ko_p:"빵을 구워요", ko_pa:"빵을 구웠어요", da_p:"bager brød", da_pa:"bagte brød", en_b:"bake bread", en_pa:"baked bread", en_ing:"baking bread"},
-  {ja_p:"旅行します", ja_pa:"旅行しました", ko_p:"여행해요", ko_pa:"여행했어요", da_p:"rejser", da_pa:"rejste", en_b:"travel", en_pa:"traveled", en_ing:"traveling"},
-  {ja_p:"ゆっくり休みます", ja_pa:"ゆっくり休みました", ko_p:"푹 쉬어요", ko_pa:"푹 쉬었어요", da_p:"slapper af", da_pa:"slappede af", en_b:"relax", en_pa:"relaxed", en_ing:"relaxing"},
+  {ja_p:"旅行します", ja_pa:"旅行しました", ko_p:"여행해요", ko_pa:"여행했어요", da_p:"rejser", da_pa:"rejste", en_b:"travel", en_pa:"traveled", en_ing:"traveling", alt_en:"travel は go on a trip とも言えます"},
+  {ja_p:"ゆっくり休みます", ja_pa:"ゆっくり休みました", ko_p:"푹 쉬어요", ko_pa:"푹 쉬었어요", da_p:"slapper af", da_pa:"slappede af", en_b:"relax", en_pa:"relaxed", en_ing:"relaxing", alt_da:"slapper af は hviler mig とも言えます(hvile sig=休息をとる)", alt_en:"relax は take it easy とも言えます"},
   {ja_p:"ニュースを見ます", ja_pa:"ニュースを見ました", ko_p:"뉴스를 봐요", ko_pa:"뉴스를 봤어요", da_p:"ser nyhederne", da_pa:"så nyhederne", en_b:"watch the news", en_pa:"watched the news", en_ing:"watching the news"},
 ];
 
@@ -420,11 +420,25 @@ const enIndef = n => n.art ? n.art + " " + n.en : n.en;
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 
 /* =====================  テンプレート  ===================== */
-/* item(): {ja, ko, da, en, h(ヒント), n:{ko,da,en}(解説)} */
-function item(ja, ko, da, en, h, nko, nda, nen, d) {
-  return { ja, ko, da, en, h, d, n: { ko: nko, da: nda, en: nen } };
+/* item(): {ja, ko, da, en, h(ヒント), n:{ko,da,en}(解説), alt:{ko,da,en}(言い換え)}
+ * 第9引数 opts は { d: 難易度, alt: {ko,da,en} }。数値を渡すと従来どおり難易度扱い。
+ *
+ * alt(言い換え)の書き方:
+ *   - 「A は B とも言えます」を基本形にし、ニュアンス差は ( ) で一言添える
+ *   - 活用や助詞が変わるものはその場で書く(例「助詞が 를 → 가 に変わります」)
+ *   - 自然さに確信が持てないものは書かない(誤った言い換えは模範解答より害が大きい) */
+function item(ja, ko, da, en, h, nko, nda, nen, opts) {
+  if (typeof opts === "number") opts = { d: opts };
+  opts = opts || {};
+  return { ja, ko, da, en, h, d: opts.d, n: { ko: nko, da: nda, en: nen }, alt: opts.alt || {} };
 }
 const bat = w => hasBatchim(w) ? "あり" : "なし";
+// 動詞ごとの言い換え(ACTIONS の alt_*)
+const actAlt = a => ({ ko: a.alt_ko, da: a.alt_da, en: a.alt_en });
+// 文型ごとの言い換えを優先し、なければ動詞ごとの言い換えにフォールバックする
+const altOr = (primary, fallback) => ({
+  ko: primary.ko || fallback.ko, da: primary.da || fallback.da, en: primary.en || fallback.en,
+});
 
 const TEMPLATES = [
 
@@ -435,12 +449,21 @@ const TEMPLATES = [
       `「~을/를 좋아해요」=「~が好きです」。${f.ko}はパッチム${bat(f.ko)}→${hasBatchim(f.ko) ? "을" : "를"}。`,
       `kan godt lide=好き。総称なので冠詞なしの ${f.dagen} を使います。`,
       f.art ? `like のあとは総称形。数えられる名詞は複数形(${f.gen})にします。`
-            : `${f.gen} は数えられない名詞なので、そのままの形で使います。`);
+            : `${f.gen} は数えられない名詞なので、そのままの形で使います。`,
+      { alt: {
+          ko: `좋아해요 は 좋아요 とも言えます(そのとき助詞が変わります: ${subjP(f.ko)} 좋아요)`,
+          da: "kan godt lide は holder af とも言えます(holde af は「愛着がある」寄りの響き)",
+          en: "like は enjoy とも言えます(I enjoy ~ のほうが少し丁寧な響き)",
+        } });
     yield item(`私は${f.ja}が好きではありません。`,
       `저는 ${objP(f.ko)} 안 좋아해요.`, `Jeg kan ikke lide ${f.dagen}.`, `I don't like ${f.gen}.`, "好み",
       "動詞の前に 안 を置くと否定になります。",
       "否定は ikke。kan ikke lide=好きではない。",
-      "don't + 動詞の原形で否定文になります。");
+      "don't + 動詞の原形で否定文になります。",
+      { alt: {
+          ko: "안 좋아해요 は 좋아하지 않아요 とも言えます(動詞の後ろにつける長い否定形)",
+          en: "don't like は am not a fan of とも言えます(やわらかい言い方)",
+        } });
     yield item(`${f.ja}は好きですか?`,
       `${objP(f.ko)} 좋아해요?`, `Kan du lide ${f.dagen}?`, `Do you like ${f.gen}?`, "質問",
       "疑問文は語尾を上げるだけ。語順は変わりません。",
@@ -456,7 +479,12 @@ const TEMPLATES = [
       `${f.ko} 하나 주세요.`, `${cap(daIndef(f))}, tak.`, `${cap(enIndef(f))}, please.`, "買い物",
       "「~ 주세요」=「~をください」。하나=1つ。",
       `${f.da}は${f.g}名詞なので「${f.g} ${f.da}」。tak をつけると丁寧。`,
-      "カフェや店での注文の最短形。please を忘れずに。");
+      "カフェや店での注文の最短形。please を忘れずに。",
+      { alt: {
+          ko: "하나 주세요 は 하나 주시겠어요? とも言えます(より丁寧な頼み方)",
+          da: "「~, tak」は Må jeg bede om ~? とも言えます(より丁寧)",
+          en: "「~, please」は Could I get ~? / I'll have ~ とも言えます",
+        } });
     yield item(`${f.ja}をお願いできますか?`,
       `${f.ko} 좀 주시겠어요?`, `Må jeg bede om ${daIndef(f)}?`, `Could I have ${enIndef(f)}, please?`, "買い物",
       "「주시겠어요?」は「주세요」より丁寧な依頼表現。",
@@ -471,7 +499,12 @@ const TEMPLATES = [
       `${subjP(p.ko)} 어디예요?`, `Hvor er ${p.dad}?`, `Where is the ${p.en}?`, "旅行",
       `「~이/가 어디예요?」=「~はどこですか」。${p.ko}はパッチム${bat(p.ko)}→${hasBatchim(p.ko) ? "이" : "가"}。`,
       `デンマーク語の定冠詞は語尾につきます(${p.da}→${p.dad})。`,
-      "場所を尋ねる基本形。Excuse me, を前につけると丁寧。");
+      "場所を尋ねる基本形。Excuse me, を前につけると丁寧。",
+      { alt: {
+          ko: "어디예요? は 어디에 있어요? とも言えます(「どこにありますか」)",
+          da: "Hvor er ~? は Kan du sige mig, hvor ~ er? とも言えます(より丁寧)",
+          en: "Where is ~? は Could you tell me where ~ is? とも言えます(より丁寧)",
+        } });
   }
 }],
 
@@ -520,7 +553,12 @@ const TEMPLATES = [
       `${objP(o.ko)} 사고 싶어요.`, `Jeg vil gerne købe ${daIndef(o)}.`, `I want to buy ${enIndef(o)}.`, "買い物",
       "「~고 싶어요」=「~したいです」。사다=買う。",
       "vil gerne købe ~ =「~を買いたい」。gerne で柔らかい響きに。",
-      "want to + 動詞の原形。");
+      "want to + 動詞の原形。",
+      { alt: {
+          ko: "사고 싶어요 は 사려고 해요 とも言えます(사려고 하다=買おうと思っている)",
+          da: "vil gerne købe は kunne godt tænke mig at købe とも言えます(より控えめな言い方)",
+          en: "want to buy は would like to buy とも言えます(would like のほうが丁寧)",
+        } });
   }
 }],
 
@@ -556,7 +594,7 @@ const TEMPLATES = [
       `저는 매일 ${a.ko_p}.`, `Jeg ${a.da_p} hver dag.`, `I ${a.en_b} every day.`, "日常",
       "매일=毎日。해요体は日常会話で最もよく使う丁寧形。",
       "hver dag=毎日。デンマーク語の現在形は原形+r が基本。",
-      "習慣は現在形で表します。");
+      "習慣は現在形で表します。", { alt: actAlt(a) });
   }
 }],
 
@@ -566,7 +604,7 @@ const TEMPLATES = [
       `어제 ${a.ko_pa}.`, `Jeg ${a.da_pa} i går.`, `I ${a.en_pa} yesterday.`, "過去",
       "過去形は語幹+았/었어요。어제=昨日。",
       "規則動詞の過去形は -ede/-te。så・tog・gik などの不規則動詞もあります。i går=昨日。",
-      "過去の出来事は過去形で。");
+      "過去の出来事は過去形で。", { alt: actAlt(a) });
   }
 }],
 
@@ -576,7 +614,7 @@ const TEMPLATES = [
       `지금 ${a.ko_p}.`, `Jeg ${a.da_p} lige nu.`, `I'm ${a.en_ing} right now.`, "日常",
       "지금=今。韓国語は現在形が進行の意味も兼ねます。",
       "デンマーク語も現在形で進行を表します(進行形は不要)。",
-      "今まさにしていることは現在進行形(be + -ing)。");
+      "今まさにしていることは現在進行形(be + -ing)。", { alt: actAlt(a) });
   }
 }],
 
@@ -595,7 +633,11 @@ const TEMPLATES = [
       `내일 ${a.ko_p}.`, `Jeg skal ${daInf(a.da_p)} i morgen.`, `I'm going to ${a.en_b} tomorrow.`, "予定",
       "確定した予定は現在形のままでOK。내일=明日。",
       "予定は skal+動詞の原形で表すのが自然です。i morgen=明日。",
-      "be going to ~ で予定を表します。");
+      "be going to ~ で予定を表します。",
+      { alt: altOr({
+          ko: "現在形のままでも予定を表せますが、-(으)ㄹ 거예요(공부할 거예요)にすると「~するつもり」の意味がはっきりします",
+          en: "be going to は will とも言えます(will はその場で決めた感じ、be going to は前から決めていた感じ)",
+        }, actAlt(a)) });
   }
 }],
 
@@ -688,7 +730,11 @@ const TEMPLATES = [
       `${o.ko} 있어요?`, `Har du ${daIndef(o)}?`, `Do you have ${enIndef(o)}?`, "質問",
       "있어요=あります・持っています。없어요=ありません。",
       `have の現在形は har。${o.da}は${o.g}名詞。`,
-      "Do you have ~? で所持を尋ねます。");
+      "Do you have ~? で所持を尋ねます。",
+      { alt: {
+          ko: "있어요? は 가지고 있어요? とも言えます(「持っている」ことをはっきり示せます)",
+          en: "Do you have ~? は Have you got ~? とも言えます(イギリス英語でよく使います)",
+        } });
   }
 }],
 
@@ -699,7 +745,11 @@ const TEMPLATES = [
       `${subjP(o.ko)} 필요해요.`, `Jeg har brug for ${daIndef(o)}.`, `I need ${enIndef(o)}.`, "日常",
       "「~이/가 필요해요」=「~が必要です」。助詞は이/가。",
       "har brug for ~ =「~が必要だ」。3語セットで覚えます。",
-      "need のあとは目的語がそのまま続きます。");
+      "need のあとは目的語がそのまま続きます。",
+      { alt: {
+          ko: "필요해요 は 있어야 해요 とも言えます(「なければならない」寄りの意味)",
+          da: "har brug for は behøver とも言えます(behøve のほうが短く言えます)",
+        } });
   }
 }],
 
@@ -759,7 +809,11 @@ const TEMPLATES = [
       `오늘은 ${w.ko}.`, w.da_c ? `${cap(w.da_c)} i dag.` : `Det er ${w.da} i dag.`, `It's ${w.en} today.`, "天気",
       w.ja === "風が強い" ? "세다=(風・力が)強い。바람=風。" : "오늘은=今日は。天気は形容詞の해요体をそのまま使えます。",
       w.da_c ? "blæse=風が吹く。動詞で表すのが自然です。" : "天気の文はふつう形式主語 Det で始めます。",
-      "天気の主語は it。It's ~ today. が定番。");
+      "天気の主語は it。It's ~ today. が定番。",
+      { alt: {
+          da: "Det er ~ i dag は Vejret er ~ i dag とも言えます(vejr=天気)",
+          en: "It's ~ today. は The weather is ~ today. とも言えます",
+        } });
   }
 }],
 
@@ -850,7 +904,12 @@ const TEMPLATES = [
       `Could I borrow your ${o.en}?`, "依頼",
       "빌려주다=貸してくれる(빌리다「借りる」+주다「くれる」)。「~아/어 주시겠어요?」はとても丁寧な依頼。",
       `Må jeg låne ~? =「~を借りてもいい?」。「あなたの」も性に一致(${o.g}名詞→${o.g === "en" ? "din" : "dit"})。`,
-      "borrow=借りる(lend=貸す と混同注意)。Could I ~? で丁寧に。");
+      "borrow=借りる(lend=貸す と混同注意)。Could I ~? で丁寧に。",
+      { alt: {
+          ko: "빌려주시겠어요? は 빌려줄 수 있어요? とも言えます(気軽な言い方)",
+          da: "Må jeg låne ~? は Kan jeg låne ~? とも言えます(よりくだけた言い方)",
+          en: "Could I borrow ~? は Can I borrow ~? とも言えます(Can のほうがカジュアル)",
+        } });
   }
 }],
 
@@ -864,7 +923,12 @@ const TEMPLATES = [
       `Have you ever tried ${f.gen}?`, "経験",
       "「먹어 봤어요?」=「食べてみたことある?」。~아/어 보다=~してみる。",
       "smage の過去分詞 smagt。Har du smagt ~? =「~を食べたことある?」",
-      "食の経験は Have you ever tried ~? が自然(eaten より口語的)。");
+      "食の経験は Have you ever tried ~? が自然(eaten より口語的)。",
+      { alt: {
+          ko: "먹어 봤어요? は 드셔 보셨어요? とも言えます(目上の人に使う尊敬表現)",
+          da: "Har du smagt ~? は Har du prøvet ~? とも言えます(prøve=試す)",
+          en: "Have you ever tried ~? は Have you ever had ~? とも言えます",
+        } });
   }
 }],
 
@@ -879,7 +943,7 @@ const TEMPLATES = [
       `How often do you ${a.en_b.replace(/\bmy\b/g, "your")}?`, "頻度",
       "얼마나 자주=どのくらい頻繁に。動詞はそのまま해요体でOK。",
       "Hvor tit ~? =「どのくらいの頻度で?」。疑問詞のあとは動詞→主語の語順。",
-      "How often do you ~? 答えは every day / twice a week など。");
+      "How often do you ~? 答えは every day / twice a week など。", { alt: actAlt(a) });
   }
 }],
 
@@ -888,16 +952,16 @@ const TEMPLATES = [
 /* =====================  手書きの定番フレーズ  ===================== */
 const CURATED = {
 ko: [
-  {t:"안녕하세요!", a:"こんにちは!", n:"時間帯を問わず使える基本のあいさつ。", h:"あいさつ"},
-  {t:"감사합니다.", a:"ありがとうございます。", n:"丁寧なお礼。カジュアルには 고마워(コマウォ)。", h:"お礼"},
-  {t:"저는 학생입니다.", a:"私は学生です。", n:"~입니다 は 이에요/예요 より硬い丁寧形。", h:"自己紹介"},
-  {t:"이름이 뭐예요?", a:"お名前は何ですか?", n:"이름=名前、뭐=何。", h:"質問"},
+  {t:"안녕하세요!", a:"こんにちは!", n:"時間帯を問わず使える基本のあいさつ。", h:"あいさつ", alt:"親しい相手には 안녕! だけでも言えます"},
+  {t:"감사합니다.", a:"ありがとうございます。", n:"丁寧なお礼。カジュアルには 고마워(コマウォ)。", h:"お礼", alt:"고맙습니다 / 고마워요 とも言えます(고마워요 のほうがやわらかい響き)"},
+  {t:"저는 학생입니다.", a:"私は学生です。", n:"~입니다 は 이에요/예요 より硬い丁寧形。", h:"自己紹介", alt:"저는 학생이에요 とも言えます(이에요 のほうが会話的)"},
+  {t:"이름이 뭐예요?", a:"お名前は何ですか?", n:"이름=名前、뭐=何。", h:"質問", alt:"성함이 어떻게 되세요? とも言えます(目上の人への丁寧な聞き方)"},
   {t:"만나서 반가워요.", a:"お会いできてうれしいです。", n:"初対面のあいさつの定番。", h:"あいさつ"},
   {t:"내일 또 봐요!", a:"また明日会いましょう!", n:"내일=明日、또=また、봐요=会いましょう。", h:"別れ"},
-  {t:"조금만 기다려 주세요.", a:"少しだけ待ってください。", n:"조금=少し、기다리다=待つ。", h:"お願い"},
+  {t:"조금만 기다려 주세요.", a:"少しだけ待ってください。", n:"조금=少し、기다리다=待つ。", h:"お願い", alt:"잠시만요 とも言えます(短く「少々お待ちを」)"},
   {t:"천천히 말해 주세요.", a:"ゆっくり話してください。", n:"천천히=ゆっくり、말하다=話す。", h:"お願い"},
   {t:"정말 맛있어요!", a:"本当においしいです!", n:"정말=本当に。맛있다=「味がある」=おいしい。", h:"食事"},
-  {t:"물 좀 주세요.", a:"お水をください。", n:"좀 を入れるとやわらかい頼み方に。", h:"食事"},
+  {t:"물 좀 주세요.", a:"お水をください。", n:"좀 を入れるとやわらかい頼み方に。", h:"食事", alt:"물 좀 주시겠어요? とも言えます(より丁寧)"},
   {t:"네, 괜찮아요.", a:"はい、大丈夫です。", n:"괜찮아요はOKにも「結構です」にも使える万能表現。", h:"日常"},
   {t:"저는 일본 사람입니다.", a:"私は日本人です。", n:"일본=日本、사람=人。", h:"自己紹介"},
   {t:"한국 음식을 좋아해요.", a:"韓国料理が好きです。", n:"음식=食べ物、料理。", h:"好み"},
@@ -905,50 +969,50 @@ ko: [
   {t:"커피 한 잔 주세요.", a:"コーヒーを一杯ください。", n:"한 잔=一杯。カフェで使えます。", h:"買い物"},
   {t:"주말에 뭐 해요?", a:"週末は何をしますか?", n:"주말=週末。", h:"質問"},
   {t:"오늘 날씨가 좋아요.", a:"今日は天気がいいです。", n:"날씨=天気、좋아요=良いです。", h:"天気"},
-  {t:"이거 얼마예요?", a:"これはいくらですか?", n:"이거=これ、얼마=いくら。", h:"買い物"},
+  {t:"이거 얼마예요?", a:"これはいくらですか?", n:"이거=これ、얼마=いくら。", h:"買い物", alt:"이거 얼마나 해요? とも言えます"},
   {t:"어디에 가요?", a:"どこに行きますか?", n:"어디=どこ、가다=行く。", h:"質問"},
   {t:"저는 한국어를 공부해요.", a:"私は韓国語を勉強しています。", n:"공부하다=勉強する。", h:"学習"},
 ],
 da: [
-  {t:"Hej! Hvordan går det?", a:"やあ!元気?", n:"Hvordan går det? は直訳「調子はどう行ってる?」。", h:"あいさつ"},
-  {t:"Tak for hjælpen.", a:"手伝ってくれてありがとう。", n:"tak=ありがとう、hjælp=助け。", h:"お礼"},
-  {t:"Jeg hedder Yuzu.", a:"私はユズといいます。", n:"jeg hedder ~=私は~という名前です。", h:"自己紹介"},
+  {t:"Hej! Hvordan går det?", a:"やあ!元気?", n:"Hvordan går det? は直訳「調子はどう行ってる?」。", h:"あいさつ", alt:"Hvordan har du det? とも言えます"},
+  {t:"Tak for hjælpen.", a:"手伝ってくれてありがとう。", n:"tak=ありがとう、hjælp=助け。", h:"お礼", alt:"Mange tak for hjælpen / Tusind tak とも言えます(感謝を強めた言い方)"},
+  {t:"Jeg hedder Yuzu.", a:"私はユズといいます。", n:"jeg hedder ~=私は~という名前です。", h:"自己紹介", alt:"Mit navn er Yuzu とも言えます(少し硬い言い方)"},
   {t:"Hvad hedder du?", a:"あなたの名前は何ですか?", n:"hvad=何、du=あなた。", h:"質問"},
   {t:"Hyggeligt at møde dig.", a:"会えてうれしいです。", n:"hyggelig はデンマーク文化の鍵となる言葉「心地よい」。", h:"あいさつ"},
-  {t:"Vi ses i morgen!", a:"また明日!", n:"vi ses=また会いましょう、i morgen=明日。", h:"別れ"},
+  {t:"Vi ses i morgen!", a:"また明日!", n:"vi ses=また会いましょう、i morgen=明日。", h:"別れ", alt:"På gensyn とも言えます(改まった別れのあいさつ)"},
   {t:"Et øjeblik, tak.", a:"少々お待ちください。", n:"øjeblik=瞬間。「一瞬お願いします」が定番の待って表現。", h:"お願い"},
   {t:"Vil du tale lidt langsommere?", a:"もう少しゆっくり話してもらえますか?", n:"langsommere=langsom(ゆっくり)の比較級。Vil du ~? で丁寧な依頼。", h:"お願い"},
   {t:"Det smager godt!", a:"おいしいです!", n:"smage=味がする。", h:"食事"},
   {t:"Må jeg bede om vand?", a:"お水をいただけますか?", n:"må jeg bede om ~=~をお願いできますか。", h:"食事"},
-  {t:"Det er i orden.", a:"大丈夫です。", n:"i orden=順調・問題ない。", h:"日常"},
+  {t:"Det er i orden.", a:"大丈夫です。", n:"i orden=順調・問題ない。", h:"日常", alt:"Det er fint / Det gør ikke noget とも言えます"},
   {t:"Jeg kommer fra Japan.", a:"私は日本から来ました。", n:"komme fra ~=~出身です。", h:"自己紹介"},
   {t:"Jeg kan godt lide dansk mad.", a:"デンマーク料理が好きです。", n:"kan godt lide=好き、mad=食べ物。", h:"好み"},
   {t:"Hvor er toilettet?", a:"トイレはどこですか?", n:"toilet の限定形は toilettet(tが重なる)。", h:"旅行"},
   {t:"En kaffe, tak.", a:"コーヒーを一杯ください。", n:"注文は「品物+tak」でOK。シンプル!", h:"買い物"},
   {t:"Hvad laver du i weekenden?", a:"週末は何をしますか?", n:"lave=する・作る。", h:"質問"},
   {t:"Vejret er godt i dag.", a:"今日は天気がいいです。", n:"vejr=天気、i dag=今日。", h:"天気"},
-  {t:"Hvad koster det?", a:"それはいくらですか?", n:"koste=値段がする。買い物の定番。", h:"買い物"},
+  {t:"Hvad koster det?", a:"それはいくらですか?", n:"koste=値段がする。買い物の定番。", h:"買い物", alt:"Hvor meget koster det? とも言えます"},
   {t:"Hvor skal du hen?", a:"どこへ行くの?", n:"hvor=どこ、hen=方向を表す語。", h:"質問"},
   {t:"Jeg lærer dansk.", a:"私はデンマーク語を学んでいます。", n:"lære=学ぶ。", h:"学習"},
 ],
 en: [
-  {t:"How's it going?", a:"調子はどう?", n:"How are you? よりカジュアルな定番あいさつ。", h:"あいさつ"},
+  {t:"How's it going?", a:"調子はどう?", n:"How are you? よりカジュアルな定番あいさつ。", h:"あいさつ", alt:"How are you doing? / What's up? とも言えます"},
   {t:"Thanks a lot for your help.", a:"手伝ってくれて本当にありがとう。", n:"Thanks a lot は Thank you より少しカジュアル。", h:"お礼"},
-  {t:"It's nice to meet you.", a:"はじめまして。", n:"初対面のあいさつの定番。", h:"あいさつ"},
+  {t:"It's nice to meet you.", a:"はじめまして。", n:"初対面のあいさつの定番。", h:"あいさつ", alt:"Nice to meet you. と It's を省いても言えます(Great to meet you. も自然)"},
   {t:"What do you do for a living?", a:"お仕事は何をされていますか?", n:"直訳「生活のために何をしてる?」=職業を尋ねる表現。", h:"質問"},
-  {t:"See you tomorrow!", a:"また明日!", n:"See you later(またあとで)もよく使う。", h:"別れ"},
+  {t:"See you tomorrow!", a:"また明日!", n:"See you later(またあとで)もよく使う。", h:"別れ", alt:"See you later / Catch you tomorrow とも言えます"},
   {t:"Just a moment, please.", a:"少々お待ちください。", n:"Just a second / Hang on も同じ意味。", h:"お願い"},
-  {t:"Could you speak more slowly?", a:"もっとゆっくり話していただけますか?", n:"Could you ~? は丁寧な依頼。", h:"お願い"},
-  {t:"This tastes amazing!", a:"これ、すごくおいしい!", n:"taste=味がする。amazing で強調。", h:"食事"},
+  {t:"Could you speak more slowly?", a:"もっとゆっくり話していただけますか?", n:"Could you ~? は丁寧な依頼。", h:"お願い", alt:"Could you slow down a bit? とも言えます"},
+  {t:"This tastes amazing!", a:"これ、すごくおいしい!", n:"taste=味がする。amazing で強調。", h:"食事", alt:"This is delicious! とも言えます"},
   {t:"Could I get some water, please?", a:"お水をいただけますか?", n:"Could I get ~ は丁寧な注文表現。", h:"食事"},
   {t:"No worries.", a:"大丈夫だよ / 気にしないで。", n:"That's OK のカジュアル版。", h:"日常"},
   {t:"I was born and raised in Japan.", a:"私は日本で生まれ育ちました。", n:"born and raised はセットでよく使う。", h:"自己紹介"},
   {t:"I'm really into Korean food.", a:"韓国料理にすごくハマってます。", n:"be into ~=~にハマっている。", h:"好み"},
   {t:"Excuse me, where's the restroom?", a:"すみません、トイレはどこですか?", n:"アメリカでは restroom、イギリスでは toilet。", h:"旅行"},
-  {t:"I'll have a coffee, please.", a:"コーヒーをください。", n:"注文は I'll have ~ が自然。", h:"買い物"},
+  {t:"I'll have a coffee, please.", a:"コーヒーをください。", n:"注文は I'll have ~ が自然。", h:"買い物", alt:"Could I get a coffee, please? とも言えます"},
   {t:"Any plans for the weekend?", a:"週末の予定はある?", n:"Do you have を省略したカジュアルな聞き方。", h:"質問"},
   {t:"It's a beautiful day today.", a:"今日はいい天気ですね。", n:"天気の話は英会話の入り口の定番。", h:"天気"},
-  {t:"How much is this?", a:"これはいくらですか?", n:"買い物の基本フレーズ。", h:"買い物"},
+  {t:"How much is this?", a:"これはいくらですか?", n:"買い物の基本フレーズ。", h:"買い物", alt:"How much does this cost? / What does this cost? とも言えます"},
   {t:"Where are you headed?", a:"どこに向かってるの?", n:"be headed=向かっている。カジュアルな表現。", h:"質問"},
   {t:"I'm learning three languages at once.", a:"私は3つの言語を同時に学んでいます。", n:"at once=同時に。", h:"学習"},
   {t:"Take care!", a:"気をつけてね!/ じゃあね!", n:"別れ際の定番。Take care of yourself の略。", h:"別れ"},
@@ -965,7 +1029,8 @@ function buildAll(lang) {
   for (const c of CURATED[lang]) {
     if (seen.has(c.t)) continue;
     seen.add(c.t);
-    out.push({ t: c.t, r: lang === "ko" ? romanize(c.t) : "", a: c.a, n: c.n, h: c.h, d: c.d || 1 });
+    out.push({ t: c.t, r: lang === "ko" ? romanize(c.t) : "", a: c.a, n: c.n, h: c.h, d: c.d || 1,
+               alt: c.alt || "" });
   }
   for (const [, baseD, gen] of TEMPLATES) {
     for (const it of gen()) {
@@ -974,7 +1039,8 @@ function buildAll(lang) {
       seen.add(t);
       let d = it.d || baseD;
       if (t.split(" ").length >= 7) d = Math.min(3, d + 1);   // 長い文は1段階難しく
-      out.push({ t, r: lang === "ko" ? romanize(t) : "", a: it.ja, n: it.n[lang], h: it.h, d });
+      out.push({ t, r: lang === "ko" ? romanize(t) : "", a: it.ja, n: it.n[lang], h: it.h, d,
+                 alt: it.alt[lang] || "" });
     }
   }
   cache[lang] = out;
