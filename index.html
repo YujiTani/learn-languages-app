@@ -166,6 +166,12 @@
   }
   .answer-box .ans-roman { font-size: 13px; color: var(--text-light); margin-top: 4px; }
   .answer-box .ans-note { font-size: 13px; color: #557; margin-top: 8px; line-height: 1.6; }
+  .answer-box .ans-alt {
+    font-size: 13px; color: var(--blue-dark); background: rgba(255,255,255,.75);
+    border-left: 4px solid var(--blue); border-radius: 8px;
+    padding: 8px 10px; margin-top: 10px; line-height: 1.6; font-weight: 700;
+  }
+  .answer-box .ans-alt::before { content: "🔁"; margin-right: 7px; }
   @keyframes pop { 0% { transform: scale(.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
   .self-check { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
@@ -219,12 +225,21 @@
   .grass-grid { display: flex; gap: 3px; }
   .grass-week { display: flex; flex-direction: column; gap: 3px; }
   .grass-cell { width: 13px; height: 13px; border-radius: 3px; background: #ebedf0; }
-  .grass-cell.l1 { background: #b7eb8f; }
-  .grass-cell.l2 { background: #73d13d; }
-  .grass-cell.l3 { background: #389e0d; }
-  .grass-cell.today { outline: 2px solid var(--orange); outline-offset: -1px; }
+  .grass-cell.l1 { background: #d9f0a3; }
+  .grass-cell.l2 { background: #b7eb8f; }
+  .grass-cell.l3 { background: #95e06b; }
+  .grass-cell.l4 { background: #73d13d; }
+  .grass-cell.l5 { background: #52b022; }
+  .grass-cell.l6 { background: #389e0d; }
+  .grass-cell.l7 { background: #237804; }
+  .grass-cell.l8 { background: var(--yellow); }   /* 7〜9レッスン */
+  .grass-cell.l9 { background: var(--orange); }   /* 10レッスン以上 */
+  /* 最上位の塗りが --orange なので、今日の枠は青にしてどの段階でも見えるようにする */
+  .grass-cell.today { outline: 2px solid var(--blue); outline-offset: -1px; }
   .grass-legend { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-light); margin-top: 8px; justify-content: flex-end; }
-  .grass-legend .grass-cell { width: 11px; height: 11px; }
+  /* 凡例はJSで生成する。ラッパーをflexにしないと中のspanがinlineのままで幅が効かない */
+  .grass-legend #grassLegend { display: flex; gap: 3px; }
+  .grass-legend .grass-cell { width: 11px; height: 11px; flex-shrink: 0; }
 
   /* Result */
   .result { text-align: center; padding: 30px 10px; }
@@ -306,9 +321,7 @@
         <div class="grass-months" id="grassMonths"></div>
         <div class="grass-grid" id="grassGrid"></div>
       </div>
-      <div class="grass-legend">
-        少 <span class="grass-cell"></span><span class="grass-cell l1"></span><span class="grass-cell l2"></span><span class="grass-cell l3"></span> 多
-      </div>
+      <div class="grass-legend">少 <span id="grassLegend"></span> 多</div>
     </div>
 
     <div class="section-title">📚 言語をえらぶ</div>
@@ -373,7 +386,7 @@
         3. 🇯🇵 和訳を入力(英語のみ): <b>英語の文</b>が出題される。日本語訳を入力してから答え合わせ<br>
         4. 答え合わせのとき解答文を音声で読み上げ。🔊ボタンで聞き直せる<br>
         5. 正解でXP獲得(★の数で10/15/20XP)。間違えると1XPのみ<br>
-        6. まちがえた問題は📒単語帳にたまる。復習で「覚えた!」と消えていく<br>
+        6. まちがえた問題は📒単語帳にたまる。復習で「覚えた!」(+5XP)と消えていく<br>
         7. <b>レベルはモードごとに別々</b>。韓国語をやっても英語の難易度は上がらない<br>
         8. 👤マイページで各モードのレベル・正解率をチェック<br>
         9. XPをためてレベルアップ、毎日つづけて🌱草を育てよう!
@@ -415,6 +428,7 @@
         </div>
         <div class="ans-roman" id="ansRoman"></div>
         <div class="ans-note" id="ansNote"></div>
+        <div class="ans-alt hidden" id="ansAlt"></div>
       </div>
     </div>
 
@@ -429,7 +443,7 @@
     <!-- review mode buttons -->
     <div class="self-check hidden" id="reviewCheck">
       <button class="btn btn-green" onclick="reviewAnswer(true)">覚えた! 🎉 +5XP</button>
-      <button class="btn btn-orange" onclick="reviewAnswer(false)">まだあやしい 🤔 +1XP</button>
+      <button class="btn btn-orange" onclick="reviewAnswer(false)">まだあやしい 🤔 +0XP</button>
     </div>
 
     <!-- tiles mode buttons -->
@@ -488,10 +502,22 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.9.2";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const GRASS_WEEKS = 17; // 約4ヶ月分
+// 草の濃さ: [そのXP以上, クラス名, 凡例のツールチップ]。濃い順に並べ、上から順に判定する。
+// 1レッスン(5問)は 40〜100XP なので、序盤は細かく・後半はゆるやかに刻み、
+// 最上位は10レッスンぶん(601XP)に置いている
+const GRASS_LEVELS = [
+  [601, "l9", "601XP〜(10レッスン以上)"], [401, "l8", "401〜600XP"], [251, "l7", "251〜400XP"],
+  [151, "l6", "151〜250XP"], [101, "l5", "101〜150XP"], [51,  "l4", "51〜100XP"],
+  [26,  "l3", "26〜50XP"],   [11,  "l2", "11〜25XP"],   [1,   "l1", "1〜10XP"],
+];
+function grassClass(xp) {
+  for (const [min, cls] of GRASS_LEVELS) if (xp >= min) return cls;
+  return "";   // 0XP は空セル
+}
 
 // ---------- 学習トラック ----------
 // 熟練度は「言語 × 出題の向き」ごとに独立してたまる。
@@ -610,15 +636,18 @@ function renderGrass() {
       if (date > today) { cell.style.visibility = "hidden"; week.appendChild(cell); continue; }
       const key = dayKey(date);
       const xp = state.days[key] || 0;
-      if (xp >= 100) cell.classList.add("l3");
-      else if (xp >= 50) cell.classList.add("l2");
-      else if (xp > 0) cell.classList.add("l1");
+      const cls = grassClass(xp);
+      if (cls) cell.classList.add(cls);
       if (key === todayKey) cell.classList.add("today");
       cell.title = key + " : " + xp + " XP";
       week.appendChild(cell);
     }
     grid.appendChild(week);
   }
+  document.getElementById("grassLegend").innerHTML =
+    ['<span class="grass-cell" title="0XP"></span>']
+      .concat([...GRASS_LEVELS].reverse().map(([, cls, label]) =>
+        `<span class="grass-cell ${cls}" title="${label}"></span>`)).join("");
   document.getElementById("grassStreak").textContent = state.streak;
   document.getElementById("grassBest").textContent = state.best;
   // 右端(今日)まで自動スクロール
@@ -699,7 +728,7 @@ function addToWordbook(q) {
   if (!state.wbEnabled) return;                              // オプションOFF時は登録しない
   if (state.wordbook.some(w => sameCard(w, q))) return;      // 同じ文でも向きが違えば別カード
   state.wordbook.push({ lang: q.lang, t: q.t, r: q.r, a: q.a, n: q.n, h: q.h, d: q.d,
-                        dir: dirOf(q), added: Date.now() });
+                        alt: q.alt, dir: dirOf(q), added: Date.now() });
   save();
   renderWordbook();
   toast("📒 単語帳に追加しました(" + state.wordbook.length + "語)");
@@ -755,7 +784,7 @@ function startReview() {
 function reviewAnswer(known) {
   const q = session.questions[session.index];
   if (known) { session.known++; removeFromWordbook(q); }
-  nextQuestion(known ? 5 : 1);
+  nextQuestion(known ? 5 : 0);   // 覚えていない問題ではXPを与えない
 }
 
 // ---------- 言語・モード選択 ----------
@@ -985,6 +1014,10 @@ function showAnswerBox(good, label, q) {
   document.getElementById("ansText").textContent = ja ? q.a : q.t;   // 和訳モードの模範解答は日本語
   document.getElementById("ansRoman").textContent = (!ja && q.r) ? "🗣 " + q.r : "";
   document.getElementById("ansNote").textContent = q.n;
+  // 言い換え(ほかの言い方)。ない問題では行ごと消す
+  const altEl = document.getElementById("ansAlt");
+  altEl.textContent = q.alt || "";
+  altEl.classList.toggle("hidden", !q.alt);
   // 読み上げ(記述・タイル・単語帳復習のすべてがこの関数を通る)。読むのは常に外国語文 q.t
   ttsCurrent = q;
   const ttsBtn = document.getElementById("ttsBtn");
@@ -1006,8 +1039,10 @@ function nextQuestion(xp) {
     state.tracks[track].answered++;
     if (full) state.tracks[track].correct++;
   }
-  addXp(xp, track);
-  floatXp("+" + xp + " XP");
+  if (xp > 0) {
+    addXp(xp, track);
+    floatXp("+" + xp + " XP");
+  }
   session.index++;
   if (session.index >= (session.total || QUESTIONS_PER_SESSION)) {
     document.getElementById("progressFill").style.width = "100%";

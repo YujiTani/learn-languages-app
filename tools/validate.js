@@ -22,7 +22,7 @@ const { hasBatchim, endsRieul, vocab } = gen;
 for (const [lang, data] of Object.entries(bank)) {
   const seen = new Set();
   for (const it of data.items) {
-    const { t, a, n, h, r } = it;
+    const { t, a, n, h, r, alt } = it;
     // 必須フィールド
     if (!t || !a || !n || !h) err(lang, t || a, "空フィールドがある");
     // テンプレート事故の痕跡
@@ -44,6 +44,16 @@ for (const [lang, data] of Object.entries(bank)) {
     // 単語タイルモードで成立するか(1語だけの文は curated 以外NG)
     // (1語文はタイル問題として成立するのでwarnのみ)
     if (t.split(" ").length === 1 && lang !== "ko") warn(lang, t, "1語のみの文");
+    // 言い換え(任意フィールド。ないのは正常、あるなら中身を検査する)
+    if (alt) {
+      for (const bad of ["undefined", "null", "NaN", "[object", "${"]) {
+        if (alt.includes(bad)) err(lang, t, `言い換えに "${bad}" が混入: ${alt}`);
+      }
+      if (alt !== alt.trim()) err(lang, t, `言い換えの端に余分な空白: ${alt}`);
+      if (/\s{2,}/.test(alt)) err(lang, t, `言い換えに二重スペース: ${alt}`);
+      if (alt === t) err(lang, t, "言い換えが模範解答そのもの");
+      if (alt.length < 10) err(lang, t, `言い換えが短すぎる(書きかけ?): ${alt}`);
+    }
     if (lang === "ko" && !r) err(lang, t, "ローマ字がない");
     if (lang === "ko" && /[a-zA-Z]/.test(t)) err(lang, t, "韓国語文にラテン文字が混入");
   }
@@ -162,6 +172,17 @@ for (const [lang, data] of Object.entries(bank)) {
   }
 }
 
+/* ---------- 言い換えデータの整合チェック ---------- */
+{
+  for (const a of vocab.ACTIONS) {
+    for (const k of ["alt_ko", "alt_da", "alt_en"]) {
+      if (a[k] === undefined) continue;
+      if (typeof a[k] !== "string" || a[k].length < 10)
+        err("all", a.ja_p, `語彙: ${k} が文字列でないか短すぎる`);
+    }
+  }
+}
+
 /* ---------- 意味の禁止パターン(レビューで見つけ次第ここに追加) ---------- */
 const BANNED = {
   ja: [
@@ -194,6 +215,8 @@ for (const [lang, data] of Object.entries(bank)) {
   for (const it of data.items) {
     for (const re of BANNED.ja) if (re.test(it.a)) err(lang, it.t, `禁止パターン(出題文): ${re}`);
     for (const re of BANNED[lang] || []) if (re.test(it.t)) err(lang, it.t, `禁止パターン: ${re}`);
+    for (const re of BANNED[lang] || []) if (it.alt && re.test(it.alt))
+      err(lang, it.t, `禁止パターン(言い換え): ${re}`);
   }
 }
 
@@ -242,7 +265,8 @@ for (const [lang, data] of Object.entries(bank)) {
 /* ---------- レポート ---------- */
 console.log("=== LingoPop! 全数検証 ===");
 for (const [lang, data] of Object.entries(bank)) {
-  console.log(`${lang}: ${data.items.length.toLocaleString()} 問`);
+  const withAlt = data.items.filter(i => i.alt).length;
+  console.log(`${lang}: ${data.items.length.toLocaleString()} 問(うち言い換えつき ${withAlt.toLocaleString()} 問)`);
 }
 console.log();
 if (warns.length) {
