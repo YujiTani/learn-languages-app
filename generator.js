@@ -240,28 +240,62 @@ const ACTIONS = [
 //         ok: 使える名詞タグ(スペース区切り)
 const ALLTAG = "read device vehicle thing furniture cloth culture commerce nature service food";
 const ADJS = [
-  {ja:"大きい", jp:"大きいです", ko_p:"커요", da:"stor", da_n:"stort", en:"big", ok:ALLTAG},
-  {ja:"小さい", jp:"小さいです", ko_p:"작아요", da:"lille", da_n:"lille", en:"small", ok:ALLTAG},
-  {ja:"新しい", jp:"新しいです", ko_p:"새로워요", da:"ny", da_n:"nyt", en:"new", ok:"read device vehicle thing furniture cloth culture commerce service"},
-  {ja:"古い", jp:"古いです", ko_p:"오래됐어요", da:"gammel", da_n:"gammelt", en:"old", ok:"read device vehicle thing furniture cloth culture commerce service"},
-  {ja:"高い", jp:"高いです", ko_p:"비싸요", da:"dyr", da_n:"dyrt", en:"expensive", ok:"read device vehicle thing furniture cloth commerce food"},
-  {ja:"安い", jp:"安いです", ko_p:"싸요", da:"billig", da_n:"billigt", en:"cheap", ok:"read device vehicle thing furniture cloth commerce food"},
-  {ja:"美しい", jp:"美しいです", ko_p:"아름다워요", da:"smuk", da_n:"smukt", en:"beautiful", ok:"thing cloth culture nature"},
-  {ja:"面白い", jp:"面白いです", ko_p:"재미있어요", da:"sjov", da_n:"sjovt", en:"fun", ok:"read culture"},
-  {ja:"難しい", jp:"難しいです", ko_p:"어려워요", da:"svær", da_n:"svært", en:"difficult", ok:"read"},
-  {ja:"簡単", jp:"簡単です", ko_p:"쉬워요", da:"nem", da_n:"nemt", en:"easy", ok:"read"},
-  {ja:"速い", jp:"速いです", ko_p:"빨라요", da:"hurtig", da_n:"hurtigt", en:"fast", ok:"vehicle device"},
-  {ja:"清潔", jp:"清潔です", ko_p:"깨끗해요", da:"ren", da_n:"rent", en:"clean", ok:"vehicle thing furniture cloth culture commerce service"},
-  {ja:"静か", jp:"静かです", ko_p:"조용해요", da:"stille", da_n:"stille", en:"quiet", ok:"culture nature service commerce"},
-  {ja:"有名", jp:"有名です", ko_p:"유명해요", da:"berømt", da_n:"berømt", en:"famous", ok:"read culture nature commerce"},
-  {ja:"重い", jp:"重いです", ko_p:"무거워요", da:"tung", da_n:"tungt", en:"heavy", ok:"read device thing furniture"},
-  {ja:"軽い", jp:"軽いです", ko_p:"가벼워요", da:"let", da_n:"let", en:"light", ok:"read device thing cloth"},
-  {ja:"便利", jp:"便利です", ko_p:"편리해요", da:"praktisk", da_n:"praktisk", en:"handy", ok:"vehicle thing"},
-  {ja:"人気", jp:"人気があります", ko_p:"인기가 많아요", da:"populær", da_n:"populært", en:"popular", ok:"read culture commerce nature food"},
-  {ja:"おいしい", jp:"おいしいです", ko_p:"맛있어요", da:"lækker", da_n:"lækkert", en:"tasty", ok:"food"},
-  {ja:"甘い", jp:"甘いです", ko_p:"달아요", da:"sød", da_n:"sødt", en:"sweet", ok:"food"},
-  {ja:"新鮮", jp:"新鮮です", ko_p:"신선해요", da:"frisk", da_n:"friskt", en:"fresh", ok:"food"},
+  {ja:"大きい", jp:"大きいです", jp_neg:"大きくないです", jp_too:"大きすぎます", jp_adn:"大きい", ko_p:"커요", da:"stor", da_n:"stort", en:"big", en_er:"bigger", en_est:"biggest", da_er:"større", da_est:"størst", ok:ALLTAG},
+  {ja:"小さい", jp:"小さいです", jp_neg:"小さくないです", jp_too:"小さすぎます", jp_adn:"小さい", ko_p:"작아요", da:"lille", da_n:"lille", en:"small", en_er:"smaller", en_est:"smallest", da_er:"mindre", da_est:"mindst", ok:ALLTAG},
+  {ja:"新しい", jp:"新しいです", jp_neg:"新しくないです", jp_too:"新しすぎます", jp_adn:"新しい", ko_p:"새로워요", da:"ny", da_n:"nyt", en:"new", en_er:"newer", en_est:"newest", da_er:"nyere", da_est:"nyest", ok:"read device vehicle thing furniture cloth culture commerce service"},
+  {ja:"古い", jp:"古いです", jp_neg:"古くないです", jp_too:"古すぎます", jp_adn:"古い", ko_p:"오래됐어요", da:"gammel", da_n:"gammelt", en:"old", en_er:"older", en_est:"oldest", da_er:"ældre", da_est:"ældst", ok:"read device vehicle thing furniture cloth culture commerce service"},
+  {ja:"高い", jp:"高いです", jp_neg:"高くないです", jp_too:"高すぎます", jp_adn:"高い", ko_p:"비싸요", da:"dyr", da_n:"dyrt", en:"expensive", en_er:"more expensive", en_est:"most expensive", da_er:"dyrere", da_est:"dyrest", ok:"read device vehicle thing furniture cloth commerce food"},
+  {ja:"安い", jp:"安いです", jp_neg:"安くないです", jp_too:"安すぎます", jp_adn:"安い", ko_p:"싸요", da:"billig", da_n:"billigt", en:"cheap", en_er:"cheaper", en_est:"cheapest", da_er:"billigere", da_est:"billigst", ok:"read device vehicle thing furniture cloth commerce food"},
+  {ja:"美しい", jp:"美しいです", jp_neg:"美しくないです", jp_too:"美しすぎます", jp_adn:"美しい", ko_p:"아름다워요", da:"smuk", da_n:"smukt", en:"beautiful", en_er:"more beautiful", en_est:"most beautiful", da_er:"smukkere", da_est:"smukkest", ok:"thing cloth culture nature"},
+  {ja:"面白い", jp:"面白いです", jp_neg:"面白くないです", jp_too:"面白すぎます", ko_neg:"재미없어요", jp_adn:"面白い", ko_p:"재미있어요", da:"sjov", da_n:"sjovt", en:"fun", en_er:"more fun", en_est:"most fun", da_er:"sjovere", da_est:"sjovest", ok:"read culture"},
+  {ja:"難しい", jp:"難しいです", jp_neg:"難しくないです", jp_too:"難しすぎます", jp_adn:"難しい", ko_p:"어려워요", da:"svær", da_n:"svært", en:"difficult", en_er:"more difficult", en_est:"most difficult", da_er:"sværere", da_est:"sværest", ok:"read"},
+  {ja:"簡単", jp:"簡単です", jp_neg:"簡単じゃないです", jp_too:"簡単すぎます", jp_adn:"簡単な", ko_p:"쉬워요", da:"nem", da_n:"nemt", en:"easy", en_er:"easier", en_est:"easiest", da_er:"nemmere", da_est:"nemmest", ok:"read"},
+  {ja:"速い", jp:"速いです", jp_neg:"速くないです", jp_too:"速すぎます", jp_adn:"速い", ko_p:"빨라요", da:"hurtig", da_n:"hurtigt", en:"fast", en_er:"faster", en_est:"fastest", da_er:"hurtigere", da_est:"hurtigst", ok:"vehicle device"},
+  {ja:"清潔", jp:"清潔です", jp_neg:"清潔じゃないです", jp_too:"清潔すぎます", jp_adn:"清潔な", ko_p:"깨끗해요", da:"ren", da_n:"rent", en:"clean", en_er:"cleaner", en_est:"cleanest", da_er:"renere", da_est:"renest", ok:"vehicle thing furniture cloth culture commerce service"},
+  {ja:"静か", jp:"静かです", jp_neg:"静かじゃないです", jp_too:"静かすぎます", jp_adn:"静かな", ko_p:"조용해요", da:"stille", da_n:"stille", en:"quiet", en_er:"quieter", en_est:"quietest", da_er:"mere stille", da_est:"mest stille", ok:"culture nature service commerce"},
+  {ja:"有名", jp:"有名です", jp_neg:"有名じゃないです", jp_too:"有名すぎます", no_deg:[3], jp_adn:"有名な", ko_p:"유명해요", da:"berømt", da_n:"berømt", en:"famous", en_er:"more famous", en_est:"most famous", da_er:"mere berømt", da_est:"mest berømt", ok:"read culture nature commerce"},
+  {ja:"重い", jp:"重いです", jp_neg:"重くないです", jp_too:"重すぎます", jp_adn:"重い", ko_p:"무거워요", da:"tung", da_n:"tungt", en:"heavy", en_er:"heavier", en_est:"heaviest", da_er:"tungere", da_est:"tungest", ok:"read device thing furniture"},
+  {ja:"軽い", jp:"軽いです", jp_neg:"軽くないです", jp_too:"軽すぎます", jp_adn:"軽い", ko_p:"가벼워요", da:"let", da_n:"let", en:"light", en_er:"lighter", en_est:"lightest", da_er:"lettere", da_est:"lettest", ok:"read device thing cloth"},
+  {ja:"便利", jp:"便利です", jp_neg:"便利じゃないです", jp_too:"便利すぎます", jp_adn:"便利な", ko_p:"편리해요", da:"praktisk", da_n:"praktisk", en:"handy", en_er:"handier", en_est:"handiest", da_er:"mere praktisk", da_est:"mest praktisk", ok:"vehicle thing"},
+  {ja:"人気", jp:"人気があります", jp_neg:"人気がないです", jp_too:"人気がありすぎます", ko_neg:"인기가 없어요", no_deg:[3,4], jp_adn:"人気のある", ko_p:"인기가 많아요", da:"populær", da_n:"populært", en:"popular", en_er:"more popular", en_est:"most popular", da_er:"mere populær", da_est:"mest populær", ok:"read culture commerce nature food"},
+  {ja:"おいしい", jp:"おいしいです", jp_neg:"おいしくないです", jp_too:"おいしすぎます", ko_neg:"맛없어요", jp_adn:"おいしい", ko_p:"맛있어요", da:"lækker", da_n:"lækkert", en:"tasty", en_er:"tastier", en_est:"tastiest", da_er:"lækrere", da_est:"lækrest", ok:"food"},
+  {ja:"甘い", jp:"甘いです", jp_neg:"甘くないです", jp_too:"甘すぎます", jp_adn:"甘い", ko_p:"달아요", da:"sød", da_n:"sødt", en:"sweet", en_er:"sweeter", en_est:"sweetest", da_er:"sødere", da_est:"sødest", ok:"food"},
+  {ja:"新鮮", jp:"新鮮です", jp_neg:"新鮮じゃないです", jp_too:"新鮮すぎます", jp_adn:"新鮮な", ko_p:"신선해요", da:"frisk", da_n:"friskt", en:"fresh", en_er:"fresher", en_est:"freshest", da_er:"friskere", da_est:"friskest", ok:"food"},
 ];
+
+/* 人の状態を表す形容詞。look(~に見える)・become(~になる)・SVOC(~を~にする)で使う。
+ * 名詞の描写(ok タグ)には出さないので ok:"human" にしてある。
+ * 韓国語の「~아/어 보여요」は ko_p の末尾「요」を落として作れる(피곤해요 → 피곤해 보여요)。 */
+const HUMAN_ADJS = [
+  {ja:"疲れた",   jp:"疲れています",   jp_look:"疲れているように見えます", jp_make:"疲れさせました",   jp_that:"疲れている",
+   ko_p:"피곤해요", ko_st:"피곤하", da:"træt",       da_n:"træt",       en:"tired"},
+  {ja:"うれしい", jp:"うれしいです",   jp_look:"うれしそうです",           jp_make:"うれしくさせました", jp_that:"うれしい",
+   ko_p:"기뻐요",   ko_st:"기쁘",   da:"glad",       da_n:"glad",       en:"happy"},
+  {ja:"悲しい",   jp:"悲しいです",     jp_look:"悲しそうです",             jp_make:"悲しくさせました",   jp_that:"悲しい",
+   ko_p:"슬퍼요",   ko_st:"슬프",   da:"ked af det", da_n:"ked af det", en:"sad"},
+  {ja:"忙しい",   jp:"忙しいです",     jp_look:"忙しそうです",             jp_make:"忙しくさせました",   jp_that:"忙しい",
+   ko_p:"바빠요",   ko_st:"바쁘",   da:"travl",      da_n:"travlt",     en:"busy"},
+  {ja:"親切",     jp:"親切です",       jp_look:"親切そうです",             jp_make:"親切にさせました",   jp_that:"親切だ",
+   ko_p:"친절해요", ko_st:"친절하", da:"venlig",     da_n:"venligt",    en:"kind"},
+  {ja:"元気",     jp:"元気です",       jp_look:"元気そうです",             jp_make:"元気にさせました",   jp_that:"元気だ",
+   ko_p:"건강해요", ko_st:"건강하", da:"rask",       da_n:"raskt",      en:"healthy"},
+  {ja:"眠い",     jp:"眠いです",       jp_look:"眠そうです",               jp_make:"眠くさせました",     jp_that:"眠い",
+   ko_p:"졸려요",   ko_st:"졸리",   da:"søvnig",     da_n:"søvnigt",    en:"sleepy"},
+  {ja:"緊張した", jp:"緊張しています", jp_look:"緊張しているように見えます", jp_make:"緊張させました",   jp_that:"緊張している",
+   ko_p:"긴장했어요", ko_st:"긴장하", ko_that:"긴장했", da:"nervøs", da_n:"nervøst", en:"nervous"},
+];
+// 「~아/어 보여요(~に見える)」「~아/어 보였어요」の語幹。해요体の요を落とす
+const koStem = ko_p => ko_p.replace(/요$/, "");
+// 韓国語の副詞は動詞の直前。目的語つきの述語(「커피를 마셔요」)なら目的語のあとに入れる
+const koAdvIn = (pred, adv) => {
+  const i = pred.lastIndexOf(" ");
+  return i < 0 ? `${adv} ${pred}` : `${pred.slice(0, i)} ${adv} ${pred.slice(i + 1)}`;
+};
+// デンマーク語の副詞は定形動詞のすぐあと。「drikker kaffe」なら drikker と kaffe の間
+const daAdvIn = (pred, adv) => {
+  const i = pred.indexOf(" ");
+  return i < 0 ? `${pred} ${adv}` : `${pred.slice(0, i)} ${adv} ${pred.slice(i + 1)}`;
+};
 
 // 時間  ko_e: 助詞「에」をつけるか
 const TIMES = [
@@ -300,13 +334,13 @@ const COUNTRIES = [
 
 // 天気  da_t: デンマーク語の文全体を差し替える場合に指定
 const WEATHER = [
-  {ja:"暑い", ko:"더워요", ko_seo:"더워서", da:"varmt", en:"hot"},
-  {ja:"寒い", ko:"추워요", ko_seo:"추워서", da:"koldt", en:"cold"},
-  {ja:"暖かい", ko:"따뜻해요", ko_seo:"따뜻해서", da:"lunt", en:"warm"},
-  {ja:"涼しい", ko:"시원해요", ko_seo:"시원해서", da:"køligt", en:"cool"},
-  {ja:"曇り", ko:"흐려요", ko_seo:"흐려서", da:"overskyet", en:"cloudy"},
-  {ja:"風が強い", ko:"바람이 세요", ko_seo:"바람이 세서", da:"blæsende", da_c:"det blæser meget", en:"windy"},
-  {ja:"蒸し暑い", ko:"무더워요", ko_seo:"무더워서", da:"lummert", en:"hot and humid"},
+  {ja:"暑い", ko:"더워요", ja_ba:"暑ければ", ko_myeon:"더우면", ja_ku:"暑く", ko_became:"더워졌어요", ko_will:"더울 거예요", ko_seo:"더워서", da:"varmt", en:"hot"},
+  {ja:"寒い", ko:"추워요", ja_ba:"寒ければ", ko_myeon:"추우면", ja_ku:"寒く", ko_became:"추워졌어요", ko_will:"추울 거예요", ko_seo:"추워서", da:"koldt", en:"cold"},
+  {ja:"暖かい", ko:"따뜻해요", ja_ba:"暖かければ", ko_myeon:"따뜻하면", ja_ku:"暖かく", ko_became:"따뜻해졌어요", ko_will:"따뜻할 거예요", ko_seo:"따뜻해서", da:"lunt", en:"warm"},
+  {ja:"涼しい", ko:"시원해요", ja_ba:"涼しければ", ko_myeon:"시원하면", ja_ku:"涼しく", ko_became:"시원해졌어요", ko_will:"시원할 거예요", ko_seo:"시원해서", da:"køligt", en:"cool"},
+  {ja:"曇り", ko:"흐려요", ja_ba:"曇りなら", ko_myeon:"흐리면", ja_ku:"曇りに", ko_became:"흐려졌어요", ko_will:"흐릴 거예요", ko_seo:"흐려서", da:"overskyet", en:"cloudy"},
+  {ja:"風が強い", ko:"바람이 세요", ja_ba:"風が強ければ", ko_myeon:"바람이 세면", ja_ku:"風が強く", ko_became:"바람이 세졌어요", ko_will:"바람이 셀 거예요", ko_seo:"바람이 세서", da:"blæsende", da_c:"det blæser meget", en:"windy"},
+  {ja:"蒸し暑い", ko:"무더워요", ja_ba:"蒸し暑ければ", ko_myeon:"무더우면", ja_ku:"蒸し暑く", ko_became:"무더워졌어요", ko_will:"무더울 거예요", ko_seo:"무더워서", da:"lummert", en:"hot and humid"},
 ];
 
 // 趣味(私の趣味は~です)
@@ -417,7 +451,92 @@ const daThis  = n => (n.g === "en" ? "denne " : "dette ") + n.da;
 const daMy    = n => (n.g === "en" ? "min " : "mit ") + n.da;
 const daAdj   = (a, n) => n.g === "en" ? a.da : a.da_n;
 const enIndef = n => n.art ? n.art + " " + n.en : n.en;
+// デンマーク語の不定冠詞。性で en/et を選ぶ(不可算に相当する語は art なしで裸のまま)
+const enIndefDa = n => (n.art ? (n.g === "en" ? "en " : "et ") : "") + n.da;
+// 「あの~」。denne/dette と対になる指示詞
+const daThat = n => (n.g === "en" ? "den " : "det ") + n.da;
+// 韓国語の形容詞の連体形(名詞を修飾する形)。해요体から作る
+// 큰/작은 のように -ㄴ/-은 になるものと、하다形容詞の -한 の2系統がある
+const KO_ADNOM = {
+  "커요": "큰", "작아요": "작은", "새로워요": "새로운", "오래됐어요": "오래된",
+  "비싸요": "비싼", "싸요": "싼", "아름다워요": "아름다운", "재미있어요": "재미있는",
+  "어려워요": "어려운", "쉬워요": "쉬운", "빨라요": "빠른", "깨끗해요": "깨끗한",
+  "조용해요": "조용한", "유명해요": "유명한", "무거워요": "무거운", "가벼워요": "가벼운",
+  "편리해요": "편리한", "인기가 많아요": "인기가 많은", "맛있어요": "맛있는",
+  "달아요": "단", "신선해요": "신선한",
+};
+const koAdnom = a => KO_ADNOM[a.ko_p] || a.ko_p;
+// デンマーク語の主節倒置。従属節が文頭に来ると「動詞→主語」の順になる
+// 「studerer」→「studerer jeg」、「laver mad」→「laver jeg mad」
+const daInvert = pred => {
+  const i = pred.indexOf(" ");
+  return i < 0 ? `${pred} jeg` : `${pred.slice(0, i)} jeg ${pred.slice(i + 1)}`;
+};
+// デンマーク語の現在形→不定詞。skal / var ved at のあとで使う
+const daInf = (da_p) => {
+  const parts = da_p.split(" ");
+  let v = parts[0];
+  if (v === "gør") v = "gøre";
+  else if (!v.endsWith("s") && v.endsWith("r")) v = v.slice(0, -1);
+  parts[0] = v;
+  return parts.join(" ");
+};
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+/* 程度副詞のローテーション。
+ * 以前は描写文がすべて「とても/아주/meget/very」固定で、very だけで951問あった。
+ * 名詞indexと形容詞indexの和で決定的に選ぶ(乱数だとリロードごとに文面が変わり、
+ * 重複除去・単語帳・検証がすべて不安定になる)。
+ * jaf: 日本語側で使う ADJS のフィールド。「~すぎる」と「あまり~ない」は
+ *      形容詞の活用そのものが変わるので jp ではなく jp_too / jp_neg を使う。 */
+const DEGREES = [
+  { ja: "とても", jaf: "jp", ko: "아주", da: "meget", en: "very",
+    nko: "아주=とても。形容詞も動詞と同じく해요体で活用します。", nda: "meget=とても。",
+    nen: "very で形容詞を強調できます。" },
+  { ja: "本当に", jaf: "jp", ko: "정말", da: "virkelig", en: "really",
+    nko: "정말=本当に。진짜 はもっとくだけた言い方です。", nda: "virkelig=本当に。rigtig とも言えます。",
+    nen: "really は very とほぼ同じ強調で、会話でよく使います。" },
+  { ja: "かなり", jaf: "jp", ko: "꽤", da: "ret", en: "quite",
+    nko: "꽤=かなり。제법 とも言えます。", nda: "ret=かなり。ganske とも言えます。",
+    nen: "quite=かなり。イギリス英語では「まあまあ」寄りの意味にもなります。" },
+  { ja: "少し", jaf: "jp", ko: "조금", da: "lidt", en: "a little",
+    nko: "조금=少し。좀 と縮めるとより口語的です。", nda: "lidt=少し。",
+    nen: "a little=少し。a bit とも言えます。" },
+  { ja: "", jaf: "jp_too", ko: "너무", da: "alt for", en: "too",
+    nko: "너무=~すぎる。会話では「とても」の意味でも使われます。",
+    nda: "alt for=~すぎる。for だけでも同じ意味になります。",
+    nen: "too=~すぎる。very と違って「度が過ぎる」という否定的な含みがあります。" },
+  { ja: "あまり", jaf: "jp_neg", ko: "별로 안", da: "ikke særlig", en: "not very",
+    nko: "별로 안 ~=あまり~ない。별로 は否定と一緒に使います。",
+    nda: "ikke særlig=あまり~ない。ikke が否定、særlig が「特に」。",
+    nen: "not very ~=あまり~ない。not と very で控えめな否定になります。" },
+];
+// 名詞index+形容詞index で程度副詞を選ぶ。相性が悪い組(no_deg)は「とても」に落とす
+const degOf = (a, i) => {
+  const d = DEGREES[i % DEGREES.length];
+  return (a.no_deg || []).includes(i % DEGREES.length) ? DEGREES[0] : d;
+};
+// 韓国語の述語。「あまり~ない」だけ否定形になり、재미없어요/맛없어요 のような
+// 専用の否定形を持つ形容詞は ko_neg を優先する
+const koDeg = (a, deg) => deg.jaf !== "jp_neg" ? `${deg.ko} ${a.ko_p}`
+  : a.ko_neg ? `별로 ${a.ko_neg}` : `별로 안 ${a.ko_p}`;
+
+/* 時間表現のローテーション。以前は過去がすべて「昨日」、未来がすべて「明日」固定だった。
+ * DEGREES と同じく、語彙のindexで決定的に選ぶ。 */
+const PASTS = [
+  { ja: "昨日",  ko: "어제",      da: "i går",       en: "yesterday" },
+  { ja: "今朝",  ko: "오늘 아침", da: "i morges",    en: "this morning" },
+  { ja: "昨晩",  ko: "어젯밤",    da: "i går aftes", en: "last night" },
+  { ja: "先週",  ko: "지난주",    da: "i sidste uge", en: "last week" },
+];
+const FUTURES = [
+  { ja: "明日",   ko: "내일",         da: "i morgen",    en: "tomorrow" },
+  { ja: "今晩",   ko: "오늘 밤",      da: "i aften",     en: "tonight" },
+  { ja: "来週",   ko: "다음 주",      da: "i næste uge", en: "next week" },
+  { ja: "週末に", ko: "이번 주말에",  da: "i weekenden", en: "this weekend" },
+];
+const pastOf   = i => PASTS[i % PASTS.length];
+const futureOf = i => FUTURES[i % FUTURES.length];
 
 /* =====================  テンプレート  ===================== */
 /* item(): {ja, ko, da, en, h(ヒント), n:{ko,da,en}(解説), alt:{ko,da,en}(言い換え)}
@@ -520,18 +639,19 @@ const TEMPLATES = [
 }],
 
 ["場所へ行く", 2, function* () {
-  for (const p of PLACES) {
+  for (const [pi, p] of PLACES.entries()) {
     if (!p.go) continue;
+    const t = pastOf(pi);
     yield item(`私は${p.ja}に行きます。`,
       `저는 ${p.ko}에 가요.`, `Jeg skal til ${p.dad}.`, `I'm going to the ${p.en}.`, "日常",
       "場所につく助詞は「에」。「~에 가요」=「~に行きます」。",
       "skal til ~ で「~へ行く予定だ」。行き先は限定形。",
       "近い予定は be going to で表します。");
-    yield item(`昨日${p.ja}に行きました。`,
-      `어제 ${p.ko}에 갔어요.`, `Jeg tog til ${p.dad} i går.`, `I went to the ${p.en} yesterday.`, "過去",
-      "過去形は 가요 → 갔어요。어제=昨日。",
-      "tage(行く)の過去形は tog。i går=昨日。",
-      "go の過去形は went(不規則動詞)。", 3);
+    yield item(`${t.ja}${p.ja}に行きました。`,
+      `${t.ko} ${p.ko}에 갔어요.`, `Jeg tog til ${p.dad} ${t.da}.`, `I went to the ${p.en} ${t.en}.`, "過去",
+      `過去形は 가요 → 갔어요。${t.ko}=${t.ja}。`,
+      `tage(行く)の過去形は tog。${t.da}=${t.ja}。`,
+      `go の過去形は went(不規則動詞)。${t.en}=${t.ja}。`, 3);
   }
 }],
 
@@ -599,12 +719,13 @@ const TEMPLATES = [
 }],
 
 ["昨日したこと", 3, function* () {
-  for (const a of ACTIONS) {
-    yield item(`昨日${a.ja_pa}。`,
-      `어제 ${a.ko_pa}.`, `Jeg ${a.da_pa} i går.`, `I ${a.en_pa} yesterday.`, "過去",
-      "過去形は語幹+았/었어요。어제=昨日。",
-      "規則動詞の過去形は -ede/-te。så・tog・gik などの不規則動詞もあります。i går=昨日。",
-      "過去の出来事は過去形で。", { alt: actAlt(a) });
+  for (const [ai, a] of ACTIONS.entries()) {
+    const t = pastOf(ai);
+    yield item(`${t.ja}${a.ja_pa}。`,
+      `${t.ko} ${a.ko_pa}.`, `Jeg ${a.da_pa} ${t.da}.`, `I ${a.en_pa} ${t.en}.`, "過去",
+      `過去形は語幹+았/었어요。${t.ko}=${t.ja}。`,
+      `規則動詞の過去形は -ede/-te。så・tog・gik などの不規則動詞もあります。${t.da}=${t.ja}。`,
+      `過去の出来事は過去形で。${t.en}=${t.ja}。`, { alt: actAlt(a) });
   }
 }],
 
@@ -619,21 +740,14 @@ const TEMPLATES = [
 }],
 
 ["明日の予定", 3, function* () {
-  // デンマーク語の予定は skal + 不定詞が最も自然
-  const daInf = (da_p) => {
-    const parts = da_p.split(" ");
-    let v = parts[0];
-    if (v === "gør") v = "gøre";
-    else if (!v.endsWith("s") && v.endsWith("r")) v = v.slice(0, -1);
-    parts[0] = v;
-    return parts.join(" ");
-  };
-  for (const a of ACTIONS) {
-    yield item(`明日${a.ja_p}。`,
-      `내일 ${a.ko_p}.`, `Jeg skal ${daInf(a.da_p)} i morgen.`, `I'm going to ${a.en_b} tomorrow.`, "予定",
-      "確定した予定は現在形のままでOK。내일=明日。",
-      "予定は skal+動詞の原形で表すのが自然です。i morgen=明日。",
-      "be going to ~ で予定を表します。",
+  // デンマーク語の予定は skal + 不定詞が最も自然(daInf はグローバルヘルパ)
+  for (const [ai, a] of ACTIONS.entries()) {
+    const t = futureOf(ai);
+    yield item(`${t.ja}${a.ja_p}。`,
+      `${t.ko} ${a.ko_p}.`, `Jeg skal ${daInf(a.da_p)} ${t.da}.`, `I'm going to ${a.en_b} ${t.en}.`, "予定",
+      `確定した予定は現在形のままでOK。${t.ko}=${t.ja}。`,
+      `予定は skal+動詞の原形で表すのが自然です。${t.da}=${t.ja}。`,
+      `be going to ~ で予定を表します。${t.en}=${t.ja}。`,
       { alt: altOr({
           ko: "現在形のままでも予定を表せますが、-(으)ㄹ 거예요(공부할 거예요)にすると「~するつもり」の意味がはっきりします",
           en: "be going to は will とも言えます(will はその場で決めた感じ、be going to は前から決めていた感じ)",
@@ -642,30 +756,34 @@ const TEMPLATES = [
 }],
 
 ["物の描写", 2, function* () {
-  for (const o of OBJECTS) {
-    for (const a of ADJS) {
+  for (const [oi, o] of OBJECTS.entries()) {
+    for (const [ai, a] of ADJS.entries()) {
       if (!a.ok.split(" ").includes(o.tag)) continue;
       if (["写真", "地図"].includes(o.ja) && ["重い", "軽い"].includes(a.ja)) continue;  // 紙物の重さは不自然
-      yield item(`この${o.ja}はとても${a.jp}。`,
-        `이 ${topicP(o.ko)} 아주 ${a.ko_p}.`, `${cap(daThis(o))} er meget ${daAdj(a, o)}.`, `This ${o.en} is very ${a.en}.`, "描写",
-        "아주=とても。形容詞も動詞と同じく해요体で活用します。",
-        a.da === a.da_n ? `この形容詞は en/et どちらの名詞でも同じ形(${a.da})です。`
-          : `述語の形容詞は性に一致。${o.g}名詞なので「${daAdj(a, o)}」。`,
-        "very で形容詞を強調できます。");
+      const g = degOf(a, oi + ai);
+      yield item(`この${o.ja}は${g.ja}${a[g.jaf]}。`,
+        `이 ${topicP(o.ko)} ${koDeg(a, g)}.`, `${cap(daThis(o))} er ${g.da} ${daAdj(a, o)}.`,
+        `This ${o.en} is ${g.en} ${a.en}.`, "描写",
+        g.nko,
+        g.nda + (a.da === a.da_n ? `この形容詞は en/et どちらの名詞でも同じ形(${a.da})です。`
+          : `述語の形容詞は性に一致。${o.g}名詞なので「${daAdj(a, o)}」。`),
+        g.nen);
     }
   }
 }],
 
 ["場所の描写", 2, function* () {
-  for (const p of PLACES) {
-    for (const a of ADJS) {
+  for (const [pi, p] of PLACES.entries()) {
+    for (const [ai, a] of ADJS.entries()) {
       if (!a.ok.split(" ").includes(p.tag)) continue;
-      yield item(`その${p.ja}はとても${a.jp}。`,
-        `그 ${topicP(p.ko)} 아주 ${a.ko_p}.`, `${cap(p.dad)} er meget ${daAdj(a, p)}.`, `The ${p.en} is very ${a.en}.`, "描写",
-        "그=その。指示語は 이(この)/그(その)/저(あの)。",
-        a.da === a.da_n ? `この形容詞は en/et どちらの名詞でも同じ形(${a.da})です。`
-          : `${p.g}名詞なので形容詞は「${daAdj(a, p)}」の形になります。`,
-        "既知のものには the をつけます。");
+      const g = degOf(a, pi + ai);
+      yield item(`その${p.ja}は${g.ja}${a[g.jaf]}。`,
+        `그 ${topicP(p.ko)} ${koDeg(a, g)}.`, `${cap(p.dad)} er ${g.da} ${daAdj(a, p)}.`,
+        `The ${p.en} is ${g.en} ${a.en}.`, "描写",
+        "그=その。指示語は 이(この)/그(その)/저(あの)。" + g.nko,
+        g.nda + (a.da === a.da_n ? `この形容詞は en/et どちらの名詞でも同じ形(${a.da})です。`
+          : `${p.g}名詞なので形容詞は「${daAdj(a, p)}」の形になります。`),
+        "既知のものには the をつけます。" + g.nen);
     }
   }
 }],
@@ -675,20 +793,22 @@ const TEMPLATES = [
   const SWEET_OK = new Set(["ケーキ", "クッキー", "チョコレート", "アイスクリーム", "りんご", "バナナ", "オレンジ", "ぶどう", "いちご", "梨", "スイカ", "ジュース", "ワイン", "ヨーグルト"]);
   const FRESH_OK = new Set(["りんご", "バナナ", "オレンジ", "ぶどう", "いちご", "梨", "スイカ", "トマト", "にんじん", "玉ねぎ", "じゃがいも", "野菜", "魚", "肉", "卵", "牛乳", "パン"]);
   const POPULAR_NG = new Set(["バター", "ヨーグルト", "卵", "玉ねぎ", "にんじん", "野菜", "じゃがいも", "牛乳", "ご飯", "パスタ", "水", "チーズ"]);
-  for (const f of FOODS) {
+  for (const [fi, f] of FOODS.entries()) {
     if (f.ja === "水") continue;                                   // 水の描写は不自然になりやすい
-    for (const a of ADJS) {
+    for (const [ai, a] of ADJS.entries()) {
       if (!a.ok.split(" ").includes("food")) continue;
       if (["大きい", "小さい"].includes(a.ja) && !f.art) continue;  // 不可算に大小は不自然
       if (a.ja === "甘い" && !SWEET_OK.has(f.ja)) continue;
       if (a.ja === "新鮮" && !FRESH_OK.has(f.ja)) continue;
       if (a.ja === "人気" && POPULAR_NG.has(f.ja)) continue;
-      yield item(`この${f.ja}はとても${a.jp}。`,
-        `이 ${topicP(f.ko)} 아주 ${a.ko_p}.`, `${cap(daThis(f))} er meget ${daAdj(a, f)}.`, `This ${f.en} is very ${a.en}.`, "食事",
-        "이=この、아주=とても。",
-        a.da === a.da_n ? `この形容詞は en/et どちらの名詞でも同じ形(${a.da})です。`
-          : `${f.g}名詞なので形容詞は「${daAdj(a, f)}」。`,
-        "食べ物の感想は This ~ is ... で伝えられます。");
+      const g = degOf(a, fi + ai);
+      yield item(`この${f.ja}は${g.ja}${a[g.jaf]}。`,
+        `이 ${topicP(f.ko)} ${koDeg(a, g)}.`, `${cap(daThis(f))} er ${g.da} ${daAdj(a, f)}.`,
+        `This ${f.en} is ${g.en} ${a.en}.`, "食事",
+        "이=この。" + g.nko,
+        g.nda + (a.da === a.da_n ? `この形容詞は en/et どちらの名詞でも同じ形(${a.da})です。`
+          : `${f.g}名詞なので形容詞は「${daAdj(a, f)}」。`),
+        "食べ物の感想は This ~ is ... で伝えられます。" + g.nen);
     }
   }
 }],
@@ -793,13 +913,14 @@ const TEMPLATES = [
 }],
 
 ["会いました", 3, function* () {
-  for (const p of PEOPLE) {
+  for (const [pi, p] of PEOPLE.entries()) {
     if (!p.human) continue;
-    yield item(`昨日私の${p.ja}に会いました。`,
-      `어제 제 ${objP(p.ko)} 만났어요.`, `Jeg mødte min ${p.da} i går.`, `I met my ${p.en} yesterday.`, "過去",
+    const t = pastOf(pi);
+    yield item(`${t.ja}私の${p.ja}に会いました。`,
+      `${t.ko} 제 ${objP(p.ko)} 만났어요.`, `Jeg mødte min ${p.da} ${t.da}.`, `I met my ${p.en} ${t.en}.`, "過去",
       "만나다は「~를/을 만나다」。日本語の「に会う」と助詞が違います。",
-      "møde の過去形は mødte。",
-      "meet の過去形は met(不規則動詞)。");
+      `møde の過去形は mødte。${t.da}=${t.ja}。`,
+      `meet の過去形は met(不規則動詞)。${t.en}=${t.ja}。`);
   }
 }],
 
@@ -947,6 +1068,683 @@ const TEMPLATES = [
   }
 }],
 
+/* ---------- 取りこぼし補強(否定・助動詞・接続詞・疑問詞) ---------- */
+
+["be動詞の否定", 2, function* () {
+  for (const j of JOBS) {
+    yield item(`私は${j.ja}ではありません。`,
+      `저는 ${subjP(j.ko)} 아니에요.`, `Jeg er ikke ${j.da}.`, `I'm not ${enIndef(j)}.`, "自己紹介",
+      "「~가/이 아니에요」=「~ではありません」。이에요/예요 の否定形です。",
+      "否定は動詞のあとに ikke。デンマーク語は職業名に冠詞をつけません。",
+      `be動詞の否定は am/is/are のあとに not。職業には ${j.art} が必要です。`);
+  }
+  for (const o of OBJECTS) {
+    yield item(`これは私の${o.ja}ではありません。`,
+      `이건 제 ${subjP(o.ko)} 아니에요.`, `Det er ikke ${o.g === "en" ? "min" : "mit"} ${o.da}.`,
+      `This isn't my ${o.en}.`, "描写",
+      "이건=이것은の縮約。「~가/이 아니에요」で否定します。",
+      `所有の min/mit も性に一致。${o.g}名詞なので「${o.g === "en" ? "min" : "mit"}」。`,
+      "This is not = This isn't。短縮形は会話でよく使います。");
+  }
+}],
+
+["can: ~できます", 3, function* () {
+  for (const c of COUNTRIES) {
+    yield item(`私は${c.lang_ja}を話せます。`,
+      `저는 ${objP(c.lang_ko)} 할 수 있어요.`, `Jeg kan tale ${c.lang_da}.`, `I can speak ${c.lang_en}.`, "学習",
+      "「~(으)ㄹ 수 있어요」=「~できます」。할 수 있어요 は하다の可能形。",
+      "kan のあとは動詞の原形(不定詞)。at はつけません。",
+      "can のあとは動詞の原形。can speak であって can to speak ではありません。");
+  }
+  const ABLE = [
+    { ja: "泳げます",       ko: "수영할 수 있어요",   da: "svømme",   en: "swim" },
+    { ja: "運転できます",   ko: "운전할 수 있어요",   da: "køre bil", en: "drive" },
+    { ja: "料理できます",   ko: "요리할 수 있어요",   da: "lave mad", en: "cook" },
+    { ja: "ギターを弾けます", ko: "기타를 칠 수 있어요", da: "spille guitar", en: "play the guitar" },
+  ];
+  for (const a of ABLE) {
+    yield item(`私は${a.ja}。`,
+      `저는 ${a.ko}.`, `Jeg kan ${a.da}.`, `I can ${a.en}.`, "日常",
+      "「~(으)ㄹ 수 있어요」で能力を表します。",
+      "kan + 原形で「~できる」。",
+      "can + 動詞の原形で能力を表します。");
+    yield item(`${a.ja.replace(/ます$/, "ますか")}?`,
+      `${a.ko}?`, `Kan du ${a.da}?`, `Can you ${a.en}?`, "質問",
+      "疑問文は語尾を上げるだけ。主語 당신은 はふつう省きます。",
+      "疑問文は kan を文頭に出します(Kan du ~?)。",
+      "Can you ~? で「~できますか」。答えは Yes, I can. / No, I can't.");
+  }
+}],
+
+["will: ~するつもりです", 3, function* () {
+  // デンマーク語は vil を未来に使うと「~したい」の意味になるため、現在形+時間表現で表す。
+  // 韓国語の -(으)ㄹ게요 は語幹によって形が変わり機械的に作れないので、動詞ごとに書く。
+  const WILL = [
+    { ja: "勉強します",       ko: "공부할게요",      da: "studerer",      en: "study" },
+    { ja: "働きます",         ko: "일할게요",        da: "arbejder",      en: "work" },
+    { ja: "料理します",       ko: "요리할게요",      da: "laver mad",     en: "cook" },
+    { ja: "掃除します",       ko: "청소할게요",      da: "gør rent",      en: "clean" },
+    { ja: "電話します",       ko: "전화할게요",      da: "ringer",        en: "call you" },
+    { ja: "本を読みます",     ko: "책을 읽을게요",   da: "læser en bog",  en: "read a book" },
+    { ja: "手紙を書きます",   ko: "편지를 쓸게요",   da: "skriver et brev", en: "write a letter" },
+    { ja: "コーヒーを飲みます", ko: "커피를 마실게요", da: "drikker kaffe", en: "drink coffee" },
+    { ja: "早く起きます",     ko: "일찍 일어날게요", da: "står tidligt op", en: "get up early" },
+    { ja: "運動します",       ko: "운동할게요",      da: "træner",        en: "exercise" },
+  ];
+  for (const [i, w] of WILL.entries()) {
+    const t = futureOf(i);
+    yield item(`${t.ja}${w.ja.replace(/ます$/, "ますね")}。`,
+      `${t.ko} ${w.ko}.`, `Jeg ${w.da} ${t.da}.`, `I'll ${w.en} ${t.en}.`, "予定",
+      `その場で決めたことは -(으)ㄹ게요。「~しますね」に近い言い方です。${t.ko}=${t.ja}。`,
+      `デンマーク語は未来にも現在形を使います。vil を使うと「~したい」の意味になるので注意。${t.da}=${t.ja}。`,
+      "will はその場で決めたこと、be going to は前から決めていたことに使います。");
+  }
+  for (const [wi, w] of WEATHER.entries()) {
+    const t = futureOf(wi);
+    yield item(`${t.ja}は${w.ja}でしょう。`,
+      `${topicP(t.ko)} ${w.ko_will}.`,
+      w.da_c ? `${cap(w.da_c)} ${t.da}.` : `Det bliver ${w.da} ${t.da}.`,
+      `It will be ${w.en} ${t.en}.`, "天気",
+      "推量は -(으)ㄹ 거예요。「~でしょう」にあたります。",
+      "未来の天気は Det bliver ~(~になる)。bliver が未来を表します。",
+      "It will be ~ で天気の予想。It's going to be ~ とも言えます。");
+  }
+}],
+
+["and / but: 2つの文をつなぐ", 3, function* () {
+  for (const [i, f] of FOODS.entries()) {
+    const g = FOODS[(i + 5) % FOODS.length];
+    if (f.ja === g.ja) continue;
+    yield item(`私は${f.ja}が好きですが、${g.ja}は好きではありません。`,
+      `저는 ${objP(f.ko)} 좋아하지만 ${topicP(g.ko)} 안 좋아해요.`,
+      `Jeg kan godt lide ${f.dagen}, men jeg kan ikke lide ${g.dagen}.`,
+      `I like ${f.gen}, but I don't like ${g.gen}.`, "好み",
+      "「~지만」=「~だが」。動詞・形容詞の語幹につけます。",
+      "men=しかし。2つの文をつなぐときは前にコンマを打ちます。",
+      "but の前にはコンマを打ちます。前後は独立した文の形にします。");
+    if (i % 3 !== 0) continue;
+    yield item(`私は${f.ja}と${g.ja}が好きです。`,
+      `저는 ${f.ko}와/과 ${objP(g.ko)} 좋아해요.`.replace(/와\/과/, hasBatchim(f.ko) ? "과" : "와"),
+      `Jeg kan godt lide ${f.dagen} og ${g.dagen}.`,
+      `I like ${f.gen} and ${g.gen}.`, "好み",
+      `名詞をつなぐ「~と」は 와/과。${f.ko}はパッチム${bat(f.ko)}→${hasBatchim(f.ko) ? "과" : "와"}。`,
+      "og=~と。名詞どうしをつなぐときはコンマ不要です。",
+      "and で名詞をつなぐときはコンマ不要です。");
+  }
+}],
+
+["疑問詞: だれ・いつ・なぜ", 3, function* () {
+  const WHO = [
+    { ja: "あの人はだれですか?",         ko: "저 사람은 누구예요?",       da: "Hvem er den person?",        en: "Who is that person?" },
+    { ja: "この本はだれのですか?",       ko: "이 책은 누구 거예요?",      da: "Hvis bog er det?",           en: "Whose book is this?" },
+    { ja: "だれがこの写真を撮りましたか?", ko: "누가 이 사진을 찍었어요?", da: "Hvem tog dette billede?",    en: "Who took this photo?" },
+    { ja: "だれと一緒に行きますか?",     ko: "누구와 같이 가요?",         da: "Hvem tager du med?",         en: "Who are you going with?" },
+    { ja: "だれが韓国語を話せますか?",   ko: "누가 한국어를 할 수 있어요?", da: "Hvem kan tale koreansk?",  en: "Who can speak Korean?" },
+    { ja: "あなたの先生はだれですか?",   ko: "선생님이 누구예요?",        da: "Hvem er din lærer?",         en: "Who is your teacher?" },
+  ];
+  for (const w of WHO) {
+    yield item(w.ja, w.ko, w.da, w.en, "質問",
+      "누구=だれ。「누가」は 누구+가(主格)の縮約形です。",
+      "hvem=だれ、hvis=だれの。疑問詞のあとは動詞→主語の語順です。",
+      "who=だれ、whose=だれの。who が主語のときは do/does を使いません。");
+  }
+  for (const [pi, p] of PEOPLE.entries()) {
+    if (!p.human) continue;
+    yield item(`あなたの${p.ja}はどこで働いていますか?`,
+      `${topicP(p.ko)} 어디에서 일해요?`, `Hvor arbejder din ${p.da}?`, `Where does your ${p.en} work?`, "質問",
+      "어디에서=どこで。場所+에서 で動作の場所を表します。",
+      "疑問詞が文頭に来ると、動詞→主語の語順(倒置)になります。",
+      "疑問詞 + does + 主語 + 動詞の原形。works ではなく work になります。");
+    if (pi % 2) continue;
+    yield item(`あなたの${p.ja}の誕生日はいつですか?`,
+      `${topicP(p.ko)} 생일이 언제예요?`, `Hvornår har din ${p.da} fødselsdag?`, `When is your ${p.en}'s birthday?`, "質問",
+      "언제=いつ。생일=誕生日。",
+      "デンマーク語は「誕生日を持つ(har fødselsdag)」と言います。",
+      "所有の 's は人につけます(your father's birthday)。");
+  }
+  for (const [ci, c] of COUNTRIES.entries()) {
+    if (ci % 2) continue;
+    yield item(`なぜ${c.lang_ja}を勉強しているのですか?`,
+      `왜 ${objP(c.lang_ko)} 공부해요?`, `Hvorfor lærer du ${c.lang_da}?`, `Why do you study ${c.lang_en}?`, "質問",
+      "왜=なぜ。理由を聞くときに使います。",
+      "hvorfor=なぜ。疑問詞のあとは動詞→主語。",
+      "Why do you ~? で理由をたずねます。答えは Because ~.");
+  }
+}],
+
+["頻度副詞: いつも・たいてい・ときどき", 3, function* () {
+  const FREQ = [
+    { ja: "いつも",   ko: "항상",    da: "altid",         en: "always",    neg: false },
+    { ja: "たいてい", ko: "보통",    da: "normalt",       en: "usually",   neg: false },
+    { ja: "ときどき", ko: "가끔",    da: "nogle gange",   en: "sometimes", neg: false },
+    { ja: "まったく", ko: "전혀 안", da: "aldrig",        en: "never",     neg: true },
+  ];
+  for (const [ai, a] of ACTIONS.entries()) {
+    const f = FREQ[ai % FREQ.length];
+    yield item(f.neg ? `私はまったく${a.ja_p.replace(/ます$/, "ません")}。` : `私は${f.ja}${a.ja_p}。`,
+      `저는 ${koAdvIn(a.ko_p, f.ko)}.`, `Jeg ${daAdvIn(a.da_p, f.da)}.`, `I ${f.en} ${a.en_b}.`, "日常",
+      f.neg ? "전혀 안 ~=まったく~ない。전혀 は否定と一緒に使います。"
+            : `${f.ko}=${f.ja}。頻度の副詞は動詞の前に置きます。`,
+      `デンマーク語の頻度副詞は動詞のすぐあと(目的語より前)に置きます。${f.da}=${f.ja}。`,
+      f.neg ? "never は it自体が否定なので don't は不要です(I never ~)。"
+            : "英語の頻度副詞は一般動詞の前、be動詞のあとに置きます。", { alt: actAlt(a) });
+  }
+}],
+
+/* ---------- 発展文型(D4): 助動詞・比較・完了・SVOO/SVOC ---------- */
+
+["should / have to: ~したほうがいい", 4, function* () {
+  // 韓国語の -아/어야 해요 は語幹で形が変わるため動詞ごとに書く
+  const DUTY = [
+    { ja: "もっと野菜を食べた",   ko: "채소를 더 먹어야",   da: "spise flere grøntsager", en: "eat more vegetables" },
+    { ja: "もっと運動した",       ko: "운동을 더 해야",     da: "træne mere",             en: "exercise more" },
+    { ja: "早く寝た",             ko: "일찍 자야",          da: "gå tidligt i seng",      en: "go to bed early" },
+    { ja: "水をたくさん飲んだ",   ko: "물을 많이 마셔야",   da: "drikke meget vand",      en: "drink a lot of water" },
+    { ja: "毎日勉強した",         ko: "매일 공부해야",      da: "studere hver dag",       en: "study every day" },
+    { ja: "медленно話した",       ko: "천천히 말해야",      da: "tale langsomt",          en: "speak slowly" },
+  ];
+  for (const d of DUTY) {
+    yield item(`あなたは${d.ja}ほうがいいです。`,
+      `${d.ko} 해요.`, `Du bør ${d.da}.`, `You should ${d.en}.`, "助言",
+      "「~아/어야 해요」=「~しなければならない・~したほうがいい」。",
+      "bør=~したほうがいい。あとは動詞の原形(at なし)。",
+      "should + 動詞の原形で助言を表します。to はつけません。");
+    yield item(`私は${d.ja}ほうがいいです。`,
+      `저는 ${d.ko} 해요.`, `Jeg skal ${d.da}.`, `I have to ${d.en}.`, "助言",
+      "主語が私のときも形は同じ。저는 をつけると誰の話かはっきりします。",
+      "skal は「~しなければならない」。bør(~したほうがいい)より強い言い方です。",
+      "have to は「~しなければならない」。should より義務が強い言い方です。");
+  }
+}],
+
+["比較級: ~より~です", 4, function* () {
+  for (const [oi, o] of OBJECTS.entries()) {
+    const q = OBJECTS[(oi + 4) % OBJECTS.length];
+    if (o.ja === q.ja || o.tag !== q.tag) continue;
+    for (const [ai, a] of ADJS.entries()) {
+      if (!a.ok.split(" ").includes(o.tag)) continue;
+      if ((oi + ai) % 4) continue;                        // 全組だと多すぎるので間引く
+      yield item(`この${o.ja}はあの${q.ja}より${a.jp}。`,
+        `이 ${topicP(o.ko)} 저 ${q.ko}보다 더 ${a.ko_p}.`,
+        `${cap(daThis(o))} er ${a.da_er} end ${daThat(q)}.`,
+        `This ${o.en} is ${a.en_er} than that ${q.en}.`, "比較",
+        "「~보다 더 ~」=「~より もっと ~」。보다 が比較の助詞です。",
+        `比較級は -ere か mere +形容詞。${a.da}→${a.da_er}。end=~より。`,
+        `比較級は -er か more +形容詞。${a.en}→${a.en_er}。than=~より。`);
+    }
+  }
+}],
+
+["最上級: いちばん~です", 4, function* () {
+  for (const [pi, p] of PLACES.entries()) {
+    for (const [ai, a] of ADJS.entries()) {
+      if (!a.ok.split(" ").includes(p.tag)) continue;
+      if ((pi + ai) % 5) continue;
+      yield item(`これがこの町でいちばん${a.jp_adn}${p.ja}です。`,
+        `이게 이 동네에서 제일 ${koAdnom(a)} ${copula(p.ko)}.`,
+        `${cap(p.g === "en" ? "det er den" : "det er det")} ${a.da_est}e ${p.da} i byen.`,
+        `This is the ${a.en_est} ${p.en} in town.`, "比較",
+        "제일=いちばん。「제일 + 形容詞の連体形 + 名詞」の順です。가장 とも言えます。",
+        `最上級は -est か mest +形容詞。名詞の前では語尾に -e がつきます(${a.da_est}e)。`,
+        `最上級には the をつけます。${a.en}→the ${a.en_est}。`);
+    }
+  }
+}],
+
+["as ... as: ~と同じくらい", 4, function* () {
+  for (const [oi, o] of OBJECTS.entries()) {
+    const q = OBJECTS[(oi + 7) % OBJECTS.length];
+    if (o.ja === q.ja || o.tag !== q.tag) continue;
+    for (const [ai, a] of ADJS.entries()) {
+      if (!a.ok.split(" ").includes(o.tag)) continue;
+      if ((oi + ai) % 6) continue;
+      yield item(`この${o.ja}はあの${q.ja}と同じくらい${a.jp}。`,
+        `이 ${topicP(o.ko)} 저 ${q.ko}만큼 ${a.ko_p}.`,
+        `${cap(daThis(o))} er lige så ${daAdj(a, o)} som ${daThat(q)}.`,
+        `This ${o.en} is as ${a.en} as that ${q.en}.`, "比較",
+        "「~만큼」=「~と同じくらい」。比較級とちがい形容詞はそのままの形です。",
+        "lige så ~ som … =「…と同じくらい~」。形容詞は元の形のまま使います。",
+        "as + 形容詞の原級 + as。比較級(-er)にはしません。");
+    }
+  }
+}],
+
+["現在完了: ~したことがあります", 4, function* () {
+  for (const [ci, c] of COUNTRIES.entries()) {
+    const times = ["一度", "二回", "三回"][ci % 3];
+    const koT = { 一度: "한 번", 二回: "두 번", 三回: "세 번" }[times];
+    const enT = { 一度: "once", 二回: "twice", 三回: "three times" }[times];
+    const daT = { 一度: "én gang", 二回: "to gange", 三回: "tre gange" }[times];
+    yield item(`私は${times}${c.ja}に行ったことがあります。`,
+      `저는 ${c.ko}에 ${koT} 가 봤어요.`, `Jeg har været i ${c.da} ${daT}.`,
+      `I have been to ${c.en} ${enT}.`, "経験",
+      "「~아/어 봤어요」=「~してみた・~したことがある」。回数は動詞の前に置きます。",
+      "現在完了は har + 過去分詞。være の過去分詞は været。",
+      "have been to ~ =「~に行ったことがある」。have gone to だと「行ってしまった」になります。");
+  }
+  const DONE = [
+    { ja: "昼ごはんを食べ",   ko: "점심을 막 먹었어요",   da: "har lige spist frokost",  en: "have just finished lunch" },
+    { ja: "宿題を終え",       ko: "숙제를 막 끝냈어요",   da: "har lige lavet lektier",  en: "have just finished my homework" },
+    { ja: "その本を読み",     ko: "그 책을 막 읽었어요",  da: "har lige læst den bog",   en: "have just read that book" },
+    { ja: "部屋を掃除し",     ko: "방을 막 청소했어요",   da: "har lige gjort rent",     en: "have just cleaned my room" },
+  ];
+  for (const d of DONE) {
+    yield item(`私はちょうど${d.ja}たところです。`,
+      `저는 ${d.ko}.`, `Jeg ${d.da}.`, `I ${d.en}.`, "日常",
+      "막=ちょうど今。「막 ~했어요」で直前の完了を表します。",
+      "lige=ちょうど。har lige + 過去分詞で「~したばかり」。",
+      "have just + 過去分詞で「~したばかり」。完了の意味です。");
+  }
+}],
+
+["if / when: ~なら・~のとき", 4, function* () {
+  for (const [wi, w] of WEATHER.entries()) {
+    yield item(`${w.ja_ba}、家にいます。`,
+      `${w.ko_myeon} 집에 있을 거예요.`,
+      `Hvis ${w.da_c ? "det blæser meget" : `det er ${w.da}`}, bliver jeg hjemme.`,
+      `If it is ${w.en}, I'll stay home.`, "理由",
+      "「~(으)면」=「~なら」。条件を表す語尾です。",
+      "hvis=もし。条件節のあとは主節が動詞→主語の語順になります(bliver jeg)。",
+      "if の中は未来のことでも現在形で書きます(If it is ~, I'll ~)。");
+  }
+  for (const [ai, a] of ACTIONS.entries()) {
+    if (ai % 4) continue;
+    yield item(`時間があるとき、私は${a.ja_p}。`,
+      `시간이 있을 때 저는 ${a.ko_p}.`, `Når jeg har tid, ${daInvert(a.da_p)}.`,
+      `When I have time, I ${a.en_b}.`, "日常",
+      "「~(으)ㄹ 때」=「~のとき」。있을 때=あるとき。",
+      "når=~のとき(くり返し)。従属節が先に来ると主節は動詞→主語の語順です。",
+      "when 節の中は未来でも現在形。文頭に置いたらコンマで区切ります。");
+  }
+}],
+
+["SVOO: ~に~をあげます", 4, function* () {
+  for (const [pi, p] of PEOPLE.entries()) {
+    if (!p.human) continue;
+    const o = OBJECTS[(pi * 3) % OBJECTS.length];
+    const t = pastOf(pi);
+    yield item(`私は${t.ja}${p.ja}に${o.ja}をあげました。`,
+      `저는 ${t.ko} ${p.ko}에게 ${objP(o.ko)} 줬어요.`,
+      `Jeg gav min ${p.da} ${enIndefDa(o)} ${t.da}.`,
+      `I gave my ${p.en} ${enIndef(o)} ${t.en}.`, "日常",
+      "「~에게 ~을/를 줬어요」=「~に~をあげた」。에게 は人につく助詞です。",
+      "give の過去形は gav。「人+もの」の順に並べます。",
+      "give + 人 + もの の語順。give something to someone とも言えます。");
+    yield item(`私は${p.ja}に${o.ja}を見せました。`,
+      `저는 ${p.ko}에게 ${objP(o.ko)} 보여줬어요.`,
+      `Jeg viste min ${p.da} ${enIndefDa(o)}.`,
+      `I showed my ${p.en} ${enIndef(o)}.`, "日常",
+      "보여주다=見せる。보다(見る)の使役形です。",
+      "vise の過去形は viste。give と同じく「人+もの」の順です。",
+      "show + 人 + もの。give と同じ形をとる動詞です。");
+  }
+}],
+
+["SVOC: ~を~と呼びます", 4, function* () {
+  const CALL = [
+    { ja: "私の友達は私をユウと呼びます。", ko: "제 친구는 저를 유우라고 불러요.", da: "Min ven kalder mig Yu.", en: "My friend calls me Yu." },
+    { ja: "みんなは彼をケンと呼びます。",   ko: "다들 그를 켄이라고 불러요.",      da: "Alle kalder ham Ken.",   en: "Everyone calls him Ken." },
+    { ja: "私たちはこの犬をモモと呼びます。", ko: "우리는 이 개를 모모라고 불러요.", da: "Vi kalder denne hund Momo.", en: "We call this dog Momo." },
+  ];
+  for (const c of CALL) {
+    yield item(c.ja, c.ko, c.da, c.en, "日常",
+      "「~을/를 ~라고 부르다」=「~を~と呼ぶ」。라고 が引用の助詞です。",
+      "kalde + 目的語 + 名前。前置詞は入りません。",
+      "call + 目的語 + 補語(呼び名)。前置詞は入りません。");
+  }
+  for (const [hi, h] of HUMAN_ADJS.entries()) {
+    if (hi % 2) continue;
+    yield item(`その知らせは私を${h.jp_make}。`,
+      `그 소식은 저를 ${h.ko_st}게 했어요.`, `Nyheden gjorde mig ${h.da}.`,
+      `The news made me ${h.en}.`, "日常",
+      "「~게 하다」=「~(の状態)にする」。形容詞の語幹に -게 하다 をつけます。",
+      "gøre + 目的語 + 形容詞。gøre の過去形は gjorde。",
+      "make + 目的語 + 形容詞で「~を~の状態にする」。");
+  }
+}],
+
+["become: ~になりました", 4, function* () {
+  for (const [pi, p] of PEOPLE.entries()) {
+    if (!p.human) continue;
+    const j = JOBS[(pi * 2) % JOBS.length];
+    yield item(`私の${p.ja}は${j.ja}になりました。`,
+      `제 ${topicP(p.ko)} ${subjP(j.ko)} 됐어요.`, `Min ${p.da} blev ${j.da}.`,
+      `My ${p.en} became ${enIndef(j)}.`, "自己紹介",
+      "「~가/이 되다」=「~になる」。助詞は을/를 ではなく 가/이 です。",
+      "blive の過去形は blev。職業には冠詞をつけません。",
+      "become の過去形は became。職業には a/an が必要です。");
+  }
+  for (const [wi, w] of WEATHER.entries()) {
+    yield item(`${pastOf(wi).ja}、${w.ja_ku}なりました。`,
+      `${pastOf(wi).ko} ${w.ko_became}.`,
+      `Det blev ${w.da} ${pastOf(wi).da}.`, `It became ${w.en} ${pastOf(wi).en}.`, "天気",
+      "「~아/어졌어요」=「~くなった」。状態の変化を表します。",
+      "天気の変化も blive で表します(Det blev ~)。",
+      "become の過去形は became。got ~ とも言えます。");
+  }
+}],
+
+["look: ~に見えます", 4, function* () {
+  for (const h of HUMAN_ADJS) {
+    yield item(`あなたは${h.jp_look}。`,
+      `${koStem(h.ko_p)} 보여요.`, `Du ser ${h.da} ud.`, `You look ${h.en}.`, "描写",
+      "「~아/어 보여요」=「~に見える」。해요体の요を取って 보여요 をつけます。",
+      "se ~ ud で「~に見える」。ud が文の最後に来るのがポイントです。",
+      "look + 形容詞で「~に見える」。look like のあとは名詞です。");
+  }
+  for (const [fi, f] of FOODS.entries()) {
+    if (fi % 3) continue;
+    yield item(`この${f.ja}はおいしそうです。`,
+      `이 ${topicP(f.ko)} 맛있어 보여요.`, `${cap(daThis(f))} ser lækker ud.`,
+      `This ${f.en} looks delicious.`, "食事",
+      "맛있어 보여요=おいしそうに見える。",
+      "se lækker ud=おいしそうに見える。",
+      "look + 形容詞。looks delicious で「おいしそう」。");
+  }
+}],
+
+["There is: ~があります", 4, function* () {
+  for (const [pi, p] of PLACES.entries()) {
+    const q = PLACES[(pi + 6) % PLACES.length];
+    if (p.ja === q.ja) continue;
+    yield item(`${q.ja}の近くに${p.ja}があります。`,
+      `${q.ko} 근처에 ${subjP(p.ko)} 있어요.`, `Der er ${enIndefDa(p)} i nærheden af ${q.dad}.`,
+      `There is ${enIndef(p)} near the ${q.en}.`, "描写",
+      "「~에 ~가/이 있어요」=「~に~があります」。場所には 에 がつきます。",
+      "Der er ~ =「~がある」。der は形式主語です。",
+      "There is + 単数名詞。複数なら There are になります。");
+  }
+}],
+
+["過去進行形: ~していました", 4, function* () {
+  // 韓国語の -고 있었어요 は辞書形の語幹につくが、해요体からは機械的に作れないので動詞ごとに書く
+  const PROG = [
+    { ja: "勉強していました",     ko: "공부하고 있었어요",   da: "studere",       en: "studying" },
+    { ja: "働いていました",       ko: "일하고 있었어요",     da: "arbejde",       en: "working" },
+    { ja: "料理していました",     ko: "요리하고 있었어요",   da: "lave mad",      en: "cooking" },
+    { ja: "本を読んでいました",   ko: "책을 읽고 있었어요",  da: "læse en bog",   en: "reading a book" },
+    { ja: "音楽を聞いていました", ko: "음악을 듣고 있었어요", da: "høre musik",   en: "listening to music" },
+    { ja: "映画を見ていました",   ko: "영화를 보고 있었어요", da: "se en film",   en: "watching a movie" },
+    { ja: "手紙を書いていました", ko: "편지를 쓰고 있었어요", da: "skrive et brev", en: "writing a letter" },
+    { ja: "走っていました",       ko: "달리고 있었어요",     da: "løbe",          en: "running" },
+  ];
+  for (const [i, g] of PROG.entries()) {
+    const t = PASTS[i % 3];   // 昨日/今朝/昨晩。「先週の8時」は時刻と噛み合わないので使わない
+    yield item(`${t.ja}の8時に私は${g.ja}。`,
+      `${t.ko} 여덟 시에 저는 ${g.ko}.`,
+      `Klokken otte ${t.da} var jeg ved at ${g.da}.`,
+      `I was ${g.en} at eight ${t.en}.`, "過去",
+      "「~고 있었어요」=「~していました」。動詞の語幹に -고 있다 をつけます。",
+      "var ved at + 動詞の原形で「~しているところだった」。デンマーク語に進行形の専用形はありません。",
+      "was/were + -ing で、過去のある時点で進行中だったことを表します。");
+  }
+}],
+
+["that節: ~だと思います", 4, function* () {
+  for (const [hi, h] of HUMAN_ADJS.entries()) {
+    yield item(`私の友達は${h.jp_that}と思います。`,
+      `제 친구는 ${h.ko_that || h.ko_st}다고 생각해요.`, `Jeg tror, at min ven er ${h.da}.`,
+      `I think that my friend is ${h.en}.`, "日常",
+      "「~다고 생각해요」=「~だと思う」。다고 が引用の語尾です。",
+      "tro, at ~ =「~だと思う」。デンマーク語は at の前にコンマを打ちます。",
+      "think that ~。この that は省略できます(I think my friend is ~)。");
+    if (hi % 2) continue;
+    yield item(`彼女は${h.jp_that.replace(/だ$/, "だった").replace(/いる$/, "いた").replace(/しい$/, "しかった").replace(/眠い$/, "眠かった")}と言いました。`,
+      `그녀는 ${h.ko_that || h.ko_st}다고 말했어요.`, `Hun sagde, at hun var ${h.da}.`,
+      `She told me that she was ${h.en}.`, "日常",
+      "「~다고 말했어요」=「~だと言った」。",
+      "sige の過去形は sagde。従属節の前にコンマを打ちます。",
+      "tell + 人 + that節。主節が過去形なので that節も過去形にします(時制の一致)。");
+  }
+}],
+
+["不定詞の応用: too ~ to / It is ~ to", 4, function* () {
+  const I = [
+    { ja: "このスープは熱すぎて飲めません。",     ko: "이 수프는 너무 뜨거워서 마실 수 없어요.", da: "Denne suppe er for varm til at drikke.", en: "This soup is too hot to drink." },
+    { ja: "この本は難しすぎて読めません。",       ko: "이 책은 너무 어려워서 읽을 수 없어요.",   da: "Denne bog er for svær til at læse.",    en: "This book is too difficult to read." },
+    { ja: "私は疲れすぎて出かけられません。",     ko: "저는 너무 피곤해서 나갈 수 없어요.",      da: "Jeg er for træt til at gå ud.",         en: "I'm too tired to go out." },
+    { ja: "韓国語を学ぶのは楽しいです。",         ko: "한국어를 배우는 것은 즐거워요.",          da: "Det er sjovt at lære koreansk.",        en: "It is fun to learn Korean." },
+    { ja: "毎日運動するのは大切です。",           ko: "매일 운동하는 것은 중요해요.",            da: "Det er vigtigt at træne hver dag.",     en: "It is important to exercise every day." },
+    { ja: "朝早く起きるのは難しいです。",         ko: "아침 일찍 일어나는 것은 어려워요.",       da: "Det er svært at stå tidligt op.",       en: "It is difficult to get up early." },
+    { ja: "何か食べるものがほしいです。",         ko: "뭔가 먹을 것이 필요해요.",                da: "Jeg vil gerne have noget at spise.",    en: "I want something to eat." },
+    { ja: "読む本がたくさんあります。",           ko: "읽을 책이 많이 있어요.",                  da: "Jeg har mange bøger at læse.",          en: "I have a lot of books to read." },
+    { ja: "私は友達に手伝ってほしいです。",       ko: "저는 친구가 도와주기를 바라요.",          da: "Jeg vil gerne have min ven til at hjælpe mig.", en: "I want my friend to help me." },
+    { ja: "先生は私たちに毎日勉強するように言いました。", ko: "선생님은 우리에게 매일 공부하라고 했어요.", da: "Læreren bad os om at studere hver dag.", en: "The teacher told us to study every day." },
+    { ja: "私は料理を習うためにデンマークに来ました。", ko: "저는 요리를 배우러 덴마크에 왔어요.", da: "Jeg kom til Danmark for at lære at lave mad.", en: "I came to Denmark to learn to cook." },
+    { ja: "彼女に会えてうれしいです。",           ko: "그녀를 만나서 기뻐요.",                   da: "Jeg er glad for at møde hende.",        en: "I'm happy to meet her." },
+  ];
+  for (const x of I) {
+    yield item(x.ja, x.ko, x.da, x.en, "学習",
+      "「~기 위해」「~러」で目的、「~을/를 것」で「~すること」を表します。",
+      "デンマーク語の不定詞は at + 動詞。for at ~ で「~するために」。",
+      "too ~ to …(~すぎて…できない)、It is ~ to …(…するのは~だ)、名詞+to不定詞(~すべき…)。");
+  }
+}],
+
+/* ---------- 上級文型(D5): 後置修飾・関係代名詞・間接疑問・受身・仮定法 ----------
+ * 韓国語の連体形とデンマーク語の関係節は語ごとに形が変わり機械的に作れないので、
+ * 語彙の総当たりではなく1文ずつ手書きしている(質を量より優先)。
+ * デンマーク語の関係節は主格 der / 目的格 som を使い、コンマは文法コンマ方式で統一。 */
+
+["後置修飾: 前置詞句", 4, function* () {
+  const P = [
+    { ja: "机の上の本は私のです。",        ko: "책상 위의 책은 제 거예요.",       da: "Bogen på bordet er min.",              en: "The book on the desk is mine." },
+    { ja: "壁の絵はとても古いです。",      ko: "벽에 있는 그림은 아주 오래됐어요.", da: "Billedet på væggen er meget gammelt.", en: "The picture on the wall is very old." },
+    { ja: "窓のそばの椅子は空いています。", ko: "창문 옆의 의자는 비어 있어요.",   da: "Stolen ved vinduet er ledig.",         en: "The chair by the window is free." },
+    { ja: "青い服の女性は私の先生です。",  ko: "파란 옷을 입은 여자는 제 선생님이에요.", da: "Kvinden i det blå tøj er min lærer.", en: "The woman in the blue dress is my teacher." },
+    { ja: "駅の前のカフェは新しいです。",  ko: "역 앞의 카페는 새로워요.",        da: "Caféen foran stationen er ny.",        en: "The café in front of the station is new." },
+    { ja: "テーブルの上の鍵はだれのですか?", ko: "테이블 위의 열쇠는 누구 거예요?", da: "Hvis er nøglen på bordet?",          en: "Whose is the key on the table?" },
+  ];
+  for (const x of P) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "「~의」「~에 있는」で名詞を後ろから修飾します。韓国語は修飾語が名詞の前に来ます。",
+      "デンマーク語は前置詞句を名詞のあとに置きます(bogen på bordet)。",
+      "英語も前置詞句は名詞のあと。日本語と語順が逆になります。");
+  }
+}],
+
+["後置修飾: 分詞", 5, function* () {
+  const P = [
+    { ja: "あそこに立っている男性は私の先生です。", ko: "저기 서 있는 남자는 제 선생님이에요.", da: "Manden, der står derovre, er min lærer.", en: "The man standing over there is my teacher." },
+    { ja: "ピアノを弾いている少女は私の妹です。",   ko: "피아노를 치는 소녀는 제 여동생이에요.", da: "Pigen, der spiller klaver, er min lillesøster.", en: "The girl playing the piano is my sister." },
+    { ja: "英語で書かれた本を読んでいます。",       ko: "영어로 쓰인 책을 읽고 있어요.",       da: "Jeg læser en bog skrevet på engelsk.",   en: "I'm reading a book written in English." },
+    { ja: "壁にかけられた絵はとても有名です。",     ko: "벽에 걸린 그림은 아주 유명해요.",     da: "Billedet, der hænger på væggen, er meget berømt.", en: "The picture hanging on the wall is very famous." },
+    { ja: "向こうで待っている人はだれですか?",     ko: "저기서 기다리는 사람은 누구예요?",    da: "Hvem er personen, der venter derovre?",  en: "Who is the person waiting over there?" },
+    { ja: "韓国で作られた車を買いました。",         ko: "한국에서 만든 차를 샀어요.",          da: "Jeg købte en bil lavet i Korea.",        en: "I bought a car made in Korea." },
+    { ja: "公園で遊んでいる子どもたちは楽しそうです。", ko: "공원에서 노는 아이들은 즐거워 보여요.", da: "Børnene, der leger i parken, ser glade ud.", en: "The children playing in the park look happy." },
+    { ja: "電話で話している男性は私の父です。",     ko: "전화로 통화하는 남자는 제 아버지예요.", da: "Manden, der taler i telefon, er min far.", en: "The man talking on the phone is my father." },
+    { ja: "そこに座っている女性を知っていますか?", ko: "거기 앉아 있는 여자를 알아요?",     da: "Kender du kvinden, der sidder der?",     en: "Do you know the woman sitting there?" },
+    { ja: "日本で撮られた写真を見せますね。",       ko: "일본에서 찍은 사진을 보여줄게요.",   da: "Jeg viser dig et billede taget i Japan.", en: "I'll show you a photo taken in Japan." },
+    { ja: "窓のそばで本を読んでいる人は先生です。", ko: "창가에서 책을 읽는 사람은 선생님이에요.", da: "Personen, der læser en bog ved vinduet, er læreren.", en: "The person reading a book by the window is the teacher." },
+    { ja: "韓国語で書かれたメールを受け取りました。", ko: "한국어로 쓰인 이메일을 받았어요.", da: "Jeg modtog en mail skrevet på koreansk.", en: "I received an email written in Korean." },
+    { ja: "道で泣いている子どもを見ました。",       ko: "길에서 우는 아이를 봤어요.",         da: "Jeg så et barn, der græd på gaden.",     en: "I saw a child crying on the street." },
+    { ja: "木の下で眠っている犬がいます。",         ko: "나무 아래에서 자는 개가 있어요.",    da: "Der er en hund, der sover under træet.", en: "There is a dog sleeping under the tree." },
+    { ja: "隣に住んでいる家族はとても親切です。",   ko: "옆집에 사는 가족은 아주 친절해요.",  da: "Familien, der bor ved siden af, er meget venlig.", en: "The family living next door is very kind." },
+    { ja: "テーブルに置かれた花はきれいです。",     ko: "테이블에 놓인 꽃은 예뻐요.",         da: "Blomsterne, der står på bordet, er smukke.", en: "The flowers placed on the table are beautiful." },
+    { ja: "フランスで作られたチーズを買いました。", ko: "프랑스에서 만든 치즈를 샀어요.",     da: "Jeg købte ost lavet i Frankrig.",        en: "I bought cheese made in France." },
+  ];
+  for (const x of P) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "現在分詞は -는、過去分詞は -(으)ㄴ/-인 の連体形にあたります。修飾語は名詞の前です。",
+      "分詞で修飾するときは名詞のあと。動詞つきの節にする場合は der で受けます。",
+      "現在分詞(-ing)は「~している」、過去分詞は「~される」。どちらも名詞のあとに置きます。");
+  }
+}],
+
+["関係代名詞: 主格(who / that)", 5, function* () {
+  const R = [
+    { ja: "私にはデンマークに住んでいる友達がいます。", ko: "저는 덴마크에 사는 친구가 있어요.",   da: "Jeg har en ven, der bor i Danmark.",       en: "I have a friend who lives in Denmark." },
+    { ja: "病院で働いている姉がいます。",               ko: "저는 병원에서 일하는 누나가 있어요.", da: "Jeg har en søster, der arbejder på et hospital.", en: "I have a sister who works at a hospital." },
+    { ja: "韓国語を教えている先生を知っています。",     ko: "저는 한국어를 가르치는 선생님을 알아요.", da: "Jeg kender en lærer, der underviser i koreansk.", en: "I know a teacher who teaches Korean." },
+    { ja: "駅の前に立っている建物はとても古いです。",   ko: "역 앞에 서 있는 건물은 아주 오래됐어요.", da: "Bygningen, der står foran stationen, er meget gammel.", en: "The building that stands in front of the station is very old." },
+    { ja: "毎日走る人は健康です。",                     ko: "매일 달리는 사람은 건강해요.",        da: "Folk, der løber hver dag, er raske.",      en: "People who run every day are healthy." },
+    { ja: "3か国語を話す友達がいます。",                ko: "저는 3개 국어를 하는 친구가 있어요.", da: "Jeg har en ven, der taler tre sprog.",     en: "I have a friend who speaks three languages." },
+    { ja: "パンを売っている店を探しています。",       ko: "빵을 파는 가게를 찾고 있어요.",     da: "Jeg leder efter en butik, der sælger brød.", en: "I'm looking for a shop that sells bread." },
+    { ja: "海の見えるホテルに泊まりました。",         ko: "바다가 보이는 호텔에 묵었어요.",     da: "Jeg boede på et hotel, der har havudsigt.", en: "I stayed at a hotel that has an ocean view." },
+    { ja: "駅の近くに住んでいる友達がいます。",       ko: "저는 역 근처에 사는 친구가 있어요.", da: "Jeg har en ven, der bor tæt på stationen.", en: "I have a friend who lives near the station." },
+    { ja: "일요日に開いているカフェを知っていますか?", ko: "일요일에 여는 카페를 알아요?",      da: "Kender du en café, der har åbent om søndagen?", en: "Do you know a café that is open on Sundays?" },
+    { ja: "音楽が好きな人はここに集まります。",       ko: "음악을 좋아하는 사람은 여기에 모여요.", da: "Folk, der kan lide musik, mødes her.",   en: "People who like music gather here." },
+    { ja: "とてもよく走るバスがあります。",           ko: "아주 잘 달리는 버스가 있어요.",      da: "Der er en bus, der kører meget godt.",   en: "There is a bus that runs very well." },
+    { ja: "空港で働いている兄がいます。",             ko: "저는 공항에서 일하는 형이 있어요.",  da: "Jeg har en bror, der arbejder i lufthavnen.", en: "I have a brother who works at the airport." },
+    { ja: "毎朝早く起きる人は元気です。",             ko: "매일 아침 일찍 일어나는 사람은 건강해요.", da: "Folk, der står tidligt op hver morgen, er raske.", en: "People who get up early every morning are healthy." },
+    { ja: "私を助けてくれた人にお礼を言いました。",   ko: "저를 도와준 사람에게 감사 인사를 했어요.", da: "Jeg takkede personen, der hjalp mig.", en: "I thanked the person who helped me." },
+    { ja: "デンマーク語を教えている学校を探しています。", ko: "덴마크어를 가르치는 학교를 찾고 있어요.", da: "Jeg leder efter en skole, der underviser i dansk.", en: "I'm looking for a school that teaches Danish." },
+    { ja: "この町には有名な絵がある美術館があります。", ko: "이 동네에는 유명한 그림이 있는 미술관이 있어요.", da: "I denne by er der et museum, der har berømte malerier.", en: "In this town there is a museum that has famous paintings." },
+  ];
+  for (const x of R) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "韓国語に関係代名詞はありません。動詞を連体形(-는)にして名詞の前に置きます。",
+      "主語の働きをする関係代名詞は der。名詞のあとにコンマを打って続けます。",
+      "人が先行詞なら who、物なら that/which。関係代名詞が主語なので直後に動詞が来ます。");
+  }
+}],
+
+["関係代名詞: 目的格(that / which)", 5, function* () {
+  const R = [
+    { ja: "これは私が昨日買った本です。",           ko: "이건 제가 어제 산 책이에요.",        da: "Det er den bog, jeg købte i går.",          en: "This is the book that I bought yesterday." },
+    { ja: "彼女が作った料理はとてもおいしかったです。", ko: "그녀가 만든 요리는 아주 맛있었어요.", da: "Maden, hun lavede, var meget lækker.",     en: "The food she made was really delicious." },
+    { ja: "私が先週見た映画は面白かったです。",     ko: "제가 지난주에 본 영화는 재미있었어요.", da: "Filmen, jeg så i sidste uge, var sjov.",   en: "The movie I saw last week was fun." },
+    { ja: "これは父がくれた腕時計です。",           ko: "이건 아버지가 주신 시계예요.",        da: "Det er det ur, min far gav mig.",           en: "This is the watch that my father gave me." },
+    { ja: "あなたが話している人を知っています。",   ko: "당신이 말하는 사람을 알아요.",        da: "Jeg kender den person, du taler om.",       en: "I know the person you are talking about." },
+    { ja: "私が住んでいる町はとても静かです。",     ko: "제가 사는 동네는 아주 조용해요.",     da: "Byen, jeg bor i, er meget stille.",         en: "The town I live in is very quiet." },
+    { ja: "これは母がくれた本です。",               ko: "이건 어머니가 주신 책이에요.",      da: "Det er den bog, min mor gav mig.",       en: "This is the book that my mother gave me." },
+    { ja: "きのう食べた料理の名前を忘れました。",   ko: "어제 먹은 요리의 이름을 잊어버렸어요.", da: "Jeg har glemt navnet på den mad, jeg spiste i går.", en: "I forgot the name of the food I ate yesterday." },
+    { ja: "私が買った服はとても安かったです。",     ko: "제가 산 옷은 아주 쌌어요.",          da: "Det tøj, jeg købte, var meget billigt.", en: "The clothes I bought were very cheap." },
+    { ja: "彼が書いた手紙をまだ持っています。",     ko: "그가 쓴 편지를 아직 가지고 있어요.", da: "Jeg har stadig det brev, han skrev.",    en: "I still have the letter he wrote." },
+    { ja: "私たちが泊まったホテルは静かでした。",   ko: "우리가 묵은 호텔은 조용했어요.",     da: "Det hotel, vi boede på, var stille.",    en: "The hotel we stayed at was quiet." },
+    { ja: "あなたが撮った写真を見たいです。",       ko: "당신이 찍은 사진을 보고 싶어요.",    da: "Jeg vil gerne se de billeder, du tog.",  en: "I want to see the photos you took." },
+    { ja: "先生が話した話は面白かったです。",       ko: "선생님이 하신 이야기는 재미있었어요.", da: "Den historie, læreren fortalte, var sjov.", en: "The story the teacher told was fun." },
+    { ja: "私が毎日使う辞書はこれです。",           ko: "제가 매일 쓰는 사전은 이거예요.",    da: "Den ordbog, jeg bruger hver dag, er denne.", en: "The dictionary I use every day is this one." },
+    { ja: "友達が薦めてくれた映画を見ました。",     ko: "친구가 추천해 준 영화를 봤어요.",    da: "Jeg så den film, min ven anbefalede.",   en: "I watched the movie my friend recommended." },
+    { ja: "私が習っている言語は韓国語です。",       ko: "제가 배우는 언어는 한국어예요.",     da: "Det sprog, jeg lærer, er koreansk.",     en: "The language I'm learning is Korean." },
+    { ja: "彼女が働いている会社は有名です。",       ko: "그녀가 일하는 회사는 유명해요.",     da: "Det firma, hun arbejder i, er berømt.",  en: "The company she works for is famous." },
+  ];
+  for (const x of R) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "目的語を修飾するときは過去なら -(으)ㄴ、現在なら -는 の連体形にします。",
+      "目的語の関係代名詞は som ですが、ふつう省略します(den bog, jeg købte)。",
+      "目的格の関係代名詞(that/which/whom)は省略できます(the book I bought)。");
+  }
+}],
+
+["間接疑問: ~か知っていますか", 5, function* () {
+  const Q = [
+    { ja: "駅がどこにあるか知っていますか?",       ko: "역이 어디에 있는지 알아요?",       da: "Ved du, hvor stationen er?",            en: "Do you know where the station is?" },
+    { ja: "彼が何時に来るか知っていますか?",       ko: "그가 몇 시에 오는지 알아요?",      da: "Ved du, hvornår han kommer?",           en: "Do you know what time he is coming?" },
+    { ja: "これがいくらか知っていますか?",         ko: "이게 얼마인지 알아요?",            da: "Ved du, hvad det koster?",              en: "Do you know how much this costs?" },
+    { ja: "彼女がどこで働いているか知りません。",   ko: "그녀가 어디에서 일하는지 몰라요.", da: "Jeg ved ikke, hvor hun arbejder.",      en: "I don't know where she works." },
+    { ja: "なぜ彼が来なかったか分かりません。",     ko: "왜 그가 안 왔는지 몰라요.",        da: "Jeg ved ikke, hvorfor han ikke kom.",   en: "I don't know why he didn't come." },
+    { ja: "だれがこれを作ったか知っていますか?",   ko: "누가 이걸 만들었는지 알아요?",     da: "Ved du, hvem der har lavet det?",       en: "Do you know who made this?" },
+    { ja: "彼が何を勉強しているか知っていますか?",   ko: "그가 뭘 공부하는지 알아요?",        da: "Ved du, hvad han studerer?",             en: "Do you know what he studies?" },
+    { ja: "バスがいつ来るか知っていますか?",         ko: "버스가 언제 오는지 알아요?",        da: "Ved du, hvornår bussen kommer?",         en: "Do you know when the bus comes?" },
+    { ja: "トイレがどこにあるか教えてください。",     ko: "화장실이 어디에 있는지 알려 주세요.", da: "Fortæl mig, hvor toilettet er.",       en: "Please tell me where the restroom is." },
+    { ja: "彼女が何歳か知りません。",                 ko: "그녀가 몇 살인지 몰라요.",          da: "Jeg ved ikke, hvor gammel hun er.",      en: "I don't know how old she is." },
+    { ja: "この単語がどういう意味か分かりますか?",   ko: "이 단어가 무슨 뜻인지 알아요?",     da: "Ved du, hvad dette ord betyder?",        en: "Do you know what this word means?" },
+    { ja: "彼らがどこに住んでいるか知りません。",     ko: "그들이 어디에 사는지 몰라요.",      da: "Jeg ved ikke, hvor de bor.",             en: "I don't know where they live." },
+    { ja: "電車が何時に出るか調べます。",             ko: "기차가 몇 시에 떠나는지 알아볼게요.", da: "Jeg finder ud af, hvornår toget kører.", en: "I'll find out what time the train leaves." },
+    { ja: "だれがこの歌を歌っているか知っていますか?", ko: "누가 이 노래를 부르는지 알아요?",  da: "Ved du, hvem der synger denne sang?",    en: "Do you know who sings this song?" },
+    { ja: "彼がなぜ怒っているか分かりません。",       ko: "그가 왜 화났는지 몰라요.",          da: "Jeg ved ikke, hvorfor han er vred.",     en: "I don't know why he is angry." },
+    { ja: "どこで切符を買えるか教えてください。",     ko: "어디에서 표를 살 수 있는지 알려 주세요.", da: "Fortæl mig, hvor jeg kan købe en billet.", en: "Please tell me where I can buy a ticket." },
+    { ja: "彼女が何と言ったか聞こえませんでした。",   ko: "그녀가 뭐라고 했는지 못 들었어요.", da: "Jeg hørte ikke, hvad hun sagde.",        en: "I didn't hear what she said." },
+  ];
+  for (const x of Q) {
+    yield item(x.ja, x.ko, x.da, x.en, "質問",
+      "「~는지 알아요?」=「~か知っていますか」。-는지 が間接疑問の語尾です。",
+      "従属節の前にコンマを打ちます。間接疑問では ふつうの語順(主語→動詞)に戻ります。",
+      "間接疑問は「疑問詞 + 主語 + 動詞」の語順。where is the station ではなく where the station is。");
+  }
+}],
+
+["受身: ~されます", 5, function* () {
+  const P = [
+    { ja: "この建物は100年前に建てられました。", ko: "이 건물은 100년 전에 지어졌어요.", da: "Denne bygning blev bygget for 100 år siden.", en: "This building was built 100 years ago." },
+    { ja: "韓国では韓国語が話されています。",     ko: "한국에서는 한국어가 사용돼요.",     da: "I Korea tales der koreansk.",                 en: "Korean is spoken in Korea." },
+    { ja: "この本は多くの人に読まれています。",   ko: "이 책은 많은 사람에게 읽혀요.",     da: "Denne bog bliver læst af mange mennesker.",   en: "This book is read by many people." },
+    { ja: "その手紙は昨日書かれました。",         ko: "그 편지는 어제 쓰였어요.",          da: "Brevet blev skrevet i går.",                  en: "The letter was written yesterday." },
+    { ja: "この車は日本で作られました。",         ko: "이 차는 일본에서 만들어졌어요.",    da: "Denne bil blev lavet i Japan.",               en: "This car was made in Japan." },
+    { ja: "私はパーティーに招待されました。",     ko: "저는 파티에 초대받았어요.",         da: "Jeg blev inviteret til festen.",              en: "I was invited to the party." },
+    { ja: "この歌は世界中で歌われています。",       ko: "이 노래는 전 세계에서 불려요.",      da: "Denne sang bliver sunget i hele verden.", en: "This song is sung all over the world." },
+    { ja: "その映画は去年作られました。",           ko: "그 영화는 작년에 만들어졌어요.",     da: "Den film blev lavet sidste år.",          en: "That movie was made last year." },
+    { ja: "この教室は毎日掃除されます。",           ko: "이 교실은 매일 청소돼요.",           da: "Dette klasseværelse bliver gjort rent hver dag.", en: "This classroom is cleaned every day." },
+    { ja: "私の自転車が盗まれました。",             ko: "제 자전거를 도둑맞았어요.",          da: "Min cykel blev stjålet.",                 en: "My bicycle was stolen." },
+    { ja: "デンマークではデンマーク語が話されています。", ko: "덴마크에서는 덴마크어가 사용돼요.", da: "I Danmark tales der dansk.",          en: "Danish is spoken in Denmark." },
+    { ja: "この写真は父に撮られました。",           ko: "이 사진은 아버지가 찍었어요.",       da: "Dette billede blev taget af min far.",    en: "This photo was taken by my father." },
+    { ja: "その橋は10年前に建てられました。",       ko: "그 다리는 10년 전에 지어졌어요.",    da: "Den bro blev bygget for 10 år siden.",    en: "That bridge was built 10 years ago." },
+    { ja: "その本は多くの言語に翻訳されています。", ko: "그 책은 여러 언어로 번역돼요.",      da: "Den bog bliver oversat til mange sprog.", en: "That book is translated into many languages." },
+    { ja: "私は先生にほめられました。",             ko: "저는 선생님에게 칭찬받았어요.",      da: "Jeg blev rost af læreren.",               en: "I was praised by my teacher." },
+    { ja: "この料理は米から作られます。",           ko: "이 요리는 쌀로 만들어져요.",         da: "Denne ret bliver lavet af ris.",          en: "This dish is made from rice." },
+    { ja: "会議は来週開かれます。",                 ko: "회의는 다음 주에 열려요.",           da: "Mødet bliver holdt i næste uge.",         en: "The meeting will be held next week." },
+  ];
+  for (const x of P) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "韓国語の受身は -이/히/리/기 や -아/어지다、漢字語では -되다/-받다 を使います。",
+      "受身は blive + 過去分詞。一般的な事実には -s 受身(tales)も使います。",
+      "受身は be + 過去分詞。動作主を示すときは by ~ を添えます。");
+  }
+}],
+
+["仮定法: もし~なら", 5, function* () {
+  const S = [
+    { ja: "もしお金があれば、車を買うのに。",       ko: "돈이 있으면 차를 살 텐데요.",        da: "Hvis jeg havde penge, ville jeg købe en bil.",   en: "If I had money, I would buy a car." },
+    { ja: "もし時間があれば、旅行に行くのに。",     ko: "시간이 있으면 여행을 갈 텐데요.",    da: "Hvis jeg havde tid, ville jeg rejse.",           en: "If I had time, I would travel." },
+    { ja: "もし韓国語が話せたら、韓国で働くのに。", ko: "한국어를 할 수 있으면 한국에서 일할 텐데요.", da: "Hvis jeg kunne tale koreansk, ville jeg arbejde i Korea.", en: "If I could speak Korean, I would work in Korea." },
+    { ja: "もし私があなたなら、そうはしないのに。", ko: "제가 당신이라면 그렇게 안 할 텐데요.", da: "Hvis jeg var dig, ville jeg ikke gøre det.",   en: "If I were you, I wouldn't do that." },
+    { ja: "もし天気がよければ、散歩するのに。",     ko: "날씨가 좋으면 산책할 텐데요.",       da: "Hvis vejret var godt, ville jeg gå en tur.",     en: "If the weather were nice, I would take a walk." },
+    { ja: "もっと早く起きれば、間に合うのに。",     ko: "더 일찍 일어나면 늦지 않을 텐데요.", da: "Hvis jeg stod tidligere op, ville jeg nå det.",  en: "If I got up earlier, I would make it." },
+    { ja: "もっとお金があれば、家を買うのに。",     ko: "돈이 더 있으면 집을 살 텐데요.",     da: "Hvis jeg havde flere penge, ville jeg købe et hus.", en: "If I had more money, I would buy a house." },
+    { ja: "もし車があれば、海に行くのに。",         ko: "차가 있으면 바다에 갈 텐데요.",      da: "Hvis jeg havde en bil, ville jeg tage til havet.", en: "If I had a car, I would go to the sea." },
+    { ja: "もし彼が来れば、うれしいのに。",         ko: "그가 오면 기쁠 텐데요.",             da: "Hvis han kom, ville jeg blive glad.",     en: "If he came, I would be happy." },
+    { ja: "もっと若ければ、留学するのに。",         ko: "더 젊으면 유학을 갈 텐데요.",        da: "Hvis jeg var yngre, ville jeg studere i udlandet.", en: "If I were younger, I would study abroad." },
+    { ja: "もし雨が降らなければ、出かけるのに。",   ko: "비가 안 오면 나갈 텐데요.",          da: "Hvis det ikke regnede, ville jeg gå ud.", en: "If it weren't raining, I would go out." },
+    { ja: "もし休みが取れたら、家族に会いに行くのに。", ko: "휴가를 낼 수 있으면 가족을 만나러 갈 텐데요.", da: "Hvis jeg kunne få fri, ville jeg besøge min familie.", en: "If I could take time off, I would visit my family." },
+    { ja: "もし彼女の電話番号を知っていれば、電話するのに。", ko: "그녀의 전화번호를 알면 전화할 텐데요.", da: "Hvis jeg kendte hendes nummer, ville jeg ringe.", en: "If I knew her number, I would call her." },
+    { ja: "もっと近くに住んでいれば、毎日会うのに。", ko: "더 가까이 살면 매일 만날 텐데요.",  da: "Hvis jeg boede tættere på, ville vi ses hver dag.", en: "If I lived closer, we would meet every day." },
+    { ja: "もし料理が上手なら、レストランを開くのに。", ko: "요리를 잘하면 식당을 열 텐데요.", da: "Hvis jeg var god til at lave mad, ville jeg åbne en restaurant.", en: "If I were good at cooking, I would open a restaurant." },
+    { ja: "もし彼が手伝ってくれたら、早く終わるのに。", ko: "그가 도와주면 빨리 끝날 텐데요.", da: "Hvis han hjalp mig, ville jeg blive hurtigt færdig.", en: "If he helped me, I would finish quickly." },
+    { ja: "もし飛行機が安ければ、毎年旅行するのに。", ko: "비행기가 싸면 매년 여행할 텐데요.", da: "Hvis flybilletter var billige, ville jeg rejse hvert år.", en: "If plane tickets were cheap, I would travel every year." },
+  ];
+  for (const x of S) {
+    yield item(x.ja, x.ko, x.da, x.en, "仮定",
+      "「~(으)면 ~ㄹ 텐데요」で「~なら~するのに」。実現していない想像を表します。",
+      "仮定法では条件節を過去形(havde/var/kunne)にし、主節に ville を使います。",
+      "仮定法過去は「If + 主語 + 過去形, 主語 + would + 原形」。be は were を使うのが正式です。");
+  }
+}],
+
+/* 様態副詞。副詞の位置が3言語で違う(韓国語は動詞の直前、英語・デンマーク語は動詞のあと)ので、
+ * 語彙の総当たりではなく自然な言い回しを1件ずつ書いている。 */
+["様態副詞: どんなふうに", 3, function* () {
+  const SUBJ = [
+    { ja: "私は",       ko: "저는",        da: "Jeg",     en: "I",         s: false },
+    { ja: "私の友達は", ko: "제 친구는",   da: "Min ven", en: "My friend", s: true },
+    { ja: "私の父は",   ko: "제 아버지는", da: "Min far", en: "My father", s: true },
+    { ja: "私の母は",   ko: "제 어머니는", da: "Min mor", en: "My mother", s: true },
+  ];
+  const MANNER = [
+    { ja: "速く走ります",       ko: "빨리 달려요",      da: "løber hurtigt",   b: "run fast",        t: "runs fast" },
+    { ja: "ゆっくり歩きます",   ko: "천천히 걸어요",    da: "går langsomt",    b: "walk slowly",     t: "walks slowly" },
+    { ja: "熱心に勉強します",   ko: "열심히 공부해요",  da: "studerer flittigt", b: "study hard",    t: "studies hard" },
+    { ja: "熱心に働きます",     ko: "열심히 일해요",    da: "arbejder flittigt", b: "work hard",     t: "works hard" },
+    { ja: "上手に歌います",     ko: "노래를 잘 불러요", da: "synger godt",     b: "sing well",       t: "sings well" },
+    { ja: "上手に踊ります",     ko: "춤을 잘 춰요",     da: "danser godt",     b: "dance well",      t: "dances well" },
+    { ja: "静かに話します",     ko: "조용히 말해요",    da: "taler stille",    b: "speak quietly",   t: "speaks quietly" },
+    { ja: "早く起きます",       ko: "일찍 일어나요",    da: "står tidligt op", b: "get up early",    t: "gets up early" },
+    { ja: "ゆっくり本を読みます", ko: "책을 천천히 읽어요", da: "læser langsomt", b: "read slowly",  t: "reads slowly" },
+    { ja: "上手に料理します",   ko: "요리를 잘해요",    da: "laver god mad",   b: "cook well",       t: "cooks well",
+      nda: "「上手に料理する」はデンマーク語では laver god mad(おいしい食事を作る)と言うのが自然です。" },
+  ];
+  for (const su of SUBJ) {
+    for (const m of MANNER) {
+      yield item(`${su.ja}${m.ja}。`,
+        `${su.ko} ${m.ko}.`, `${su.da} ${m.da}.`, `${su.en} ${su.s ? m.t : m.b}.`, "日常",
+        "韓国語の副詞は動詞の直前に置きます。目的語がある文では「目的語+副詞+動詞」の順です。",
+        m.nda || "デンマーク語の様態副詞は動詞のあとに置きます。",
+        su.s ? "様態副詞は動詞のあと。三人称単数が主語なので動詞に -s がつきます。"
+             : "様態副詞(fast/slowly/hard/well)は動詞のあとに置きます。");
+    }
+  }
+}],
+
 ];
 
 /* =====================  手書きの定番フレーズ  ===================== */
@@ -1038,7 +1836,9 @@ function buildAll(lang) {
       if (seen.has(t)) continue;
       seen.add(t);
       let d = it.d || baseD;
-      if (t.split(" ").length >= 7) d = Math.min(3, d + 1);   // 長い文は1段階難しく
+      // 長い文は1段階難しく。D4/D5 は文型そのもので難易度を決めているので昇格させない
+      // (Math.min(3, d+1) だと d=4/5 が D3 に「降格」してしまう)
+      if (t.split(" ").length >= 7 && d < 3) d += 1;
       out.push({ t, r: lang === "ko" ? romanize(t) : "", a: it.ja, n: it.n[lang], h: it.h, d,
                  alt: it.alt[lang] || "" });
     }
