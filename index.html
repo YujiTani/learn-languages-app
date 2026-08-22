@@ -348,6 +348,10 @@
     </div>
     <div class="mode-desc" id="modeDesc"></div>
 
+    <div class="section-title">🎯 難易度をえらぶ</div>
+    <div class="mode-toggle" id="diffToggle"></div>
+    <div class="mode-desc" id="diffDesc"></div>
+
     <div class="section-title">⚙️ オプション</div>
     <div class="card opt-row">
       <div>
@@ -502,7 +506,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.9.2";
+const APP_VERSION = "1.10.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const GRASS_WEEKS = 17; // 約4ヶ月分
@@ -530,6 +534,17 @@ const TRACKS = {
 };
 const TRACK_KEYS = ["ko", "da", "en", "en_ja"];
 
+// ---------- 難易度の手動選択 ----------
+// "auto" はレベル連動(従来どおり)。1〜3 を選ぶとレベルを無視してその難易度だけを出す。
+// 設定はトラックごと(ミックスは "mix" という枠)に state.diffs へ保存する。
+const DIFFS = {
+  auto: { short: "🎚 おまかせ", label: "おまかせ",   desc: "レベルに合わせて自動で調整します" },
+  1:    { short: "★",          label: "やさしい",   desc: "基礎の文型だけ。ウォームアップや復習に" },
+  2:    { short: "★★",        label: "ふつう",     desc: "標準の文型だけ" },
+  3:    { short: "★★★",      label: "むずかしい", desc: "過去形・経験・比較・理由・依頼などの応用文型だけ" },
+};
+const DIFF_KEYS = ["auto", "1", "2", "3"];
+
 function trackOf(lang, dir) { return dir === "ja" ? "en_ja" : lang; }
 function trackOfQ(q) { return trackOf(q.lang, dirOf(q)); }
 function trackXp(t) { return (state.tracks[t] || {}).xp || 0; }
@@ -538,6 +553,8 @@ function trackLevel(t) { return levelOf(trackXp(t)); }
 function currentTrack() {
   return selectedLang === "mix" ? "mix" : trackOf(selectedLang, state.mode === "ja" ? "ja" : "fw");
 }
+// いま選ばれているトラックの難易度設定。未設定は "auto"(レベル連動)
+function currentDiff() { return state.diffs[currentTrack()] || "auto"; }
 
 // ---------- 状態 ----------
 let state = load();
@@ -554,8 +571,9 @@ function load() {
       tracks: loadTracks(s),
       wbEnabled: s.wbEnabled !== false,     // デフォルトON
       ttsEnabled: s.ttsEnabled !== false,   // デフォルトON
+      diffs: s.diffs || {},                 // トラック別の難易度。キーが無ければ全部 "auto"
     };
-  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [], tracks: loadTracks({}), wbEnabled: true, ttsEnabled: true }; }
+  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [], tracks: loadTracks({}), wbEnabled: true, ttsEnabled: true, diffs: {} }; }
 }
 
 // トラック別XPの読み込み。tracks を持たない旧データは各トラックの初期XPを総合XPにそろえ、
@@ -583,6 +601,8 @@ function distText(dist) {
   return "出題バランス: ★" + Math.round(dist[0] * 100) + "% ★★" + Math.round(dist[1] * 100) +
          "% ★★★" + Math.round(dist[2] * 100) + "%";
 }
+// 難易度を固定しているときは分布のパーセンテージが嘘になるので、こちらを代わりに出す
+function diffFixedText(d) { return "難易度: " + DIFFS[d].short + " " + DIFFS[d].label + "(固定)"; }
 
 // ヘッダーの⚡は総合XP(全モード通算)、💎とレベルバーは「いま選んでいるトラック」を表す
 function renderStats() {
@@ -600,8 +620,10 @@ function renderStats() {
     : TRACKS[t].flag + " " + TRACKS[t].name + " レベル " + lv;
   document.getElementById("levelXpLabel").textContent = into + " / " + XP_PER_LEVEL + " XP";
   document.getElementById("levelBarFill").style.width = Math.round(into / XP_PER_LEVEL * 100) + "%";
-  document.getElementById("diffBalance").textContent = mix
-    ? keys.map(k => TRACKS[k].flag + " Lv." + trackLevel(k)).join(" / ")
+  const fd = currentDiff();
+  document.getElementById("diffBalance").textContent =
+    fd !== "auto" ? diffFixedText(fd)
+    : mix ? keys.map(k => TRACKS[k].flag + " Lv." + trackLevel(k)).join(" / ")
     : distText(levelDist(lv));
 }
 
@@ -793,6 +815,7 @@ function selectLang(lang) {
   document.querySelectorAll(".lang-tile").forEach(el =>
     el.classList.toggle("selected", el.dataset.lang === lang));
   syncModeAvail();
+  syncDiffUI();    // 難易度設定はトラックごとなので、言語を変えたら選択も切り替わる
   renderStats();   // 選んだトラックのレベル・出題バランスに切り替える
 }
 
@@ -816,7 +839,41 @@ function setMode(mode) {
   document.getElementById("modeTiles").classList.toggle("active", mode === "tiles");
   document.getElementById("modeJa").classList.toggle("active", mode === "ja");
   document.getElementById("modeDesc").textContent = MODE_DESC[mode] || MODE_DESC.write;
+  syncDiffUI();    // 難易度設定はトラックごとなので、向きが変われば選択も切り替わる
   renderStats();   // 🇯🇵和訳モードは英語とは別トラックなので表示を切り替える
+}
+
+// ---------- 難易度選択 ----------
+function renderDiffToggle() {
+  document.getElementById("diffToggle").innerHTML = DIFF_KEYS.map(k =>
+    `<div class="mode-opt" id="diff-${k}" onclick="setDiff('${k}')">${DIFFS[k].short}</div>`).join("");
+}
+
+// いま選んでいる言語で、その難易度の問題が何問あるか。BANK 読み込み前は null
+function diffStock(d) {
+  if (!BANK) return null;
+  const langs = selectedLang === "mix" ? ["ko", "da", "en"] : [selectedLang];
+  return langs.reduce((a, l) =>
+    a + BANK[l].items.filter(it => (it.d || 1) === Number(d)).length, 0);
+}
+
+function syncDiffUI() {
+  const cur = currentDiff();
+  for (const k of DIFF_KEYS)
+    document.getElementById("diff-" + k).classList.toggle("active", k === cur);
+  let desc = DIFFS[cur].desc;
+  // ★ と ★★★ は在庫が薄い(各言語200〜370問)ので、選ぶ前に分かるようにしておく
+  if (cur !== "auto") {
+    const n = diffStock(cur);
+    if (n != null) desc += "。この難易度のストックは " + n.toLocaleString() + "問";
+  }
+  document.getElementById("diffDesc").textContent = desc;
+}
+
+function setDiff(d) {
+  state.diffs[currentTrack()] = d; save();
+  syncDiffUI();
+  renderStats();   // 出題バランスの表示を固定/連動で切り替える
 }
 
 // ---------- セッション ----------
@@ -836,6 +893,8 @@ function levelDist(lv) {
   const d3 = Math.min(0.40, 0.05 + 0.02 * (lv - 1));
   return [d1, 1 - d1 - d3, d3];
 }
+// 難易度を手動で固定したときの分布。選んだ難易度だけを100%出す
+function fixedDist(d) { const a = [0, 0, 0]; a[Number(d) - 1] = 1; return a; }
 function weightedPick(dist) {
   const r = Math.random();
   return r < dist[0] ? 0 : r < dist[0] + dist[1] ? 1 : 2;
@@ -854,11 +913,15 @@ function pickQuestions() {
     for (const it of BANK[lang].items) b[(it.d || 1) - 1].push({...it, lang, dir});
     buckets[lang] = b;
   }
+  // 難易度を手動で選んでいればレベルを無視して固定。"auto" なら従来どおりレベル連動
+  const forced = currentDiff();
   const out = [], used = new Set();
   for (let i = 0; i < QUESTIONS_PER_SESSION; i++) {
     const lang = langs[Math.floor(Math.random() * langs.length)];
     const bk = buckets[lang];
-    const dist = levelDist(trackLevel(trackOf(lang, dir)));
+    const dist = forced === "auto"
+      ? levelDist(trackLevel(trackOf(lang, dir)))
+      : fixedDist(forced);
     let d = weightedPick(dist);
     let guard = 0;
     while (bk[d].length === 0 && guard++ < 5) d = weightedPick(dist);
@@ -1118,6 +1181,8 @@ function renderProfile() {
   const per = wordbookPerTrack();
   document.getElementById("trackList").innerHTML = TRACK_KEYS.map(k => {
     const tr = state.tracks[k], lv = trackLevel(k), into = tr.xp % XP_PER_LEVEL;
+    const dk = state.diffs[k] || "auto";
+    const balance = dk === "auto" ? distText(levelDist(lv)) : diffFixedText(dk);
     const acc = tr.answered ? Math.round(tr.correct / tr.answered * 100) + "%" : "—";
     const fresh = tr.xp === 0 && tr.answered === 0;
     const detail = fresh
@@ -1133,7 +1198,7 @@ function renderProfile() {
         </div>
         <div class="level-bar"><div class="level-bar-fill" style="width:${into / XP_PER_LEVEL * 100}%"></div></div>
         <div class="track-xp">${into} / ${XP_PER_LEVEL} XP ・ 累計 ${tr.xp} XP</div>
-        <div class="track-rows"><div>${distText(levelDist(lv))}</div><div>${detail}</div></div>
+        <div class="track-rows"><div>${balance}</div><div>${detail}</div></div>
       </div>`;
   }).join("");
 }
@@ -1180,6 +1245,7 @@ function toast(text) {
 
 // ---------- 初期化 ----------
 document.getElementById("appVersion").textContent = "v" + APP_VERSION;
+renderDiffToggle();   // setMode / selectLang が syncDiffUI を呼ぶので、先に中身を作っておく
 renderStats();
 // selectedLang は永続化されないため、和訳モードの復元には英語の再選択が先に必要
 // (setMode("ja") は selectedLang が en でないと弾かれる)
@@ -1202,6 +1268,7 @@ loadBank().then(bank => {
   const btn = document.getElementById("startBtn");
   btn.disabled = false;
   btn.textContent = "問題を生成する 🎲";
+  syncDiffUI();   // 難易度ごとのストック数はバンクが要るので、ここで入れ直す
   renderWordbook();
 }).catch(err => {
   document.getElementById("startBtn").textContent = "読み込みに失敗しました";
