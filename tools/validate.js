@@ -70,8 +70,12 @@ for (const [lang, data] of Object.entries(bank)) {
       if (m[2] !== need) err("ko", t, `目的格助詞: ${m[1]}${m[2]} → ${m[1]}${need} が正しい`);
     }
     // 이/가 (이 は連体詞「この」と衝突するため直後が空白のもののみ)
+    // 「가까이(近くに)」のように 이 で終わる副詞は助詞ではないので除外する。
+    // m[1] は1文字しか取れないので、マッチ位置の手前まで含めて判定する
+    const ADV_I = /(가까이|많이|같이|깊이|높이)$/;
     for (const m of t.matchAll(/([가-힣])(이|가)\s/g)) {
       const need = hasBatchim(m[1]) ? "이" : "가";
+      if (m[2] === "이" && ADV_I.test(t.slice(0, m.index + 2))) continue;
       if (m[2] !== need) err("ko", t, `主格助詞: ${m[1]}${m[2]} → ${m[1]}${need} が正しい`);
     }
     // 은/는

@@ -1493,6 +1493,196 @@ const TEMPLATES = [
   }
 }],
 
+/* ---------- 上級文型(D5): 後置修飾・関係代名詞・間接疑問・受身・仮定法 ----------
+ * 韓国語の連体形とデンマーク語の関係節は語ごとに形が変わり機械的に作れないので、
+ * 語彙の総当たりではなく1文ずつ手書きしている(質を量より優先)。
+ * デンマーク語の関係節は主格 der / 目的格 som を使い、コンマは文法コンマ方式で統一。 */
+
+["後置修飾: 前置詞句", 4, function* () {
+  const P = [
+    { ja: "机の上の本は私のです。",        ko: "책상 위의 책은 제 거예요.",       da: "Bogen på bordet er min.",              en: "The book on the desk is mine." },
+    { ja: "壁の絵はとても古いです。",      ko: "벽에 있는 그림은 아주 오래됐어요.", da: "Billedet på væggen er meget gammelt.", en: "The picture on the wall is very old." },
+    { ja: "窓のそばの椅子は空いています。", ko: "창문 옆의 의자는 비어 있어요.",   da: "Stolen ved vinduet er ledig.",         en: "The chair by the window is free." },
+    { ja: "青い服の女性は私の先生です。",  ko: "파란 옷을 입은 여자는 제 선생님이에요.", da: "Kvinden i det blå tøj er min lærer.", en: "The woman in the blue dress is my teacher." },
+    { ja: "駅の前のカフェは新しいです。",  ko: "역 앞의 카페는 새로워요.",        da: "Caféen foran stationen er ny.",        en: "The café in front of the station is new." },
+    { ja: "テーブルの上の鍵はだれのですか?", ko: "테이블 위의 열쇠는 누구 거예요?", da: "Hvis er nøglen på bordet?",          en: "Whose is the key on the table?" },
+  ];
+  for (const x of P) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "「~의」「~에 있는」で名詞を後ろから修飾します。韓国語は修飾語が名詞の前に来ます。",
+      "デンマーク語は前置詞句を名詞のあとに置きます(bogen på bordet)。",
+      "英語も前置詞句は名詞のあと。日本語と語順が逆になります。");
+  }
+}],
+
+["後置修飾: 分詞", 5, function* () {
+  const P = [
+    { ja: "あそこに立っている男性は私の先生です。", ko: "저기 서 있는 남자는 제 선생님이에요.", da: "Manden, der står derovre, er min lærer.", en: "The man standing over there is my teacher." },
+    { ja: "ピアノを弾いている少女は私の妹です。",   ko: "피아노를 치는 소녀는 제 여동생이에요.", da: "Pigen, der spiller klaver, er min lillesøster.", en: "The girl playing the piano is my sister." },
+    { ja: "英語で書かれた本を読んでいます。",       ko: "영어로 쓰인 책을 읽고 있어요.",       da: "Jeg læser en bog skrevet på engelsk.",   en: "I'm reading a book written in English." },
+    { ja: "壁にかけられた絵はとても有名です。",     ko: "벽에 걸린 그림은 아주 유명해요.",     da: "Billedet, der hænger på væggen, er meget berømt.", en: "The picture hanging on the wall is very famous." },
+    { ja: "向こうで待っている人はだれですか?",     ko: "저기서 기다리는 사람은 누구예요?",    da: "Hvem er personen, der venter derovre?",  en: "Who is the person waiting over there?" },
+    { ja: "韓国で作られた車を買いました。",         ko: "한국에서 만든 차를 샀어요.",          da: "Jeg købte en bil lavet i Korea.",        en: "I bought a car made in Korea." },
+    { ja: "公園で遊んでいる子どもたちは楽しそうです。", ko: "공원에서 노는 아이들은 즐거워 보여요.", da: "Børnene, der leger i parken, ser glade ud.", en: "The children playing in the park look happy." },
+    { ja: "電話で話している男性は私の父です。",     ko: "전화로 통화하는 남자는 제 아버지예요.", da: "Manden, der taler i telefon, er min far.", en: "The man talking on the phone is my father." },
+    { ja: "そこに座っている女性を知っていますか?", ko: "거기 앉아 있는 여자를 알아요?",     da: "Kender du kvinden, der sidder der?",     en: "Do you know the woman sitting there?" },
+    { ja: "日本で撮られた写真を見せますね。",       ko: "일본에서 찍은 사진을 보여줄게요.",   da: "Jeg viser dig et billede taget i Japan.", en: "I'll show you a photo taken in Japan." },
+    { ja: "窓のそばで本を読んでいる人は先生です。", ko: "창가에서 책을 읽는 사람은 선생님이에요.", da: "Personen, der læser en bog ved vinduet, er læreren.", en: "The person reading a book by the window is the teacher." },
+    { ja: "韓国語で書かれたメールを受け取りました。", ko: "한국어로 쓰인 이메일을 받았어요.", da: "Jeg modtog en mail skrevet på koreansk.", en: "I received an email written in Korean." },
+    { ja: "道で泣いている子どもを見ました。",       ko: "길에서 우는 아이를 봤어요.",         da: "Jeg så et barn, der græd på gaden.",     en: "I saw a child crying on the street." },
+    { ja: "木の下で眠っている犬がいます。",         ko: "나무 아래에서 자는 개가 있어요.",    da: "Der er en hund, der sover under træet.", en: "There is a dog sleeping under the tree." },
+    { ja: "隣に住んでいる家族はとても親切です。",   ko: "옆집에 사는 가족은 아주 친절해요.",  da: "Familien, der bor ved siden af, er meget venlig.", en: "The family living next door is very kind." },
+    { ja: "テーブルに置かれた花はきれいです。",     ko: "테이블에 놓인 꽃은 예뻐요.",         da: "Blomsterne, der står på bordet, er smukke.", en: "The flowers placed on the table are beautiful." },
+    { ja: "フランスで作られたチーズを買いました。", ko: "프랑스에서 만든 치즈를 샀어요.",     da: "Jeg købte ost lavet i Frankrig.",        en: "I bought cheese made in France." },
+  ];
+  for (const x of P) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "現在分詞は -는、過去分詞は -(으)ㄴ/-인 の連体形にあたります。修飾語は名詞の前です。",
+      "分詞で修飾するときは名詞のあと。動詞つきの節にする場合は der で受けます。",
+      "現在分詞(-ing)は「~している」、過去分詞は「~される」。どちらも名詞のあとに置きます。");
+  }
+}],
+
+["関係代名詞: 主格(who / that)", 5, function* () {
+  const R = [
+    { ja: "私にはデンマークに住んでいる友達がいます。", ko: "저는 덴마크에 사는 친구가 있어요.",   da: "Jeg har en ven, der bor i Danmark.",       en: "I have a friend who lives in Denmark." },
+    { ja: "病院で働いている姉がいます。",               ko: "저는 병원에서 일하는 누나가 있어요.", da: "Jeg har en søster, der arbejder på et hospital.", en: "I have a sister who works at a hospital." },
+    { ja: "韓国語を教えている先生を知っています。",     ko: "저는 한국어를 가르치는 선생님을 알아요.", da: "Jeg kender en lærer, der underviser i koreansk.", en: "I know a teacher who teaches Korean." },
+    { ja: "駅の前に立っている建物はとても古いです。",   ko: "역 앞에 서 있는 건물은 아주 오래됐어요.", da: "Bygningen, der står foran stationen, er meget gammel.", en: "The building that stands in front of the station is very old." },
+    { ja: "毎日走る人は健康です。",                     ko: "매일 달리는 사람은 건강해요.",        da: "Folk, der løber hver dag, er raske.",      en: "People who run every day are healthy." },
+    { ja: "3か国語を話す友達がいます。",                ko: "저는 3개 국어를 하는 친구가 있어요.", da: "Jeg har en ven, der taler tre sprog.",     en: "I have a friend who speaks three languages." },
+    { ja: "パンを売っている店を探しています。",       ko: "빵을 파는 가게를 찾고 있어요.",     da: "Jeg leder efter en butik, der sælger brød.", en: "I'm looking for a shop that sells bread." },
+    { ja: "海の見えるホテルに泊まりました。",         ko: "바다가 보이는 호텔에 묵었어요.",     da: "Jeg boede på et hotel, der har havudsigt.", en: "I stayed at a hotel that has an ocean view." },
+    { ja: "駅の近くに住んでいる友達がいます。",       ko: "저는 역 근처에 사는 친구가 있어요.", da: "Jeg har en ven, der bor tæt på stationen.", en: "I have a friend who lives near the station." },
+    { ja: "일요日に開いているカフェを知っていますか?", ko: "일요일에 여는 카페를 알아요?",      da: "Kender du en café, der har åbent om søndagen?", en: "Do you know a café that is open on Sundays?" },
+    { ja: "音楽が好きな人はここに集まります。",       ko: "음악을 좋아하는 사람은 여기에 모여요.", da: "Folk, der kan lide musik, mødes her.",   en: "People who like music gather here." },
+    { ja: "とてもよく走るバスがあります。",           ko: "아주 잘 달리는 버스가 있어요.",      da: "Der er en bus, der kører meget godt.",   en: "There is a bus that runs very well." },
+    { ja: "空港で働いている兄がいます。",             ko: "저는 공항에서 일하는 형이 있어요.",  da: "Jeg har en bror, der arbejder i lufthavnen.", en: "I have a brother who works at the airport." },
+    { ja: "毎朝早く起きる人は元気です。",             ko: "매일 아침 일찍 일어나는 사람은 건강해요.", da: "Folk, der står tidligt op hver morgen, er raske.", en: "People who get up early every morning are healthy." },
+    { ja: "私を助けてくれた人にお礼を言いました。",   ko: "저를 도와준 사람에게 감사 인사를 했어요.", da: "Jeg takkede personen, der hjalp mig.", en: "I thanked the person who helped me." },
+    { ja: "デンマーク語を教えている学校を探しています。", ko: "덴마크어를 가르치는 학교를 찾고 있어요.", da: "Jeg leder efter en skole, der underviser i dansk.", en: "I'm looking for a school that teaches Danish." },
+    { ja: "この町には有名な絵がある美術館があります。", ko: "이 동네에는 유명한 그림이 있는 미술관이 있어요.", da: "I denne by er der et museum, der har berømte malerier.", en: "In this town there is a museum that has famous paintings." },
+  ];
+  for (const x of R) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "韓国語に関係代名詞はありません。動詞を連体形(-는)にして名詞の前に置きます。",
+      "主語の働きをする関係代名詞は der。名詞のあとにコンマを打って続けます。",
+      "人が先行詞なら who、物なら that/which。関係代名詞が主語なので直後に動詞が来ます。");
+  }
+}],
+
+["関係代名詞: 目的格(that / which)", 5, function* () {
+  const R = [
+    { ja: "これは私が昨日買った本です。",           ko: "이건 제가 어제 산 책이에요.",        da: "Det er den bog, jeg købte i går.",          en: "This is the book that I bought yesterday." },
+    { ja: "彼女が作った料理はとてもおいしかったです。", ko: "그녀가 만든 요리는 아주 맛있었어요.", da: "Maden, hun lavede, var meget lækker.",     en: "The food she made was really delicious." },
+    { ja: "私が先週見た映画は面白かったです。",     ko: "제가 지난주에 본 영화는 재미있었어요.", da: "Filmen, jeg så i sidste uge, var sjov.",   en: "The movie I saw last week was fun." },
+    { ja: "これは父がくれた腕時計です。",           ko: "이건 아버지가 주신 시계예요.",        da: "Det er det ur, min far gav mig.",           en: "This is the watch that my father gave me." },
+    { ja: "あなたが話している人を知っています。",   ko: "당신이 말하는 사람을 알아요.",        da: "Jeg kender den person, du taler om.",       en: "I know the person you are talking about." },
+    { ja: "私が住んでいる町はとても静かです。",     ko: "제가 사는 동네는 아주 조용해요.",     da: "Byen, jeg bor i, er meget stille.",         en: "The town I live in is very quiet." },
+    { ja: "これは母がくれた本です。",               ko: "이건 어머니가 주신 책이에요.",      da: "Det er den bog, min mor gav mig.",       en: "This is the book that my mother gave me." },
+    { ja: "きのう食べた料理の名前を忘れました。",   ko: "어제 먹은 요리의 이름을 잊어버렸어요.", da: "Jeg har glemt navnet på den mad, jeg spiste i går.", en: "I forgot the name of the food I ate yesterday." },
+    { ja: "私が買った服はとても安かったです。",     ko: "제가 산 옷은 아주 쌌어요.",          da: "Det tøj, jeg købte, var meget billigt.", en: "The clothes I bought were very cheap." },
+    { ja: "彼が書いた手紙をまだ持っています。",     ko: "그가 쓴 편지를 아직 가지고 있어요.", da: "Jeg har stadig det brev, han skrev.",    en: "I still have the letter he wrote." },
+    { ja: "私たちが泊まったホテルは静かでした。",   ko: "우리가 묵은 호텔은 조용했어요.",     da: "Det hotel, vi boede på, var stille.",    en: "The hotel we stayed at was quiet." },
+    { ja: "あなたが撮った写真を見たいです。",       ko: "당신이 찍은 사진을 보고 싶어요.",    da: "Jeg vil gerne se de billeder, du tog.",  en: "I want to see the photos you took." },
+    { ja: "先生が話した話は面白かったです。",       ko: "선생님이 하신 이야기는 재미있었어요.", da: "Den historie, læreren fortalte, var sjov.", en: "The story the teacher told was fun." },
+    { ja: "私が毎日使う辞書はこれです。",           ko: "제가 매일 쓰는 사전은 이거예요.",    da: "Den ordbog, jeg bruger hver dag, er denne.", en: "The dictionary I use every day is this one." },
+    { ja: "友達が薦めてくれた映画を見ました。",     ko: "친구가 추천해 준 영화를 봤어요.",    da: "Jeg så den film, min ven anbefalede.",   en: "I watched the movie my friend recommended." },
+    { ja: "私が習っている言語は韓国語です。",       ko: "제가 배우는 언어는 한국어예요.",     da: "Det sprog, jeg lærer, er koreansk.",     en: "The language I'm learning is Korean." },
+    { ja: "彼女が働いている会社は有名です。",       ko: "그녀가 일하는 회사는 유명해요.",     da: "Det firma, hun arbejder i, er berømt.",  en: "The company she works for is famous." },
+  ];
+  for (const x of R) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "目的語を修飾するときは過去なら -(으)ㄴ、現在なら -는 の連体形にします。",
+      "目的語の関係代名詞は som ですが、ふつう省略します(den bog, jeg købte)。",
+      "目的格の関係代名詞(that/which/whom)は省略できます(the book I bought)。");
+  }
+}],
+
+["間接疑問: ~か知っていますか", 5, function* () {
+  const Q = [
+    { ja: "駅がどこにあるか知っていますか?",       ko: "역이 어디에 있는지 알아요?",       da: "Ved du, hvor stationen er?",            en: "Do you know where the station is?" },
+    { ja: "彼が何時に来るか知っていますか?",       ko: "그가 몇 시에 오는지 알아요?",      da: "Ved du, hvornår han kommer?",           en: "Do you know what time he is coming?" },
+    { ja: "これがいくらか知っていますか?",         ko: "이게 얼마인지 알아요?",            da: "Ved du, hvad det koster?",              en: "Do you know how much this costs?" },
+    { ja: "彼女がどこで働いているか知りません。",   ko: "그녀가 어디에서 일하는지 몰라요.", da: "Jeg ved ikke, hvor hun arbejder.",      en: "I don't know where she works." },
+    { ja: "なぜ彼が来なかったか分かりません。",     ko: "왜 그가 안 왔는지 몰라요.",        da: "Jeg ved ikke, hvorfor han ikke kom.",   en: "I don't know why he didn't come." },
+    { ja: "だれがこれを作ったか知っていますか?",   ko: "누가 이걸 만들었는지 알아요?",     da: "Ved du, hvem der har lavet det?",       en: "Do you know who made this?" },
+    { ja: "彼が何を勉強しているか知っていますか?",   ko: "그가 뭘 공부하는지 알아요?",        da: "Ved du, hvad han studerer?",             en: "Do you know what he studies?" },
+    { ja: "バスがいつ来るか知っていますか?",         ko: "버스가 언제 오는지 알아요?",        da: "Ved du, hvornår bussen kommer?",         en: "Do you know when the bus comes?" },
+    { ja: "トイレがどこにあるか教えてください。",     ko: "화장실이 어디에 있는지 알려 주세요.", da: "Fortæl mig, hvor toilettet er.",       en: "Please tell me where the restroom is." },
+    { ja: "彼女が何歳か知りません。",                 ko: "그녀가 몇 살인지 몰라요.",          da: "Jeg ved ikke, hvor gammel hun er.",      en: "I don't know how old she is." },
+    { ja: "この単語がどういう意味か分かりますか?",   ko: "이 단어가 무슨 뜻인지 알아요?",     da: "Ved du, hvad dette ord betyder?",        en: "Do you know what this word means?" },
+    { ja: "彼らがどこに住んでいるか知りません。",     ko: "그들이 어디에 사는지 몰라요.",      da: "Jeg ved ikke, hvor de bor.",             en: "I don't know where they live." },
+    { ja: "電車が何時に出るか調べます。",             ko: "기차가 몇 시에 떠나는지 알아볼게요.", da: "Jeg finder ud af, hvornår toget kører.", en: "I'll find out what time the train leaves." },
+    { ja: "だれがこの歌を歌っているか知っていますか?", ko: "누가 이 노래를 부르는지 알아요?",  da: "Ved du, hvem der synger denne sang?",    en: "Do you know who sings this song?" },
+    { ja: "彼がなぜ怒っているか分かりません。",       ko: "그가 왜 화났는지 몰라요.",          da: "Jeg ved ikke, hvorfor han er vred.",     en: "I don't know why he is angry." },
+    { ja: "どこで切符を買えるか教えてください。",     ko: "어디에서 표를 살 수 있는지 알려 주세요.", da: "Fortæl mig, hvor jeg kan købe en billet.", en: "Please tell me where I can buy a ticket." },
+    { ja: "彼女が何と言ったか聞こえませんでした。",   ko: "그녀가 뭐라고 했는지 못 들었어요.", da: "Jeg hørte ikke, hvad hun sagde.",        en: "I didn't hear what she said." },
+  ];
+  for (const x of Q) {
+    yield item(x.ja, x.ko, x.da, x.en, "質問",
+      "「~는지 알아요?」=「~か知っていますか」。-는지 が間接疑問の語尾です。",
+      "従属節の前にコンマを打ちます。間接疑問では ふつうの語順(主語→動詞)に戻ります。",
+      "間接疑問は「疑問詞 + 主語 + 動詞」の語順。where is the station ではなく where the station is。");
+  }
+}],
+
+["受身: ~されます", 5, function* () {
+  const P = [
+    { ja: "この建物は100年前に建てられました。", ko: "이 건물은 100년 전에 지어졌어요.", da: "Denne bygning blev bygget for 100 år siden.", en: "This building was built 100 years ago." },
+    { ja: "韓国では韓国語が話されています。",     ko: "한국에서는 한국어가 사용돼요.",     da: "I Korea tales der koreansk.",                 en: "Korean is spoken in Korea." },
+    { ja: "この本は多くの人に読まれています。",   ko: "이 책은 많은 사람에게 읽혀요.",     da: "Denne bog bliver læst af mange mennesker.",   en: "This book is read by many people." },
+    { ja: "その手紙は昨日書かれました。",         ko: "그 편지는 어제 쓰였어요.",          da: "Brevet blev skrevet i går.",                  en: "The letter was written yesterday." },
+    { ja: "この車は日本で作られました。",         ko: "이 차는 일본에서 만들어졌어요.",    da: "Denne bil blev lavet i Japan.",               en: "This car was made in Japan." },
+    { ja: "私はパーティーに招待されました。",     ko: "저는 파티에 초대받았어요.",         da: "Jeg blev inviteret til festen.",              en: "I was invited to the party." },
+    { ja: "この歌は世界中で歌われています。",       ko: "이 노래는 전 세계에서 불려요.",      da: "Denne sang bliver sunget i hele verden.", en: "This song is sung all over the world." },
+    { ja: "その映画は去年作られました。",           ko: "그 영화는 작년에 만들어졌어요.",     da: "Den film blev lavet sidste år.",          en: "That movie was made last year." },
+    { ja: "この教室は毎日掃除されます。",           ko: "이 교실은 매일 청소돼요.",           da: "Dette klasseværelse bliver gjort rent hver dag.", en: "This classroom is cleaned every day." },
+    { ja: "私の自転車が盗まれました。",             ko: "제 자전거를 도둑맞았어요.",          da: "Min cykel blev stjålet.",                 en: "My bicycle was stolen." },
+    { ja: "デンマークではデンマーク語が話されています。", ko: "덴마크에서는 덴마크어가 사용돼요.", da: "I Danmark tales der dansk.",          en: "Danish is spoken in Denmark." },
+    { ja: "この写真は父に撮られました。",           ko: "이 사진은 아버지가 찍었어요.",       da: "Dette billede blev taget af min far.",    en: "This photo was taken by my father." },
+    { ja: "その橋は10年前に建てられました。",       ko: "그 다리는 10년 전에 지어졌어요.",    da: "Den bro blev bygget for 10 år siden.",    en: "That bridge was built 10 years ago." },
+    { ja: "その本は多くの言語に翻訳されています。", ko: "그 책은 여러 언어로 번역돼요.",      da: "Den bog bliver oversat til mange sprog.", en: "That book is translated into many languages." },
+    { ja: "私は先生にほめられました。",             ko: "저는 선생님에게 칭찬받았어요.",      da: "Jeg blev rost af læreren.",               en: "I was praised by my teacher." },
+    { ja: "この料理は米から作られます。",           ko: "이 요리는 쌀로 만들어져요.",         da: "Denne ret bliver lavet af ris.",          en: "This dish is made from rice." },
+    { ja: "会議は来週開かれます。",                 ko: "회의는 다음 주에 열려요.",           da: "Mødet bliver holdt i næste uge.",         en: "The meeting will be held next week." },
+  ];
+  for (const x of P) {
+    yield item(x.ja, x.ko, x.da, x.en, "描写",
+      "韓国語の受身は -이/히/리/기 や -아/어지다、漢字語では -되다/-받다 を使います。",
+      "受身は blive + 過去分詞。一般的な事実には -s 受身(tales)も使います。",
+      "受身は be + 過去分詞。動作主を示すときは by ~ を添えます。");
+  }
+}],
+
+["仮定法: もし~なら", 5, function* () {
+  const S = [
+    { ja: "もしお金があれば、車を買うのに。",       ko: "돈이 있으면 차를 살 텐데요.",        da: "Hvis jeg havde penge, ville jeg købe en bil.",   en: "If I had money, I would buy a car." },
+    { ja: "もし時間があれば、旅行に行くのに。",     ko: "시간이 있으면 여행을 갈 텐데요.",    da: "Hvis jeg havde tid, ville jeg rejse.",           en: "If I had time, I would travel." },
+    { ja: "もし韓国語が話せたら、韓国で働くのに。", ko: "한국어를 할 수 있으면 한국에서 일할 텐데요.", da: "Hvis jeg kunne tale koreansk, ville jeg arbejde i Korea.", en: "If I could speak Korean, I would work in Korea." },
+    { ja: "もし私があなたなら、そうはしないのに。", ko: "제가 당신이라면 그렇게 안 할 텐데요.", da: "Hvis jeg var dig, ville jeg ikke gøre det.",   en: "If I were you, I wouldn't do that." },
+    { ja: "もし天気がよければ、散歩するのに。",     ko: "날씨가 좋으면 산책할 텐데요.",       da: "Hvis vejret var godt, ville jeg gå en tur.",     en: "If the weather were nice, I would take a walk." },
+    { ja: "もっと早く起きれば、間に合うのに。",     ko: "더 일찍 일어나면 늦지 않을 텐데요.", da: "Hvis jeg stod tidligere op, ville jeg nå det.",  en: "If I got up earlier, I would make it." },
+    { ja: "もっとお金があれば、家を買うのに。",     ko: "돈이 더 있으면 집을 살 텐데요.",     da: "Hvis jeg havde flere penge, ville jeg købe et hus.", en: "If I had more money, I would buy a house." },
+    { ja: "もし車があれば、海に行くのに。",         ko: "차가 있으면 바다에 갈 텐데요.",      da: "Hvis jeg havde en bil, ville jeg tage til havet.", en: "If I had a car, I would go to the sea." },
+    { ja: "もし彼が来れば、うれしいのに。",         ko: "그가 오면 기쁠 텐데요.",             da: "Hvis han kom, ville jeg blive glad.",     en: "If he came, I would be happy." },
+    { ja: "もっと若ければ、留学するのに。",         ko: "더 젊으면 유학을 갈 텐데요.",        da: "Hvis jeg var yngre, ville jeg studere i udlandet.", en: "If I were younger, I would study abroad." },
+    { ja: "もし雨が降らなければ、出かけるのに。",   ko: "비가 안 오면 나갈 텐데요.",          da: "Hvis det ikke regnede, ville jeg gå ud.", en: "If it weren't raining, I would go out." },
+    { ja: "もし休みが取れたら、家族に会いに行くのに。", ko: "휴가를 낼 수 있으면 가족을 만나러 갈 텐데요.", da: "Hvis jeg kunne få fri, ville jeg besøge min familie.", en: "If I could take time off, I would visit my family." },
+    { ja: "もし彼女の電話番号を知っていれば、電話するのに。", ko: "그녀의 전화번호를 알면 전화할 텐데요.", da: "Hvis jeg kendte hendes nummer, ville jeg ringe.", en: "If I knew her number, I would call her." },
+    { ja: "もっと近くに住んでいれば、毎日会うのに。", ko: "더 가까이 살면 매일 만날 텐데요.",  da: "Hvis jeg boede tættere på, ville vi ses hver dag.", en: "If I lived closer, we would meet every day." },
+    { ja: "もし料理が上手なら、レストランを開くのに。", ko: "요리를 잘하면 식당을 열 텐데요.", da: "Hvis jeg var god til at lave mad, ville jeg åbne en restaurant.", en: "If I were good at cooking, I would open a restaurant." },
+    { ja: "もし彼が手伝ってくれたら、早く終わるのに。", ko: "그가 도와주면 빨리 끝날 텐데요.", da: "Hvis han hjalp mig, ville jeg blive hurtigt færdig.", en: "If he helped me, I would finish quickly." },
+    { ja: "もし飛行機が安ければ、毎年旅行するのに。", ko: "비행기가 싸면 매년 여행할 텐데요.", da: "Hvis flybilletter var billige, ville jeg rejse hvert år.", en: "If plane tickets were cheap, I would travel every year." },
+  ];
+  for (const x of S) {
+    yield item(x.ja, x.ko, x.da, x.en, "仮定",
+      "「~(으)면 ~ㄹ 텐데요」で「~なら~するのに」。実現していない想像を表します。",
+      "仮定法では条件節を過去形(havde/var/kunne)にし、主節に ville を使います。",
+      "仮定法過去は「If + 主語 + 過去形, 主語 + would + 原形」。be は were を使うのが正式です。");
+  }
+}],
+
 /* 様態副詞。副詞の位置が3言語で違う(韓国語は動詞の直前、英語・デンマーク語は動詞のあと)ので、
  * 語彙の総当たりではなく自然な言い回しを1件ずつ書いている。 */
 ["様態副詞: どんなふうに", 3, function* () {
