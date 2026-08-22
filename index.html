@@ -111,6 +111,9 @@
     transition: all .15s; user-select: none;
   }
   .mode-opt.active { background: var(--blue); color: #fff; }
+  /* 難易度トグルは6個あるので2段に折り返す(回答モードの3個は1行のまま) */
+  #diffToggle { flex-wrap: wrap; }
+  #diffToggle .mode-opt { flex: 1 1 28%; }
   .mode-opt.disabled { opacity: .4; pointer-events: none; }
   .mode-desc { font-size: 12px; color: var(--text-light); text-align: center; margin: -8px 0 16px; }
 
@@ -506,9 +509,10 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.10.0";
+const APP_VERSION = "1.11.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
+const MAX_D = 5;   // 難易度の段数(★1〜★5)。増やすときは DIFFS と XP_BY_D も伸ばす
 const GRASS_WEEKS = 17; // 約4ヶ月分
 // 草の濃さ: [そのXP以上, クラス名, 凡例のツールチップ]。濃い順に並べ、上から順に判定する。
 // 1レッスン(5問)は 40〜100XP なので、序盤は細かく・後半はゆるやかに刻み、
@@ -542,8 +546,10 @@ const DIFFS = {
   1:    { short: "★",          label: "やさしい",   desc: "基礎の文型だけ。ウォームアップや復習に" },
   2:    { short: "★★",        label: "ふつう",     desc: "標準の文型だけ" },
   3:    { short: "★★★",      label: "むずかしい", desc: "過去形・経験・比較・理由・依頼などの応用文型だけ" },
+  4:    { short: "★★★★",    label: "発展",       desc: "助動詞・比較級・最上級・現在完了・if節・SVOO/SVOCなどの発展文型だけ" },
+  5:    { short: "★★★★★",  label: "上級",       desc: "関係代名詞・後置修飾・間接疑問・受身・仮定法だけ" },
 };
-const DIFF_KEYS = ["auto", "1", "2", "3"];
+const DIFF_KEYS = ["auto", "1", "2", "3", "4", "5"];
 
 function trackOf(lang, dir) { return dir === "ja" ? "en_ja" : lang; }
 function trackOfQ(q) { return trackOf(q.lang, dirOf(q)); }
@@ -597,9 +603,13 @@ function dayKey(d) {
   return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 }
 
+// 出題バランスの1行表示。0%の段(低レベルでの★★★★・★★★★★)は省いて横幅を節約する
 function distText(dist) {
-  return "出題バランス: ★" + Math.round(dist[0] * 100) + "% ★★" + Math.round(dist[1] * 100) +
-         "% ★★★" + Math.round(dist[2] * 100) + "%";
+  return "出題バランス: " + dist
+    .map((v, i) => [Math.round(v * 100), i])
+    .filter(([pct]) => pct > 0)
+    .map(([pct, i]) => "★".repeat(i + 1) + pct + "%")
+    .join(" ");
 }
 // 難易度を固定しているときは分布のパーセンテージが嘘になるので、こちらを代わりに出す
 function diffFixedText(d) { return "難易度: " + DIFFS[d].short + " " + DIFFS[d].label + "(固定)"; }
@@ -885,21 +895,37 @@ function shuffle(arr) {
   return arr;
 }
 
-// レベルに応じた難易度分布 [D1, D2, D3]
-// 段階式ではなく連続式: レベルごとに ★-2.5% / ★★★+2% ずつなだらかに移行し、
-// 約20レベルかけて上限(★21% / ★★39% / ★★★40%)に到達する
+// レベルに応じた難易度分布 [D1..D5]
+// 段階式ではなく連続式。★〜★★★の3段は従来の式をそのまま使い、
+// ★★★★はLv7から・★★★★★はLv13から徐々に顔を出す(そのぶん全体を正規化して縮める)。
+// Lv1〜6 は d4=d5=0 なので、分布は従来と完全に同じ [70%, 25%, 5%] のまま。
 function levelDist(lv) {
   const d1 = Math.max(0.20, 0.70 - 0.025 * (lv - 1));
   const d3 = Math.min(0.40, 0.05 + 0.02 * (lv - 1));
-  return [d1, 1 - d1 - d3, d3];
+  const d2 = 1 - d1 - d3;
+  const d4 = Math.min(0.25, Math.max(0, 0.025 * (lv - 6)));
+  const d5 = Math.min(0.20, Math.max(0, 0.02  * (lv - 12)));
+  const s = d1 + d2 + d3 + d4 + d5;
+  return [d1 / s, d2 / s, d3 / s, d4 / s, d5 / s];
 }
 // 難易度を手動で固定したときの分布。選んだ難易度だけを100%出す
-function fixedDist(d) { const a = [0, 0, 0]; a[Number(d) - 1] = 1; return a; }
+function fixedDist(d) {
+  const a = new Array(MAX_D).fill(0);
+  a[Number(d) - 1] = 1;
+  return a;
+}
+// 累積で判定する。丸め誤差で合計が1に届かない場合に備え、最後のバケツをフォールバックにする
 function weightedPick(dist) {
   const r = Math.random();
-  return r < dist[0] ? 0 : r < dist[0] + dist[1] ? 1 : 2;
+  let acc = 0;
+  for (let i = 0; i < dist.length - 1; i++) {
+    acc += dist[i];
+    if (r < acc) return i;
+  }
+  return dist.length - 1;
 }
-function xpFor(d) { return [10, 15, 20][(d || 1) - 1]; }
+const XP_BY_D = [10, 15, 20, 25, 30];
+function xpFor(d) { return XP_BY_D[(d || 1) - 1]; }
 
 function pickQuestions() {
   // 向きは出題時に確定させる。単語帳に入っても向きが保たれ、復習で同じ形式が再現される
@@ -909,7 +935,7 @@ function pickQuestions() {
   // 韓国語はLv.2・英語はLv.8といった差がそのまま出題に反映される
   const buckets = {};
   for (const lang of langs) {
-    const b = [[], [], []];
+    const b = Array.from({ length: MAX_D }, () => []);
     for (const it of BANK[lang].items) b[(it.d || 1) - 1].push({...it, lang, dir});
     buckets[lang] = b;
   }
@@ -954,7 +980,7 @@ function renderQuestion() {
   document.getElementById("qSentence").textContent = ja ? q.t : q.a;  // 和訳モードは外国語文で出題
   document.getElementById("qHint").textContent = "ヒント: " + q.h;
   const dd = q.d || 1;
-  document.getElementById("qDiff").textContent = "★".repeat(dd) + "☆".repeat(3 - dd);
+  document.getElementById("qDiff").textContent = "★".repeat(dd) + "☆".repeat(MAX_D - dd);
   document.getElementById("selfGoodBtn").textContent = `書けた! 😊 +${xpFor(dd)}XP`;
   document.getElementById("selfHardBtn").textContent = `惜しかった 😅 +${Math.ceil(xpFor(dd) / 2)}XP`;
   document.getElementById("selfBadBtn").textContent = "書けなかった 😢 +1XP";
