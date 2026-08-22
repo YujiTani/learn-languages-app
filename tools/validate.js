@@ -75,8 +75,12 @@ for (const [lang, data] of Object.entries(bank)) {
       if (m[2] !== need) err("ko", t, `主格助詞: ${m[1]}${m[2]} → ${m[1]}${need} が正しい`);
     }
     // 은/는
+    // 動詞・形容詞の連体形(재미있는・사는 など)は助詞ではないので除外する。
+    // 있다 の連体形は必ず 있는 で、「있 + 은」になることはない。
+    const ADNOM = /(있|사|하|가|오|보|자|먹|읽|쓰)는$/;
     for (const m of t.matchAll(/([가-힣])(은|는)\s/g)) {
       const need = hasBatchim(m[1]) ? "은" : "는";
+      if (m[2] === "는" && ADNOM.test(m[1] + m[2])) continue;
       if (m[2] !== need) err("ko", t, `主題助詞: ${m[1]}${m[2]} → ${m[1]}${need} が正しい`);
     }
     // 이에요/예요
@@ -223,10 +227,13 @@ for (const [lang, data] of Object.entries(bank)) {
 /* ---------- 難易度チェック ---------- */
 {
   const MIN_PER_BUCKET = 100;
+  const MAX_D = 5;
   for (const [lang, data] of Object.entries(bank)) {
-    const counts = [0, 0, 0];
+    const counts = new Array(MAX_D).fill(0);
     for (const it of data.items) {
-      if (![1, 2, 3].includes(it.d)) { err(lang, it.t, `難易度が不正 (d=${it.d})`); continue; }
+      if (!(Number.isInteger(it.d) && it.d >= 1 && it.d <= MAX_D)) {
+        err(lang, it.t, `難易度が不正 (d=${it.d})`); continue;
+      }
       counts[it.d - 1]++;
     }
     counts.forEach((c, i) => {
