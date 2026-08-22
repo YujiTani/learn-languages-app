@@ -1174,14 +1174,19 @@ const TEMPLATES = [
 }],
 
 ["疑問詞: だれ・いつ・なぜ", 3, function* () {
-  for (const p of PEOPLE) {
-    if (!p.human) continue;
-    yield item(`あの人はだれですか?`,
-      `저 사람은 누구예요?`, `Hvem er den person?`, `Who is that person?`, "質問",
-      "누구=だれ。「누구예요?」で「だれですか?」。",
-      "hvem=だれ。疑問詞のあとは動詞→主語の語順です。",
-      "Who is ~? で人をたずねます。", 3);
-    break;
+  const WHO = [
+    { ja: "あの人はだれですか?",         ko: "저 사람은 누구예요?",       da: "Hvem er den person?",        en: "Who is that person?" },
+    { ja: "この本はだれのですか?",       ko: "이 책은 누구 거예요?",      da: "Hvis bog er det?",           en: "Whose book is this?" },
+    { ja: "だれがこの写真を撮りましたか?", ko: "누가 이 사진을 찍었어요?", da: "Hvem tog dette billede?",    en: "Who took this photo?" },
+    { ja: "だれと一緒に行きますか?",     ko: "누구와 같이 가요?",         da: "Hvem tager du med?",         en: "Who are you going with?" },
+    { ja: "だれが韓国語を話せますか?",   ko: "누가 한국어를 할 수 있어요?", da: "Hvem kan tale koreansk?",  en: "Who can speak Korean?" },
+    { ja: "あなたの先生はだれですか?",   ko: "선생님이 누구예요?",        da: "Hvem er din lærer?",         en: "Who is your teacher?" },
+  ];
+  for (const w of WHO) {
+    yield item(w.ja, w.ko, w.da, w.en, "質問",
+      "누구=だれ。「누가」は 누구+가(主格)の縮約形です。",
+      "hvem=だれ、hvis=だれの。疑問詞のあとは動詞→主語の語順です。",
+      "who=だれ、whose=だれの。who が主語のときは do/does を使いません。");
   }
   for (const [pi, p] of PEOPLE.entries()) {
     if (!p.human) continue;
@@ -1490,6 +1495,29 @@ const TEMPLATES = [
       "「~다고 말했어요」=「~だと言った」。",
       "sige の過去形は sagde。従属節の前にコンマを打ちます。",
       "tell + 人 + that節。主節が過去形なので that節も過去形にします(時制の一致)。");
+  }
+}],
+
+["不定詞の応用: too ~ to / It is ~ to", 4, function* () {
+  const I = [
+    { ja: "このスープは熱すぎて飲めません。",     ko: "이 수프는 너무 뜨거워서 마실 수 없어요.", da: "Denne suppe er for varm til at drikke.", en: "This soup is too hot to drink." },
+    { ja: "この本は難しすぎて読めません。",       ko: "이 책은 너무 어려워서 읽을 수 없어요.",   da: "Denne bog er for svær til at læse.",    en: "This book is too difficult to read." },
+    { ja: "私は疲れすぎて出かけられません。",     ko: "저는 너무 피곤해서 나갈 수 없어요.",      da: "Jeg er for træt til at gå ud.",         en: "I'm too tired to go out." },
+    { ja: "韓国語を学ぶのは楽しいです。",         ko: "한국어를 배우는 것은 즐거워요.",          da: "Det er sjovt at lære koreansk.",        en: "It is fun to learn Korean." },
+    { ja: "毎日運動するのは大切です。",           ko: "매일 운동하는 것은 중요해요.",            da: "Det er vigtigt at træne hver dag.",     en: "It is important to exercise every day." },
+    { ja: "朝早く起きるのは難しいです。",         ko: "아침 일찍 일어나는 것은 어려워요.",       da: "Det er svært at stå tidligt op.",       en: "It is difficult to get up early." },
+    { ja: "何か食べるものがほしいです。",         ko: "뭔가 먹을 것이 필요해요.",                da: "Jeg vil gerne have noget at spise.",    en: "I want something to eat." },
+    { ja: "読む本がたくさんあります。",           ko: "읽을 책이 많이 있어요.",                  da: "Jeg har mange bøger at læse.",          en: "I have a lot of books to read." },
+    { ja: "私は友達に手伝ってほしいです。",       ko: "저는 친구가 도와주기를 바라요.",          da: "Jeg vil gerne have min ven til at hjælpe mig.", en: "I want my friend to help me." },
+    { ja: "先生は私たちに毎日勉強するように言いました。", ko: "선생님은 우리에게 매일 공부하라고 했어요.", da: "Læreren bad os om at studere hver dag.", en: "The teacher told us to study every day." },
+    { ja: "私は料理を習うためにデンマークに来ました。", ko: "저는 요리를 배우러 덴마크에 왔어요.", da: "Jeg kom til Danmark for at lære at lave mad.", en: "I came to Denmark to learn to cook." },
+    { ja: "彼女に会えてうれしいです。",           ko: "그녀를 만나서 기뻐요.",                   da: "Jeg er glad for at møde hende.",        en: "I'm happy to meet her." },
+  ];
+  for (const x of I) {
+    yield item(x.ja, x.ko, x.da, x.en, "学習",
+      "「~기 위해」「~러」で目的、「~을/를 것」で「~すること」を表します。",
+      "デンマーク語の不定詞は at + 動詞。for at ~ で「~するために」。",
+      "too ~ to …(~すぎて…できない)、It is ~ to …(…するのは~だ)、名詞+to不定詞(~すべき…)。");
   }
 }],
 

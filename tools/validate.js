@@ -73,9 +73,12 @@ for (const [lang, data] of Object.entries(bank)) {
     // 「가까이(近くに)」のように 이 で終わる副詞は助詞ではないので除外する。
     // m[1] は1文字しか取れないので、マッチ位置の手前まで含めて判定する
     const ADV_I = /(가까이|많이|같이|깊이|높이)$/;
+    // 「뭔가(何か)」「누가(だれが)」は助詞つきの語ではなく1語なので除外する
+    const WORD_GA = /(뭔가|누가|먼가)$/;
     for (const m of t.matchAll(/([가-힣])(이|가)\s/g)) {
       const need = hasBatchim(m[1]) ? "이" : "가";
       if (m[2] === "이" && ADV_I.test(t.slice(0, m.index + 2))) continue;
+      if (m[2] === "가" && WORD_GA.test(t.slice(0, m.index + 2))) continue;
       if (m[2] !== need) err("ko", t, `主格助詞: ${m[1]}${m[2]} → ${m[1]}${need} が正しい`);
     }
     // 은/는
@@ -203,6 +206,8 @@ const BANNED = {
     /(ビール|ワイン|コーヒー|お茶|牛乳|水)を食べた/,
   ],
   da: [
+    /\bsom der\b/,           // 関係代名詞の重複
+    /\bat at\b/,             // 不定詞マーカーの重複
     /\bzooen\b/,             // zoologisk have を使う(zooen は口語すぎ)
     /Det er fugtigt/,        // 蒸し暑い は lummert(LLMレビュー指摘)
     /Jeg tegnede i går/,     // 目的語が必要
@@ -213,6 +218,10 @@ const BANNED = {
     /Where is my key\?/,     // 鍵は keys(複数)が自然
     /do you .* my /,         // 疑問文でmyは人称不一致(→your)
     /Have you ever tried (bread|meat|cheese|rice)\b/,  // 日常食すぎて不自然
+    /\bmore \w+er\b|\bmore better\b|\bmost \w+est\b/,   // 二重比較・二重最上級
+    /\bdid (went|ate|saw|bought|made)\b/,                 // 二重過去
+    /\bcan to \b|\bshould to \b|\bwill to \b/,             // 助動詞のあとに to
+    /\bas \w+er as\b/,                                    // as ... as に比較級
   ],
   ko: [
     /바람이 불어요/,          // 「風が強い」は 바람이 세요(LLMレビュー指摘)
@@ -244,6 +253,14 @@ for (const [lang, data] of Object.entries(bank)) {
       if (c < MIN_PER_BUCKET) err(lang, `D${i + 1}`, `難易度D${i + 1}の問題が${c}問しかない(最低${MIN_PER_BUCKET}問)`);
     });
   }
+  // 程度副詞の偏りガード。以前は描写文がすべて very だった(951問)
+  {
+    const desc = bank.en.items.filter(it => ["描写", "食事"].includes(it.h) && / is (very|really|quite|a little|too|not very) /.test(it.t));
+    const very = desc.filter(it => / is very /.test(it.t)).length;
+    if (desc.length && very / desc.length > 0.25)
+      err("en", "程度副詞", `描写文の very が ${Math.round(very / desc.length * 100)}% あります(上限25%)`);
+  }
+
   // 飲み物に「食べた」が付いていないか(回帰ガード)
   for (const it of bank.en.items) {
     if (/tried (water|milk|coffee|tea|juice|beer|wine)\b/.test(it.t)) err("en", it.t, "飲み物にtried(食べた文脈)");
