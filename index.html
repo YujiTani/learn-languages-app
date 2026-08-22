@@ -512,7 +512,7 @@ function loadBank() {
 const APP_VERSION = "1.11.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
-const MAX_D = 5;   // 難易度の段数(★1〜★5)。増やすときは DIFFS と XP_BY_D も伸ばす
+const MAX_D = 5;   // 難易度の段数(★1〜★5)。増やすときは DIFFS も伸ばす
 const GRASS_WEEKS = 17; // 約4ヶ月分
 // 草の濃さ: [そのXP以上, クラス名, 凡例のツールチップ]。濃い順に並べ、上から順に判定する。
 // 1レッスン(5問)は 40〜100XP なので、序盤は細かく・後半はゆるやかに刻み、
@@ -924,8 +924,10 @@ function weightedPick(dist) {
   }
   return dist.length - 1;
 }
-const XP_BY_D = [10, 15, 20, 25, 30];
-function xpFor(d) { return XP_BY_D[(d || 1) - 1]; }
+// 獲得XPは難易度によらず一律。難しい問題を選んでもレベルが速く上がることはないので、
+// 「XP稼ぎのために難易度を選ぶ」動機が生まれず、難易度は純粋に学びたい文法で選べる
+const XP_PER_QUESTION = 15;
+function xpFor() { return XP_PER_QUESTION; }
 
 function pickQuestions() {
   // 向きは出題時に確定させる。単語帳に入っても向きが保たれ、復習で同じ形式が再現される
