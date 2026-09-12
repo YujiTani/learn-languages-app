@@ -293,6 +293,19 @@
     border-radius: 12px; font-size: 14px; z-index: 100; animation: pop .3s ease;
   }
   footer { text-align: center; color: #bbb; font-size: 12px; padding: 20px 0; }
+.moved {
+  background: #fff4d6; border: 2px solid #f0b429; border-radius: 14px;
+  padding: 14px 16px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px;
+}
+.moved-head { font-weight: 800; font-size: 15px; display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.moved-desc { font-size: 13px; line-height: 1.6; color: #6b5200; }
+.moved-desc code { background: #ffe8a8; padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+.moved-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.moved-btns .btn { flex: 1 1 180px; margin: 0; }
+.moved-close {
+  background: none; border: none; font-size: 18px; line-height: 1; cursor: pointer;
+  color: #8a6d00; padding: 0 2px;
+}
 .import-text { width: 100%; min-height: 110px; box-sizing: border-box; margin-bottom: 10px;
   padding: 10px; border: 2px solid var(--border); border-radius: 12px;
   font-family: inherit; font-size: 12px; resize: vertical; }
@@ -300,6 +313,22 @@
 </head>
 <body>
 <div class="container">
+  <div class="moved hidden" id="movedBanner">
+    <div class="moved-head">
+      <span>🚚 新しいURLに引っ越しました</span>
+      <button class="moved-close" onclick="dismissMoved()" title="今回は閉じる" aria-label="閉じる">✕</button>
+    </div>
+    <div class="moved-desc">
+      これからは <code id="movedUrl"></code> をお使いください。<br>
+      このページの学習データを持っていくには、下の「コピー」を押してから新しいサイトの
+      👤マイページ →「⬆️ データを読み込む」に貼り付けてください。
+    </div>
+    <div class="moved-btns">
+      <button class="btn btn-white" onclick="copyData()">📋 データをコピー</button>
+      <button class="btn btn-green" onclick="openNewHome()">新しいサイトを開く ↗</button>
+    </div>
+  </div>
+
   <header>
     <div class="logo">LingoPop!<span class="version" id="appVersion"></span></div>
     <div class="stats">
@@ -534,7 +563,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.12.0";
+const APP_VERSION = "1.13.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const MAX_D = 5;   // 難易度の段数(★1〜★5)。増やすときは DIFFS も伸ばす
@@ -1274,6 +1303,28 @@ function renderProfile() {
   renderBackupNote();
 }
 
+// ---------- 引っ越し案内 ----------
+// 公開先を Cloudflare Pages に移したので、旧URL(GitHub Pages)を開いた人を新URLへ誘導する。
+// 旧URLで学習を続けられると、同じ人の記録が2つのオリジンに分かれて二度と合流しない。
+const NEW_HOME = "https://learn-languages-app.pages.dev/";
+const OLD_HOSTS = ["yujitani.github.io"];
+
+function isOldHome() { return OLD_HOSTS.includes(location.hostname); }
+
+function renderMovedBanner() {
+  if (!isOldHome() || sessionStorage.getItem("movedClosed")) return;
+  document.getElementById("movedUrl").textContent = NEW_HOME.replace(/^https:\/\/|\/$/g, "");
+  document.getElementById("movedBanner").classList.remove("hidden");
+}
+
+// 閉じるのはそのタブのあいだだけ。開き直せばまた出る(引っ越しを促し続けるため)
+function dismissMoved() {
+  try { sessionStorage.setItem("movedClosed", "1"); } catch (e) {}
+  document.getElementById("movedBanner").classList.add("hidden");
+}
+
+function openNewHome() { window.open(NEW_HOME, "_blank", "noopener"); }
+
 // ---------- データのバックアップ ----------
 // 学習データはオリジン(URL)ごとの localStorage にしかないので、別ブラウザ・別ドメインへ
 // 引っ越すときはここで書き出して読み込む。
@@ -1448,6 +1499,7 @@ function toast(text) {
 
 // ---------- 初期化 ----------
 document.getElementById("appVersion").textContent = "v" + APP_VERSION;
+renderMovedBanner();   // 旧URLのときだけ引っ越し案内を出す
 renderDiffToggle();   // setMode / selectLang が syncDiffUI を呼ぶので、先に中身を作っておく
 renderStats();
 // selectedLang は永続化されないため、和訳モードの復元には英語の再選択が先に必要
