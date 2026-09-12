@@ -293,6 +293,9 @@
     border-radius: 12px; font-size: 14px; z-index: 100; animation: pop .3s ease;
   }
   footer { text-align: center; color: #bbb; font-size: 12px; padding: 20px 0; }
+.import-text { width: 100%; min-height: 110px; box-sizing: border-box; margin-bottom: 10px;
+  padding: 10px; border: 2px solid var(--border); border-radius: 12px;
+  font-family: inherit; font-size: 12px; resize: vertical; }
 </style>
 </head>
 <body>
@@ -476,6 +479,28 @@
       レベルはモードごとに別々にたまり、そのモードの出題難易度だけが上がります
     </div>
     <div id="trackList"></div>
+
+    <div class="section-title">💾 データのバックアップ</div>
+    <div class="mode-desc" style="margin:-6px 0 12px">
+      学習データはこのブラウザにだけ保存されています。書き出しておけば、別のブラウザや新しいURLへ引っ越すときに復元できます
+    </div>
+    <div class="card">
+      <button class="btn btn-blue" onclick="exportData()">⬇️ データを書き出す</button>
+      <button class="btn btn-white" onclick="copyData()">📋 クリップボードにコピー</button>
+      <button class="btn btn-white" onclick="openImport()">⬆️ データを読み込む</button>
+      <input type="file" id="importFile" class="hidden" accept="application/json,.json"
+             onchange="importFromFile(event)">
+      <div id="importBox" class="hidden">
+        <div class="opt-desc" style="margin:4px 0 8px">
+          書き出したJSONを貼り付けるか、ファイルを選んでください。いまのデータは消えず、多いほうに合算されます
+        </div>
+        <textarea id="importText" class="import-text" placeholder='{"app":"lingopop", ...}'></textarea>
+        <button class="btn btn-green" onclick="importFromText()">貼り付けたデータを読み込む</button>
+        <button class="btn btn-white" onclick="pickImportFile()">ファイルを選ぶ</button>
+      </div>
+      <div class="opt-desc" id="backupNote"></div>
+    </div>
+
     <button class="btn btn-white" onclick="goHome()">ホームへもどる</button>
   </div>
 
@@ -509,7 +534,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.11.0";
+const APP_VERSION = "1.12.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const MAX_D = 5;   // 難易度の段数(★1〜★5)。増やすときは DIFFS も伸ばす
@@ -568,18 +593,32 @@ let selectedLang = "ko";
 let session = null;
 
 function load() {
-  try {
-    const s = JSON.parse(localStorage.getItem("lingopop") || "{}");
-    return {
-      xp: s.xp || 0, streak: s.streak || 0, lastDay: s.lastDay || null,
-      best: s.best || 0, days: s.days || {}, mode: s.mode || "write",
-      wordbook: s.wordbook || [],
-      tracks: loadTracks(s),
-      wbEnabled: s.wbEnabled !== false,     // デフォルトON
-      ttsEnabled: s.ttsEnabled !== false,   // デフォルトON
-      diffs: s.diffs || {},                 // トラック別の難易度。キーが無ければ全部 "auto"
-    };
-  } catch (e) { return { xp: 0, streak: 0, lastDay: null, best: 0, days: {}, mode: "write", wordbook: [], tracks: loadTracks({}), wbEnabled: true, ttsEnabled: true, diffs: {} }; }
+  try { return normalize(JSON.parse(localStorage.getItem("lingopop") || "{}")); }
+  catch (e) { return normalize({}); }
+}
+
+// 保存データや読み込んだバックアップを、欠けたキーを埋めた正規の state に整える。
+// 外から来たJSONも通るので、型が違う値は既定値に落として壊れないようにする
+function num(v) { return typeof v === "number" && isFinite(v) && v >= 0 ? v : 0; }
+function obj(v) { return v && typeof v === "object" && !Array.isArray(v) ? v : {}; }
+// 復習画面は BANK[lang] を引くので、知らない言語のカードが混ざると落ちる。取り込みの入口で捨てる
+function validCard(w) {
+  return !!w && typeof w === "object" && typeof w.t === "string" && typeof w.a === "string" &&
+         ["ko", "da", "en"].includes(w.lang);
+}
+
+function normalize(s) {
+  s = obj(s);
+  return {
+    xp: num(s.xp), streak: num(s.streak), lastDay: s.lastDay || null,
+    best: num(s.best), days: obj(s.days), mode: s.mode || "write",
+    wordbook: (Array.isArray(s.wordbook) ? s.wordbook : []).filter(validCard),
+    tracks: loadTracks(s),
+    wbEnabled: s.wbEnabled !== false,     // デフォルトON
+    ttsEnabled: s.ttsEnabled !== false,   // デフォルトON
+    diffs: obj(s.diffs),                  // トラック別の難易度。キーが無ければ全部 "auto"
+    updatedAt: num(s.updatedAt),          // 最後に保存した時刻。バックアップの新旧判定に使う
+  };
 }
 
 // トラック別XPの読み込み。tracks を持たない旧データは各トラックの初期XPを総合XPにそろえ、
@@ -587,16 +626,19 @@ function load() {
 function loadTracks(s) {
   const out = {};
   for (const k of TRACK_KEYS) {
-    const t = (s.tracks || {})[k] || {};
+    const t = obj(obj(s.tracks)[k]);
     out[k] = {
-      xp: t.xp != null ? t.xp : (s.tracks ? 0 : (s.xp || 0)),
-      answered: t.answered || 0,
-      correct: t.correct || 0,
+      xp: t.xp != null ? num(t.xp) : (s.tracks ? 0 : num(s.xp)),
+      answered: num(t.answered),
+      correct: num(t.correct),
     };
   }
   return out;
 }
-function save() { localStorage.setItem("lingopop", JSON.stringify(state)); }
+function save() {
+  state.updatedAt = Date.now();
+  localStorage.setItem("lingopop", JSON.stringify(state));
+}
 
 function levelOf(xp) { return Math.floor(xp / XP_PER_LEVEL) + 1; }
 function dayKey(d) {
@@ -1229,6 +1271,139 @@ function renderProfile() {
         <div class="track-rows"><div>${balance}</div><div>${detail}</div></div>
       </div>`;
   }).join("");
+  renderBackupNote();
+}
+
+// ---------- データのバックアップ ----------
+// 学習データはオリジン(URL)ごとの localStorage にしかないので、別ブラウザ・別ドメインへ
+// 引っ越すときはここで書き出して読み込む。
+// mergeState() は「どちらのデータも失わない」合成関数で、将来のクラウド同期でもそのまま使う。
+const BACKUP_SCHEMA = 1;
+
+function backupJson() {
+  return JSON.stringify({ app: "lingopop", schema: BACKUP_SCHEMA, version: APP_VERSION,
+                          exportedAt: new Date().toISOString(), state: state }, null, 2);
+}
+
+function exportData() {
+  const url = URL.createObjectURL(new Blob([backupJson()], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "lingopop-backup-" + dayKey(new Date()) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast("💾 データを書き出しました");
+}
+
+async function copyData() {
+  const json = backupJson();
+  try {
+    await navigator.clipboard.writeText(json);
+    toast("📋 コピーしました");
+  } catch (e) {
+    // クリップボードが使えない環境(file:// や古いブラウザ)では貼り付け欄に出して手動コピーしてもらう
+    openImport();
+    const ta = document.getElementById("importText");
+    ta.value = json;
+    ta.focus(); ta.select();
+    toast("コピーできないので下に表示しました(手動でコピーしてください)");
+  }
+}
+
+function openImport() { document.getElementById("importBox").classList.remove("hidden"); }
+function pickImportFile() { document.getElementById("importFile").click(); }
+
+async function importFromFile(ev) {
+  const file = ev.target.files[0];
+  ev.target.value = "";   // 同じファイルを続けて選び直せるようにする
+  if (file) applyImport(await file.text());
+}
+
+function importFromText() { applyImport(document.getElementById("importText").value); }
+
+// 読み込んだJSONを検証していまのデータに合流させる。壊れていたら何も変更しない
+function applyImport(text) {
+  let incoming;
+  try {
+    const data = JSON.parse(text);
+    incoming = (data && data.app === "lingopop") ? data.state : data;   // 封筒ありでも生のstateでも受ける
+  } catch (e) { return toast("⚠️ JSONとして読めませんでした"); }
+  if (!incoming || typeof incoming !== "object" || Array.isArray(incoming))
+    return toast("⚠️ バックアップの形式ではありません");
+  if (incoming.xp == null && incoming.days == null && incoming.tracks == null)
+    return toast("⚠️ 学習データが入っていません");
+
+  const before = state.xp;
+  state = mergeState(state, normalize(incoming));
+  save();
+  document.getElementById("importBox").classList.add("hidden");
+  document.getElementById("importText").value = "";
+  refreshAll();
+  toast("✅ 読み込みました(⚡" + before + " → " + state.xp + " XP)");
+}
+
+// 2つの state を合成する。累積値(XP・回答数・学習日)は大きいほう、単語帳は和集合。
+// どちらのデータも減らないので、取り込みで失うものがない
+function mergeState(a, b) {
+  // 設定(mode・トグル類)をどちらから採るか。アプリを開くだけで updatedAt は進むので、
+  // 時刻だけで比べると引っ越し先のまっさらな初期設定が必ず勝ってしまう。
+  // そこで「学習履歴が空のほう」は負けにして、中身のある側の設定を引き継ぐ
+  const newer = isBlank(a) ? b : isBlank(b) ? a
+              : (b.updatedAt || 0) > (a.updatedAt || 0) ? b : a;
+  const older = newer === b ? a : b;
+  const out = {
+    xp: Math.max(a.xp, b.xp),
+    best: Math.max(a.best, b.best),
+    days: {},
+    tracks: {},
+    wordbook: a.wordbook.slice(),
+    mode: newer.mode,
+    wbEnabled: newer.wbEnabled,
+    ttsEnabled: newer.ttsEnabled,
+    diffs: Object.assign({}, older.diffs, newer.diffs),
+    updatedAt: Math.max(a.updatedAt || 0, b.updatedAt || 0),
+    streak: 0, lastDay: null,
+  };
+  for (const src of [a.days, b.days])
+    for (const k in src) out.days[k] = Math.max(out.days[k] || 0, num(src[k]));
+  for (const k of TRACK_KEYS) {
+    const x = a.tracks[k] || {}, y = b.tracks[k] || {};
+    out.tracks[k] = { xp: Math.max(num(x.xp), num(y.xp)),
+                      answered: Math.max(num(x.answered), num(y.answered)),
+                      correct: Math.max(num(x.correct), num(y.correct)) };
+  }
+  for (const w of b.wordbook) if (!out.wordbook.some(v => sameCard(v, w))) out.wordbook.push(w);
+  // ストリークは日付の連続性が命なので、最後に学習した日が新しいほうの記録をそのまま採る
+  const fresher = (b.lastDay || "") > (a.lastDay || "") ? b : a;
+  out.streak = fresher.streak;
+  out.lastDay = fresher.lastDay;
+  return out;
+}
+
+// まだ一度も学習していない state かどうか(引っ越し直後の新オリジンなど)
+function isBlank(s) {
+  return s.xp === 0 && Object.keys(s.days).length === 0 && s.wordbook.length === 0;
+}
+
+function renderBackupNote() {
+  const el = document.getElementById("backupNote");
+  if (el) el.textContent = "最終更新: " +
+    (state.updatedAt ? new Date(state.updatedAt).toLocaleString("ja-JP") : "不明(前のバージョンで保存)");
+}
+
+// state を丸ごと入れ替えたあとの一括再描画。初期化と同じ順で並べる
+function refreshAll() {
+  if (state.mode === "ja") selectLang("en");   // 和訳モードは英語が選ばれていないと復元できない
+  setMode(state.mode);
+  syncModeAvail();
+  renderStats();
+  renderGrass();
+  renderTts();
+  renderWordbook();
+  syncDiffUI();
+  renderProfile();
 }
 
 function showScreen(id) {
