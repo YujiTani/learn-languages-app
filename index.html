@@ -280,6 +280,32 @@
     box-shadow: 0 2px 0 var(--border); transition: transform .08s, box-shadow .08s;
   }
   .icon-btn:active { transform: translateY(2px); box-shadow: none; }
+
+  /* ツールチップ。hover を持つ端末(マウス)だけに出す。
+     タッチ端末で :hover を使うと、タップ後に出しっぱなしになるため */
+  .tip { position: relative; }
+  @media (hover: hover) {
+    .tip::after, .tip::before {
+      opacity: 0; pointer-events: none; position: absolute; z-index: 60;
+      transition: opacity .15s ease;
+    }
+    .tip::after {
+      content: attr(data-tip);
+      top: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+      background: var(--text); color: #fff; font-size: 12px; font-weight: 700;
+      padding: 5px 10px; border-radius: 8px; white-space: nowrap;
+      box-shadow: 0 3px 10px rgba(0,0,0,.18);
+    }
+    .tip::before {
+      content: ""; top: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+      border: 5px solid transparent; border-bottom-color: var(--text);
+    }
+    .tip:hover::after, .tip:hover::before,
+    .tip:focus-visible::after, .tip:focus-visible::before { opacity: 1; }
+    /* 右端のボタンは中央寄せだと画面外へ出るので、ボタンの右端に揃えて左へ伸ばす */
+    .header-actions .tip:last-child::after { left: auto; right: 0; transform: none; }
+    .header-actions .tip:last-child::before { left: auto; right: 13px; transform: none; }
+  }
   .profile-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .summary-card { display: flex; justify-content: space-between; text-align: center; padding: 18px 12px; gap: 6px; }
   .sum-val { font-size: 20px; font-weight: 800; color: var(--purple); }
@@ -338,12 +364,6 @@
   }
 
   /* ============ つかいかた画面 ============ */
-  .help-link-wrap { text-align: center; margin: 18px 0 4px; }
-  .help-link {
-    background: none; border: none; color: var(--text-light); font-family: inherit;
-    font-size: 13px; font-weight: 700; cursor: pointer; padding: 8px 12px; border-radius: 10px;
-  }
-  .help-link:hover { background: var(--border); color: var(--text); }
   .help-lead { font-size: 13px; color: var(--text-light); line-height: 1.9; margin-bottom: 16px; }
   .help-sec {
     background: var(--card); border: 2px solid var(--border); border-radius: 14px;
@@ -433,8 +453,8 @@
   <header>
     <div class="logo">LingoPop!<span class="version" id="appVersion"></span></div>
     <div class="header-actions">
-      <button class="icon-btn" onclick="showHelp()" title="つかいかた" aria-label="つかいかた">❓</button>
-      <button class="icon-btn" onclick="showProfile()" title="マイページ" aria-label="マイページ">👤</button>
+      <button class="icon-btn tip" onclick="showHelp()" data-tip="使い方" aria-label="使い方">❓</button>
+      <button class="icon-btn tip" onclick="showProfile()" data-tip="マイページ" aria-label="マイページ">👤</button>
     </div>
     <div class="stats">
       <div class="stat streak" title="連続学習日数">🔥 <span id="streakVal">0</span></div>
@@ -819,10 +839,6 @@
     </div>
   </div>
 
-  <div class="help-link-wrap" id="helpLinkWrap">
-    <button class="help-link" onclick="showHelp()">❓ つかいかた・データの同期について</button>
-  </div>
-
   <footer>LingoPop! ─ 韓国語・デンマーク語・英語をたのしく学ぼう</footer>
 </div>
 
@@ -838,7 +854,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.15.0";
+const APP_VERSION = "1.15.1";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const MAX_D = 5;   // 難易度の段数(★1〜★5)。増やすときは DIFFS も伸ばす
@@ -1879,8 +1895,6 @@ function showScreen(id) {
   // マイページとつかいかたは全トラックの話なので、上部の「現在トラック」バーは隠す
   document.querySelector(".level-bar-wrap").classList.toggle("hidden",
     id === "profileScreen" || id === "helpScreen");
-  // つかいかたへの導線はホームだけに出す(レッスン中は集中を切らさない)
-  document.getElementById("helpLinkWrap").classList.toggle("hidden", id !== "homeScreen");
 }
 
 // ---------- エフェクト ----------
