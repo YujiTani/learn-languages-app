@@ -293,6 +293,19 @@
     border-radius: 12px; font-size: 14px; z-index: 100; animation: pop .3s ease;
   }
   footer { text-align: center; color: #bbb; font-size: 12px; padding: 20px 0; }
+.sync-input {
+  width: 100%; box-sizing: border-box; margin-bottom: 10px;
+  padding: 12px 14px; border: 2px solid var(--border); border-radius: 12px;
+  font-family: inherit; font-size: 15px;
+}
+.sync-input:focus { outline: none; border-color: var(--blue); }
+.sync-mail { font-weight: 800; font-size: 14px; word-break: break-all; margin-bottom: 2px; }
+.sync-badge {
+  display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px;
+  border-radius: 999px; margin-left: 6px; vertical-align: 1px;
+}
+.sync-badge.ok  { background: #d7f5c8; color: #3c8a1e; }
+.sync-badge.ng  { background: #ffe0dc; color: #c4342a; }
 .moved {
   background: #fff4d6; border: 2px solid #f0b429; border-radius: 14px;
   padding: 14px 16px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px;
@@ -509,6 +522,31 @@
     </div>
     <div id="trackList"></div>
 
+    <div class="section-title">☁️ 同期</div>
+    <div class="mode-desc" style="margin:-6px 0 12px">
+      ログインすると学習データがクラウドにも保存され、スマホとパソコンで続きから学べます
+    </div>
+    <div class="card">
+      <div id="syncOff">
+        <div class="opt-desc" style="margin:0 0 10px">
+          パスワードはありません。メールに届くリンクを開くだけでログインできます
+        </div>
+        <input type="email" id="syncEmail" class="sync-input" placeholder="you@example.com"
+               autocomplete="email" inputmode="email">
+        <button class="btn btn-blue" id="syncSendBtn" onclick="sendMagicLink()">ログインリンクを送る 📧</button>
+        <div class="opt-desc" id="syncMsg"></div>
+      </div>
+      <div id="syncOn" class="hidden">
+        <div class="sync-mail" id="syncWho"></div>
+        <div class="opt-desc" id="syncStatus"></div>
+        <button class="btn btn-white" onclick="syncNow()">いま同期する 🔄</button>
+        <button class="btn btn-white" onclick="syncSignOut()">ログアウト</button>
+      </div>
+      <div id="syncNA" class="hidden">
+        <div class="opt-desc">この環境ではクラウド同期を使えません(オフライン、またはファイルを直接開いています)。下のバックアップでデータを移せます</div>
+      </div>
+    </div>
+
     <div class="section-title">💾 データのバックアップ</div>
     <div class="mode-desc" style="margin:-6px 0 12px">
       学習データはこのブラウザにだけ保存されています。書き出しておけば、別のブラウザや新しいURLへ引っ越すときに復元できます
@@ -552,6 +590,7 @@
   <footer>LingoPop! ─ 韓国語・デンマーク語・英語をたのしく学ぼう</footer>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="generator.js"></script>
 <script>
 // ---------- 問題バンク ----------
@@ -563,7 +602,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.13.0";
+const APP_VERSION = "1.14.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const MAX_D = 5;   // 難易度の段数(★1〜★5)。増やすときは DIFFS も伸ばす
@@ -667,6 +706,7 @@ function loadTracks(s) {
 function save() {
   state.updatedAt = Date.now();
   localStorage.setItem("lingopop", JSON.stringify(state));
+  scheduleSync();   // ログイン中ならクラウドにも反映する(まとめて数秒後)
 }
 
 function levelOf(xp) { return Math.floor(xp / XP_PER_LEVEL) + 1; }
@@ -1301,6 +1341,144 @@ function renderProfile() {
       </div>`;
   }).join("");
   renderBackupNote();
+  renderSync();
+}
+
+// ---------- クラウド同期(Supabase) ----------
+// localStorage が一次ソースで、クラウドはその複製。
+// ログインしていなくても、通信できなくても、アプリはこれまでどおり動く。
+// 合流には既存の mergeState() をそのまま使うので、同期のために新しい合流ロジックは持たない。
+const SUPABASE_URL = "https://nsrsbvfisnldivniifgi.supabase.co";
+// anon キーは公開前提の値。守っているのは RLS(profiles は自分の行しか読み書きできない)であって、この文字列の秘匿ではない
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zcnNidmZpc25sZGl2bmlpZmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyOTE4OTIsImV4cCI6MjEwNDg2Nzg5Mn0.ET4xf8HgobKWtLF3faPd4JvjMObNnMMu3E9EviuSrHs";
+const SYNC_DEBOUNCE_MS = 3000;   // 1レッスン中に何度も送らないための待ち
+
+let sb = null;          // Supabaseクライアント。CDNを読めなければ null のまま(同期なしで動く)
+let syncUser = null;    // ログイン中のユーザー
+let syncTimer = null;
+let syncing = false;    // 送信中。ここで予約を止めないと save() → 送信 → save() で無限ループになる
+let syncedAt = 0;
+let syncErr = "";
+
+function initSync() {
+  // file:// や CDN 到達不可のときは同期機能そのものを出さない
+  if (!window.supabase || location.protocol === "file:") return renderSync();
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  sb.auth.onAuthStateChange((event, session) => {
+    syncUser = session ? session.user : null;
+    if (event === "SIGNED_IN") syncOnLogin();
+    renderSync();
+  });
+  sb.auth.getSession().then(({ data }) => {
+    syncUser = data.session ? data.session.user : null;
+    if (syncUser) syncOnLogin();
+    renderSync();
+  }).catch(() => renderSync());
+
+  // 別の端末で進めたぶんを、タブに戻ってきたときに取り込む
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && syncUser) pullAndMerge();
+  });
+}
+
+// ---- 通信 ----
+async function pullRemote() {
+  const { data, error } = await sb.from("profiles")
+    .select("state").eq("user_id", syncUser.id).maybeSingle();
+  if (error) throw error;
+  return data ? data.state : {};
+}
+
+// 送信は必ず read-modify-write。2台で同時に進めても、単調マージなのでどちらの記録も消えない
+async function pushSync() {
+  syncing = true;
+  try {
+    const remote = await pullRemote();
+    state = mergeState(state, normalize(remote));
+    save();
+    const { error } = await sb.from("profiles").upsert({
+      user_id: syncUser.id, state: state, updated_at: new Date().toISOString(),
+    });
+    if (error) throw error;
+    syncedAt = Date.now(); syncErr = "";
+  } finally { syncing = false; }
+}
+
+async function pullAndMerge() {
+  try {
+    const before = JSON.stringify(state);
+    state = mergeState(state, normalize(await pullRemote()));
+    syncedAt = Date.now(); syncErr = "";
+    if (JSON.stringify(state) !== before) { save(); refreshAll(); }
+  } catch (e) { syncErr = e.message || "同期できませんでした"; }
+  renderSync();
+}
+
+// ログイン直後: 手元のデータとクラウドを合流させてから、その結果を書き戻す
+async function syncOnLogin() {
+  try {
+    await pushSync();
+    refreshAll();
+    toast("☁️ 同期しました");
+  } catch (e) {
+    syncErr = e.message || "同期できませんでした";
+    renderSync();
+  }
+}
+
+function scheduleSync() {
+  if (!sb || !syncUser || syncing) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    pushSync().catch(e => { syncErr = e.message || "同期できませんでした"; }).then(renderSync);
+  }, SYNC_DEBOUNCE_MS);
+}
+
+function syncNow() {
+  if (!syncUser) return;
+  pushSync().catch(e => { syncErr = e.message || "同期できませんでした"; })
+             .then(() => { renderSync(); toast(syncErr ? "⚠️ " + syncErr : "☁️ 同期しました"); });
+}
+
+// ---- 認証(マジックリンク) ----
+async function sendMagicLink() {
+  const el = document.getElementById("syncEmail");
+  const email = el.value.trim();
+  if (!email) return toast("メールアドレスを入力してください");
+  const btn = document.getElementById("syncSendBtn");
+  btn.disabled = true; btn.textContent = "送信中…";
+  const { error } = await sb.auth.signInWithOtp({
+    email, options: { emailRedirectTo: location.origin + location.pathname },
+  });
+  btn.disabled = false; btn.textContent = "ログインリンクを送る 📧";
+  const msg = document.getElementById("syncMsg");
+  if (error) { msg.textContent = "⚠️ " + error.message; return; }
+  msg.textContent = email + " にログインリンクを送りました。メールを開いてください(迷惑メールに入ることがあります)";
+}
+
+async function syncSignOut() {
+  await sb.auth.signOut();
+  syncUser = null; syncedAt = 0; syncErr = "";
+  renderSync();
+  toast("ログアウトしました(データはこの端末に残っています)");
+}
+
+function renderSync() {
+  const off = document.getElementById("syncOff");
+  if (!off) return;
+  const on = document.getElementById("syncOn"), na = document.getElementById("syncNA");
+  off.classList.toggle("hidden", !sb || !!syncUser);
+  on.classList.toggle("hidden", !syncUser);
+  na.classList.toggle("hidden", !!sb);
+  if (!syncUser) return;
+  document.getElementById("syncWho").innerHTML =
+    (syncUser.email || "ログイン中") +
+    (syncErr ? '<span class="sync-badge ng">同期できていません</span>'
+             : '<span class="sync-badge ok">同期中</span>');
+  document.getElementById("syncStatus").textContent = syncErr
+    ? syncErr + "(データはこの端末に保存済みです)"
+    : "最終同期: " + (syncedAt ? new Date(syncedAt).toLocaleString("ja-JP") : "—");
 }
 
 // ---------- 引っ越し案内 ----------
@@ -1500,6 +1678,7 @@ function toast(text) {
 // ---------- 初期化 ----------
 document.getElementById("appVersion").textContent = "v" + APP_VERSION;
 renderMovedBanner();   // 旧URLのときだけ引っ越し案内を出す
+initSync();            // ログイン済みならセッションを復元して同期を始める
 renderDiffToggle();   // setMode / selectLang が syncDiffUI を呼ぶので、先に中身を作っておく
 renderStats();
 // selectedLang は永続化されないため、和訳モードの復元には英語の再選択が先に必要
