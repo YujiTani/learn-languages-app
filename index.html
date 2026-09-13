@@ -538,23 +538,6 @@
       <div class="wb-langs" id="wbLangs"></div>
       <button class="btn btn-purple" id="reviewBtn" onclick="startReview()">単語帳で復習する 📖</button>
     </div>
-
-    <div class="card" style="margin-top:20px">
-      <div style="font-weight:800; margin-bottom:8px">あそびかた</div>
-      <div style="font-size:14px; color:var(--text-light); line-height:1.8">
-        1. 言語と回答モードをえらんで「問題を生成」<br>
-        2. <b>日本語の文</b>が出題される<br>
-        3. 📝 ノート記述: 自分でノートに書いてから「回答を確認」で答え合わせ<br>
-        3. 🧩 単語タイル: バラバラの単語を正しい順にタップして「答え合わせ」<br>
-        3. 🇯🇵 和訳を入力(英語のみ): <b>英語の文</b>が出題される。日本語訳を入力してから答え合わせ<br>
-        4. 答え合わせのとき解答文を音声で読み上げ。🔊ボタンで聞き直せる<br>
-        5. 正解でXP獲得(★の数で10/15/20XP)。間違えると1XPのみ<br>
-        6. まちがえた問題は📒単語帳にたまる。復習で「覚えた!」(+5XP)と消えていく<br>
-        7. <b>レベルはモードごとに別々</b>。韓国語をやっても英語の難易度は上がらない<br>
-        8. 👤マイページで各モードのレベル・正解率をチェック<br>
-        9. XPをためてレベルアップ、毎日つづけて🌱草を育てよう!
-      </div>
-    </div>
   </div>
 
   <!-- Session screen -->
@@ -854,7 +837,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.15.1";
+const APP_VERSION = "1.15.2";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const MAX_D = 5;   // 難易度の段数(★1〜★5)。増やすときは DIFFS も伸ばす
