@@ -37,17 +37,23 @@
   /* Header */
   header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 0; margin-bottom: 8px;
+    gap: 10px 12px; padding: 12px 0; margin-bottom: 8px;
   }
+  .header-actions { display: flex; gap: 6px; flex: 0 0 auto; }
   .logo { font-size: 24px; font-weight: 800; color: var(--green); letter-spacing: -0.5px; }
   .logo .version {
     font-size: 11px; font-weight: 700; color: var(--text-light);
     letter-spacing: 0; margin-left: 5px; vertical-align: super;
   }
-  .stats { display: flex; gap: 14px; align-items: center; }
-  .stat { display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 15px; }
+  /* 数字は桁が増えるので、はみ出さないように折り返せるピルにする */
+  .stats { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+  .stat {
+    display: flex; align-items: center; gap: 4px; font-weight: 800; font-size: 14px;
+    background: var(--card); border: 2px solid var(--border); border-radius: 999px;
+    padding: 3px 11px; white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
   .stat.streak { color: var(--orange); }
-  .stat.xp { color: var(--yellow); filter: saturate(1.4); }
+  .stat.xp { color: #e0a500; }
   .stat.level { color: var(--purple); }
 
   /* Level bar */
@@ -268,10 +274,12 @@
 
   /* My page */
   .icon-btn {
-    background: none; border: none; font-size: 20px; cursor: pointer;
-    padding: 0; line-height: 1; filter: grayscale(.3);
+    background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+    width: 40px; height: 40px; flex-shrink: 0; font-size: 18px; cursor: pointer;
+    padding: 0; line-height: 1; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 0 var(--border); transition: transform .08s, box-shadow .08s;
   }
-  .icon-btn:active { transform: translateY(1px); }
+  .icon-btn:active { transform: translateY(2px); box-shadow: none; }
   .profile-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .summary-card { display: flex; justify-content: space-between; text-align: center; padding: 18px 12px; gap: 6px; }
   .sum-val { font-size: 20px; font-weight: 800; color: var(--purple); }
@@ -293,7 +301,87 @@
     border-radius: 12px; font-size: 14px; z-index: 100; animation: pop .3s ease;
   }
   footer { text-align: center; color: #bbb; font-size: 12px; padding: 20px 0; }
-.sync-input {
+  /* ============ スマホ向けの調整 ============
+     これまでメディアクエリが1つも無く、桁数が増えるとヘッダーが画面外へはみ出して
+     👤ボタンが押せなくなっていた。狭い画面ではロゴ+ボタンとスタッツを2段に分ける。 */
+  body { -webkit-tap-highlight-color: transparent; }
+  .btn, .icon-btn, .lang-tile, .mode-opt, .word-tile, .switch, .tts-btn, .quit-btn,
+  .help-sec > summary { touch-action: manipulation; }
+
+  @media (max-width: 480px) {
+    header { flex-wrap: wrap; padding: 10px 0 8px; }
+    .logo { margin-right: auto; font-size: 21px; }
+    .header-actions { order: 2; }
+    .stats { order: 3; flex: 1 1 100%; justify-content: flex-start; gap: 6px; }
+    .stat { font-size: 13px; padding: 3px 10px; }
+
+    .container { padding: 12px 14px calc(24px + env(safe-area-inset-bottom)); }
+    .card { padding: 18px 16px; border-radius: 14px; }
+    .section-title { font-size: 16px; margin: 18px 0 10px; }
+    .sentence { font-size: 22px; }
+    .answer-box { padding: 15px; }
+    .answer-box .ans-text { font-size: 18px; }
+    .btn { padding: 13px 16px; font-size: 15px; }
+    .lang-tile { padding: 16px 8px; }
+    .lang-tile .flag { font-size: 34px; }
+    .lang-grid { gap: 10px; }
+    .mode-opt { font-size: 12px; padding: 9px 4px; }
+    .summary-card { padding: 14px 8px; }
+    .sum-val { font-size: 18px; }
+    .word-tile { font-size: 15px; padding: 8px 12px; }
+    .grass-card { padding: 14px; }
+    .toast {
+      left: 12px; right: 12px; transform: none; text-align: center;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+    .opt-row { padding: 14px 16px; }
+  }
+
+  /* ============ つかいかた画面 ============ */
+  .help-link-wrap { text-align: center; margin: 18px 0 4px; }
+  .help-link {
+    background: none; border: none; color: var(--text-light); font-family: inherit;
+    font-size: 13px; font-weight: 700; cursor: pointer; padding: 8px 12px; border-radius: 10px;
+  }
+  .help-link:hover { background: var(--border); color: var(--text); }
+  .help-lead { font-size: 13px; color: var(--text-light); line-height: 1.9; margin-bottom: 16px; }
+  .help-sec {
+    background: var(--card); border: 2px solid var(--border); border-radius: 14px;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .help-sec > summary {
+    padding: 14px 16px; font-weight: 800; font-size: 15px; cursor: pointer;
+    list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .help-sec > summary::-webkit-details-marker { display: none; }
+  .help-sec > summary::after { content: "▾"; color: var(--text-light); font-size: 13px; transition: transform .2s; }
+  .help-sec[open] > summary::after { transform: rotate(180deg); }
+  .help-sec[open] > summary { border-bottom: 2px solid var(--border); }
+  .help-body { padding: 14px 16px 16px; font-size: 14px; line-height: 1.9; }
+  .help-body p { margin-bottom: 10px; }
+  .help-body p.k { margin-top: 16px; }
+  .help-body p.k:first-child { margin-top: 0; }
+  .help-body p:last-child { margin-bottom: 0; }
+  .help-body ul, .help-body ol { margin: 8px 0 12px 20px; }
+  .help-body li { margin-bottom: 6px; }
+  .help-body li::marker { color: var(--blue); font-weight: 800; }
+  .help-body code { background: var(--bg); padding: 2px 6px; border-radius: 5px; font-size: 12px; }
+  .help-body .k { font-weight: 800; }
+  .help-tip, .help-warn {
+    border-radius: 0 10px 10px 0; padding: 10px 13px; margin: 12px 0; font-size: 13px; line-height: 1.8;
+  }
+  .help-tip { background: #eef8ff; border-left: 4px solid var(--blue); }
+  .help-warn { background: #fff4e6; border-left: 4px solid var(--orange); }
+  .help-tip .lab, .help-warn .lab { font-weight: 800; display: block; margin-bottom: 2px; }
+  .help-tip .lab { color: var(--blue-dark); }
+  .help-warn .lab { color: #cc7a00; }
+  .help-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  .help-table th, .help-table td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  .help-table th { font-weight: 800; color: var(--text-light); font-size: 12px; }
+  .help-table tr:last-child td { border-bottom: none; }
+  .help-wrap { overflow-x: auto; }
+
+  .sync-input {
   width: 100%; box-sizing: border-box; margin-bottom: 10px;
   padding: 12px 14px; border: 2px solid var(--border); border-radius: 12px;
   font-family: inherit; font-size: 15px;
@@ -344,11 +432,14 @@
 
   <header>
     <div class="logo">LingoPop!<span class="version" id="appVersion"></span></div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="showHelp()" title="つかいかた" aria-label="つかいかた">❓</button>
+      <button class="icon-btn" onclick="showProfile()" title="マイページ" aria-label="マイページ">👤</button>
+    </div>
     <div class="stats">
       <div class="stat streak" title="連続学習日数">🔥 <span id="streakVal">0</span></div>
       <div class="stat xp" title="合計XP">⚡ <span id="xpVal">0</span></div>
       <div class="stat level" title="このモードのレベル">💎 Lv.<span id="levelVal">1</span></div>
-      <button class="icon-btn" onclick="showProfile()" title="マイページ" aria-label="マイページ">👤</button>
     </div>
   </header>
 
@@ -503,6 +594,147 @@
     <button class="btn btn-blue hidden" id="continueBtn" onclick="continueTiles()">つづける ➡️</button>
   </div>
 
+  <!-- Help -->
+  <div id="helpScreen" class="hidden">
+    <div class="profile-top">
+      <div class="section-title" style="margin:0">❓ つかいかた</div>
+      <button class="quit-btn" onclick="goHome()" title="とじる" aria-label="とじる">✕</button>
+    </div>
+    <div class="help-lead">
+      日本語の文を見て、韓国語・デンマーク語・英語で答える練習アプリです。<br>
+      知りたいところをタップすると開きます。
+    </div>
+
+    <details class="help-sec" open>
+      <summary>🎯 はじめかた</summary>
+      <div class="help-body">
+        <ol>
+          <li><span class="k">言語をえらぶ</span> — 🇰🇷韓国語 / 🇩🇰デンマーク語 / 🇬🇧英語 / 🌏ミックス</li>
+          <li><span class="k">回答モードをえらぶ</span> — 書く・タイル・和訳から</li>
+          <li><span class="k">「問題を生成する 🎲」</span>を押すと5問出題されます</li>
+        </ol>
+        <p>問題はその場で作られるので、毎回ちがう文が出ます。1回5問で、終わるとXPがもらえます。</p>
+      </div>
+    </details>
+
+    <details class="help-sec">
+      <summary>✍️ 3つの答え方</summary>
+      <div class="help-body">
+        <p><span class="k">📝 ノート記述</span><br>
+        手元のノートに書いてから「回答を確認」。自己採点で「書けた / 惜しかった / 書けなかった」を選びます。いちばん力がつきます。</p>
+        <p><span class="k">🧩 単語タイル</span><br>
+        バラバラの単語を正しい順にタップ。ダミーの単語も混ざっています。語順を覚えるのに向いています。</p>
+        <p><span class="k">🇯🇵 和訳を入力（英語のみ）</span><br>
+        出題の向きが逆になり、英文を読んで日本語訳を入力します。読解の練習になります。</p>
+      </div>
+    </details>
+
+    <details class="help-sec">
+      <summary>⭐ 難易度のえらび方</summary>
+      <div class="help-body">
+        <p>ふだんは <span class="k">🎚 おまかせ</span> で大丈夫です。レベルが上がるほど難しい問題が混ざります。</p>
+        <p>「今日は関係代名詞だけやりたい」というときは ★〜★★★★★ を選ぶと、レベルを無視してその難易度だけが出ます。</p>
+        <div class="help-wrap"><table class="help-table">
+          <tr><th>★</th><td>基礎 — be動詞・あいさつ・値段（中1前半）</td></tr>
+          <tr><th>★★</th><td>標準 — 修飾語・指示詞・want to（中1後半）</td></tr>
+          <tr><th>★★★</th><td>応用 — 過去形・because・can・疑問詞（中2前半）</td></tr>
+          <tr><th>★★★★</th><td>発展 — 比較級・現在完了・if節（中2後半〜中3）</td></tr>
+          <tr><th>★★★★★</th><td>上級 — 関係代名詞・受身・仮定法（中3〜高校）</td></tr>
+        </table></div>
+        <div class="help-tip"><span class="lab">XPは難易度で変わりません</span>
+          難しい問題を選んでも損得がないので、「いま練習したい文法」で自由に選べます。</div>
+      </div>
+    </details>
+
+    <details class="help-sec">
+      <summary>⚡ XP・レベル・🔥ストリーク</summary>
+      <div class="help-body">
+        <div class="help-wrap"><table class="help-table">
+          <tr><th>書けた / タイル正解</th><td>+15 XP</td></tr>
+          <tr><th>惜しかった</th><td>+8 XP</td></tr>
+          <tr><th>書けなかった / 不正解</th><td>+1 XP</td></tr>
+        </table></div>
+        <p>100XPで1レベル上がります。レベルは <span class="k">「言語 × 出題の向き」ごとに別々</span>にたまるので、韓国語をやり込んでも英語がいきなり難しくなることはありません。</p>
+        <p>🔥ストリークは連続で学習した日数です。1日1問でも続けば途切れません。</p>
+      </div>
+    </details>
+
+    <details class="help-sec">
+      <summary>🌱 学習カレンダー・📒 単語帳・🔊 音声</summary>
+      <div class="help-body">
+        <p><span class="k">🌱 学習カレンダー</span><br>
+        その日のXPに応じて草が濃くなります。1問だけの日でも色がつきます。</p>
+        <p><span class="k">📒 単語帳</span><br>
+        まちがえた問題は自動でたまります。復習して「覚えた!」を押すと消えます（+5XP）。⚙️オプションでOFFにもできます。</p>
+        <p><span class="k">🔊 音声読み上げ</span><br>
+        答え合わせのときに自動で読み上げます。🔊ボタンで何度でも聞き直せます。端末に対応音声がない言語ではボタンが出ません。</p>
+      </div>
+    </details>
+
+    <details class="help-sec">
+      <summary>☁️ データの同期（ログイン）</summary>
+      <div class="help-body">
+        <p>学習データは、ふだんは<span class="k">その端末のブラウザの中だけ</span>に保存されています。ログインするとクラウドにも保存され、スマホとパソコンで同じ続きから学べます。</p>
+
+        <p class="k">ログインのしかた</p>
+        <ol>
+          <li>👤マイページ → <span class="k">☁️ 同期</span> を開く</li>
+          <li>メールアドレスを入れて「ログインリンクを送る 📧」</li>
+          <li>届いたメールのリンクを開く</li>
+        </ol>
+        <p>パスワードはありません。メールのリンクがカギの代わりです。</p>
+
+        <div class="help-warn"><span class="lab">スマホでログインするときの注意</span>
+          メールアプリ（Gmailなど）はリンクを<span class="k">アプリ内ブラウザ</span>で開くことがあります。そこでログインしても、ふだん使う Safari / Chrome には反映されません。<br>
+          リンクを<span class="k">長押し →「Safariで開く」</span>を選んでください。
+        </div>
+
+        <div class="help-tip"><span class="lab">複数の端末で使うときは</span>
+          かならず<span class="k">同じメールアドレス</span>を使ってください。別のアドレスは別人あつかいになり、データも別々になります。
+        </div>
+
+        <p class="k">いつ同期される?</p>
+        <ul>
+          <li>ログインした直後</li>
+          <li>問題に答えた数秒後</li>
+          <li>アプリの画面に戻ってきたとき</li>
+        </ul>
+        <p>圏外でも学習は続けられます。つながったときにまとめて送られます。</p>
+
+        <div class="help-warn"><span class="lab">同時に2台で学習したとき</span>
+          記録が消えることはありませんが、<span class="k">同じ言語を2台で同時に進めたぶんは足し算されません</span>（多いほうが残ります）。ちがう言語ならどちらも残ります。
+        </div>
+      </div>
+    </details>
+
+    <details class="help-sec">
+      <summary>💾 バックアップ・引っ越し</summary>
+      <div class="help-body">
+        <p>👤マイページの <span class="k">💾 データのバックアップ</span> から、学習データをファイルに書き出したりコピーしたりできます。</p>
+        <p>別のブラウザや新しいURLへ移すときは、<span class="k">📋 コピー</span> → 移動先で <span class="k">⬆️ データを読み込む</span> に貼り付けてください。</p>
+        <div class="help-tip"><span class="lab">読み込みで減ることはありません</span>
+          取り込みは「置き換え」ではなく「合流」です。同じデータを何回読み込んでも結果は変わらないので、失敗を恐れず何度でも試せます。
+        </div>
+      </div>
+    </details>
+
+    <details class="help-sec">
+      <summary>🔧 こまったときは</summary>
+      <div class="help-body">
+        <p><span class="k">ログインのメールが届かない</span><br>
+        迷惑メールフォルダを確認してください。送信回数に制限があるため、続けて何度も送ると一時的に届かなくなります。少し待ってからもう一度お試しください。</p>
+        <p><span class="k">別の端末でXPが違う</span><br>
+        どちらの端末でもログインし、アプリの画面に戻ると同期されます。それでも合わないときは、マイページの「いま同期する 🔄」を押してください。</p>
+        <p><span class="k">音声が鳴らない</span><br>
+        端末にその言語の音声が入っていない場合は🔊ボタンが表示されません。端末の設定から音声を追加できることがあります。</p>
+        <p><span class="k">データが消えたように見える</span><br>
+        URLが変わると別の保存場所になります。以前のURLを開いて 📋 コピー → 新しいURLで読み込んでください。</p>
+      </div>
+    </details>
+
+    <button class="btn btn-white" onclick="goHome()">ホームへもどる</button>
+  </div>
+
   <!-- My page -->
   <div id="profileScreen" class="hidden">
     <div class="profile-top">
@@ -587,6 +819,10 @@
     </div>
   </div>
 
+  <div class="help-link-wrap" id="helpLinkWrap">
+    <button class="help-link" onclick="showHelp()">❓ つかいかた・データの同期について</button>
+  </div>
+
   <footer>LingoPop! ─ 韓国語・デンマーク語・英語をたのしく学ぼう</footer>
 </div>
 
@@ -602,7 +838,7 @@ function loadBank() {
   return Promise.resolve(window.LINGOPOP_GEN.buildBank());
 }
 
-const APP_VERSION = "1.14.0";
+const APP_VERSION = "1.15.0";
 const QUESTIONS_PER_SESSION = 5;
 const XP_PER_LEVEL = 100;
 const MAX_D = 5;   // 難易度の段数(★1〜★5)。増やすときは DIFFS も伸ばす
@@ -1310,6 +1546,7 @@ function quitSession() {
 function goHome() { stopTts(); showScreen("homeScreen"); renderGrass(); renderWordbook(); }
 
 function showProfile() { stopTts(); renderProfile(); showScreen("profileScreen"); }
+function showHelp() { stopTts(); showScreen("helpScreen"); window.scrollTo(0, 0); }
 
 function renderProfile() {
   document.getElementById("pTotalXp").textContent = state.xp;
@@ -1636,10 +1873,14 @@ function refreshAll() {
 }
 
 function showScreen(id) {
-  for (const s of ["homeScreen", "sessionScreen", "resultScreen", "profileScreen"])
+  for (const s of ["homeScreen", "sessionScreen", "resultScreen", "profileScreen", "helpScreen"])
     document.getElementById(s).classList.toggle("hidden", s !== id);
   // マイページは全トラックを並べるので、上部の「現在トラック」バーは隠す
-  document.querySelector(".level-bar-wrap").classList.toggle("hidden", id === "profileScreen");
+  // マイページとつかいかたは全トラックの話なので、上部の「現在トラック」バーは隠す
+  document.querySelector(".level-bar-wrap").classList.toggle("hidden",
+    id === "profileScreen" || id === "helpScreen");
+  // つかいかたへの導線はホームだけに出す(レッスン中は集中を切らさない)
+  document.getElementById("helpLinkWrap").classList.toggle("hidden", id !== "homeScreen");
 }
 
 // ---------- エフェクト ----------
